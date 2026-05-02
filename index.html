@@ -35,8 +35,12 @@
         }
     </script>
     
-    <!-- Supabase Mimarisi -->
+    <!-- Supabase Mimarisi (Kasa) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Firebase Mimarisi (SMS Kuryesi - CDN ile uydudan çekiyoruz) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 </head>
 <body id="ana-body" class="antialiased flex flex-col min-h-screen relative pt-10 bg-zemin text-white transition-colors duration-1000">
 
@@ -183,6 +187,9 @@
 
     <!-- LOBİ EKRANI -->
     <div id="lobby-view" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[60] flex-col items-center justify-center p-4">
+        <!-- Görünmez reCAPTCHA divi -->
+        <div id="recaptcha-container"></div>
+        
         <div class="bg-black border border-kaos p-8 rounded-2xl max-w-md w-full shadow-kaos-lg relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-kaos"></div>
             <h3 class="text-2xl font-black text-white mb-2 uppercase text-center mt-2">Son Bir Adım</h3>
@@ -216,8 +223,18 @@
                     <div class="w-1/2">
                         <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest">Telefon Numaranız</label>
                         <div class="flex items-stretch border border-slate-700 rounded-lg overflow-hidden bg-slate-900 focus-within:border-kaos transition">
-                            <div class="bg-kaos text-white font-black text-xs px-2 flex items-center select-none">05</div>
-                            <input type="tel" id="lobby-telefon" placeholder="XX XXX XX XX" maxlength="9" class="w-full bg-transparent text-white p-2 font-medium outline-none text-sm">
+                            <select id="lobby-ulke-kodu" class="bg-kaos text-white font-black text-xs px-2 outline-none cursor-pointer border-r border-slate-800 text-center appearance-none min-w-[60px]">
+                                <option value="+90">🇹🇷 +90</option>
+                                <option value="+49">🇩🇪 +49</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+31">🇳🇱 +31</option>
+                                <option value="+33">🇫🇷 +33</option>
+                                <option value="+43">🇦🇹 +43</option>
+                                <option value="+994">🇦🇿 +994</option>
+                                <option value="+359">🇧🇬 +359</option>
+                            </select>
+                            <input type="tel" id="lobby-telefon" placeholder="5XX XXX XX XX" class="w-full bg-transparent text-white p-2 font-medium outline-none text-sm">
                         </div>
                     </div>
                     <div class="w-1/2">
@@ -241,9 +258,23 @@
                 </label>
 
                 <button onclick="profiliKasayaYaz()" id="btn-lobby-kaydet" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos mt-2 hover:opacity-90 transition">
-                    PROFİLİ TAMAMLA VE İÇERİ GİR
+                    PROFİLİ TAMAMLA VE SMS GÖNDER
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- SMS KODU DOĞRULAMA MODALI -->
+    <div id="sms-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[70] flex-col items-center justify-center p-4">
+        <div class="bg-black border border-kaos p-8 rounded-2xl max-w-sm w-full shadow-kaos-lg relative overflow-hidden text-center">
+            <h3 class="text-2xl font-black text-white mb-2 uppercase mt-2">SMS DOĞRULAMA</h3>
+            <p class="text-gray-400 text-xs mb-6 leading-relaxed">Telefonunuza gönderilen 6 haneli güvenlik kodunu giriniz.</p>
+            
+            <input type="tel" id="sms-kodu-input" placeholder="000000" maxlength="6" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-4 outline-none focus:border-kaos transition text-center text-2xl tracking-[0.5em] font-mono mb-6 shadow-[0_0_15px_rgba(var(--neon-rgb),0.1)]">
+            
+            <button onclick="smsKoduOnayla()" id="btn-sms-onayla" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos hover:opacity-90 transition">
+                KODU ONAYLA VE GİRİŞ YAP
+            </button>
         </div>
     </div>
 
@@ -370,7 +401,7 @@
                 <div class="w-2 h-8 bg-kaos mr-3"></div>
                 <div>
                     <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.1 (e-Devlet Korumalı)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.3 (Global SMS)</div>
                 </div>
             </div>
             <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -428,9 +459,28 @@
         </div>
     </div>
 
-    <!-- SİSTEM MOTORU VE SUPABASE ENTEGRASYONU -->
+    <!-- SİSTEM MOTORU -->
     <script>
-        // SUPABASE BİLGİLERİ
+        // ---------------------------------------------------------
+        // 1. AŞAMA: FİREBASE SMS KURYESİ KURULUMU
+        // ---------------------------------------------------------
+        const firebaseConfig = {
+          apiKey: "AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA",
+          authDomain: "me26-io.firebaseapp.com",
+          projectId: "me26-io",
+          storageBucket: "me26-io.firebasestorage.app",
+          messagingSenderId: "87570616950",
+          appId: "1:87570616950:web:50c97a3de14a69efb4c557"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        auth.languageCode = 'tr'; 
+
+        let confirmationResult = null; 
+
+        // ---------------------------------------------------------
+        // 2. AŞAMA: SUPABASE KASA BİLGİLERİ
+        // ---------------------------------------------------------
         const supabaseUrl = 'https://ukmkojfntsmueikjcrvz.supabase.co'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw';
 
@@ -445,17 +495,17 @@
         const topBanner = document.getElementById('top-banner-sayac');
         
         let pendingGoogleUser = { email: '' };
+        let gecerliKullaniciVerisi = {}; 
 
-        /* =====================================================================
-           DİJİTAL DİRENİŞ MOTORU: ACIMASIZ KAOS RENKLERİ (HERKESE AÇIK SÜRÜM)
-           ===================================================================== */
+        // ---------------------------------------------------------
+        // DİJİTAL DİRENİŞ MOTORU: ACIMASIZ KAOS RENKLERİ
+        // ---------------------------------------------------------
         const kaosRenkleri = [
             '#FF007F', '#7FFF00', '#00FFFF', '#FF00FF', '#FFFF00',
             '#FF4500', '#8A2BE2', '#00FF00', '#FF1493', '#1E90FF'
         ];
 
         window.kaosRenginiBas = function() {
-            // Rengi hafızadan al, yoksa yeni bir tane oluştur ve kaydet
             let aktifKaosRengi = localStorage.getItem('me26_kaos_rengi');
             if (!aktifKaosRengi) {
                 aktifKaosRengi = kaosRenkleri[Math.floor(Math.random() * kaosRenkleri.length)];
@@ -480,7 +530,7 @@
             }
         }
 
-        // 1. GOOGLE BUTONU TETİKLEYİCİSİ
+        // GOOGLE BUTONU
         window.googleIleGiris = async function() {
             try {
                 const { error } = await supabaseClient.auth.signInWithOAuth({
@@ -491,11 +541,13 @@
             } catch (err) { alert("Google bağlantısı kurulamadı. Lütfen tekrar deneyin."); }
         };
 
-        // 2. OTURUM DURUMU VE SAYFA YÜKLENME DİNLEYİCİSİ
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // --- HERKESE KAOS! ---
             window.kaosRenginiBas();
+
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => { }
+            });
 
             if (localStorage.getItem('me26_user_id') && localStorage.getItem('me26_user_name')) {
                 landingView.classList.add('hidden');
@@ -542,11 +594,14 @@
             });
         });
 
-        // 3. LOBİDEKİ VERİLERİ KASAYA YAZMA
+        // ---------------------------------------------------------
+        // 3. AŞAMA: PROFİLİ KONTROL ET VE SMS GÖNDER (GLOBAL)
+        // ---------------------------------------------------------
         window.profiliKasayaYaz = async function() {
             const btnSubmit = document.getElementById('btn-lobby-kaydet');
             
             const isim = document.getElementById('lobby-isim').value.trim();
+            const ulkeKodu = document.getElementById('lobby-ulke-kodu').value;
             const telInput = document.getElementById('lobby-telefon').value.trim().replace(/[^0-9]/g, '');
             const tcInput = document.getElementById('lobby-tc').value.trim().replace(/[^0-9]/g, '');
             let durum = document.getElementById('lobby-durum').value;
@@ -554,7 +609,7 @@
             const genelOnay = document.getElementById('kvkk-genel-onay').checked;
 
             if (!isim) { alert("EKSİK BİLGİ: Lütfen adınızı ve soyadınızı girin."); return; }
-            if (telInput.length !== 9) { alert("EKSİK BİLGİ: Lütfen telefon numaranızı 9 hane olarak girin."); return; }
+            if (telInput.length < 7) { alert("EKSİK BİLGİ: Lütfen geçerli bir telefon numarası girin."); return; }
             if (tcInput.length !== 11) { alert("EKSİK BİLGİ: Lütfen T.C. Kimlik numaranızı tam 11 hane olarak girin."); return; }
             if (!durum) { alert("EKSİK BİLGİ: Lütfen ağdaki statünüzü seçin."); return; }
             if (durum === "Diğer") {
@@ -565,55 +620,93 @@
             if (!edevletBarkod) { alert("GÜVENLİK: e-Devlet barkod numarası güvenlik için zorunludur."); return; }
             if (!genelOnay) { alert("ONAY GEREKLİ: Aydınlatma metnini kabul etmelisiniz."); return; }
 
-            btnSubmit.innerText = "ŞİFRELENİYOR...";
+            btnSubmit.innerText = "SMS GÖNDERİLİYOR...";
             btnSubmit.disabled = true;
 
-            try {
-                const tamTelefon = "05" + telInput;
-                const { data, error } = await supabaseClient.from('uyeler').insert([{ 
-                    isim: isim, 
-                    email: pendingGoogleUser.email, 
-                    telefon: tamTelefon, 
-                    tc_kimlik: tcInput,
-                    durum: durum, 
-                    edevlet_barkod: edevletBarkod,
-                    liyakat_puani: 10
-                }]).select();
+            const tamTelefon = ulkeKodu + telInput; // Artık Supabase ve Firebase için tek global format
 
-                if (error) throw error;
-                
-                const uretilenID = data[0].id;
-                localStorage.setItem('me26_user_id', uretilenID);
-                localStorage.setItem('me26_user_name', isim);
+            gecerliKullaniciVerisi = { 
+                isim: isim, 
+                email: pendingGoogleUser.email, 
+                telefon: tamTelefon, 
+                tc_kimlik: tcInput,
+                durum: durum, 
+                edevlet_barkod: edevletBarkod,
+                liyakat_puani: 10
+            };
+
+            try {
+                confirmationResult = await auth.signInWithPhoneNumber(tamTelefon, window.recaptchaVerifier);
                 
                 lobbyView.classList.add('hidden');
                 lobbyView.classList.remove('flex');
+                document.getElementById('sms-modal').classList.remove('hidden');
+                document.getElementById('sms-modal').classList.add('flex');
                 
-                runTerminalAnimation(uretilenID, isim, "Profil Tamamlandı. Lider Onayı Bekleniyor.");
             } catch (err) {
-                console.error("Kayıt Hatası:", err);
-                if(err.code === '23505' || (err.message && err.message.toLowerCase().includes('duplicate'))) {
-                    alert("REDDEDİLDİ: Bu Telefon, T.C. Kimlik veya Barkod zaten sisteme kayıtlı.");
-                } else {
-                    alert("Kayıt sırasında sunucu bağlantı hatası oluştu. Lütfen tekrar deneyin.");
-                }
-                btnSubmit.innerText = "PROFİLİ TAMAMLA VE İÇERİ GİR";
+                console.error("SMS Hatası:", err);
+                alert("SMS gönderilemedi. Numaranızı kontrol edin veya sayfayı yenileyip tekrar deneyin.");
+                btnSubmit.innerText = "PROFİLİ TAMAMLA VE SMS GÖNDER";
                 btnSubmit.disabled = false;
+                
+                window.recaptchaVerifier.render().then(function(widgetId) {
+                  grecaptcha.reset(widgetId);
+                });
             }
         };
 
-        // 4. ÇIKIŞ YAP
+        // ---------------------------------------------------------
+        // 4. AŞAMA: SMS KODUNU ONAYLA VE KASAYA (SUPABASE) YAZ
+        // ---------------------------------------------------------
+        window.smsKoduOnayla = async function() {
+             const code = document.getElementById('sms-kodu-input').value.trim();
+             if(code.length !== 6) { alert("Eksik giriş: Lütfen 6 haneli kodu girin."); return; }
+
+             const smsBtn = document.getElementById('btn-sms-onayla');
+             smsBtn.innerText = "ŞİFRELENİYOR...";
+             smsBtn.disabled = true;
+
+             try {
+                 const result = await confirmationResult.confirm(code);
+                 
+                 const { data, error } = await supabaseClient.from('uyeler').insert([gecerliKullaniciVerisi]).select();
+                 
+                 if (error) throw error; 
+                 
+                 const uretilenID = data[0].id;
+                 localStorage.setItem('me26_user_id', uretilenID);
+                 localStorage.setItem('me26_user_name', gecerliKullaniciVerisi.isim);
+                 
+                 document.getElementById('sms-modal').classList.add('hidden');
+                 document.getElementById('sms-modal').classList.remove('flex');
+                 
+                 runTerminalAnimation(uretilenID, gecerliKullaniciVerisi.isim, "Güvenlik Duvarı Aşıldı. Lider Onayı Bekleniyor.");
+
+             } catch (error) {
+                 console.error("Hata:", error);
+                 if(error.code === 'auth/invalid-verification-code') {
+                     alert("Hatalı kod girdiniz. Lütfen kontrol edip tekrar deneyin.");
+                 } else if (error.code === '23505' || (error.message && error.message.toLowerCase().includes('duplicate'))) {
+                     alert("REDDEDİLDİ: Bu Telefon, T.C. Kimlik veya Barkod zaten sisteme kayıtlı.");
+                 } else {
+                     alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+                 }
+                 smsBtn.innerText = "KODU ONAYLA VE GİRİŞ YAP";
+                 smsBtn.disabled = false;
+             }
+        }
+
         window.cikisYap = async function() {
             if(supabaseClient) await supabaseClient.auth.signOut();
+            try { await auth.signOut(); } catch(e) {} 
             localStorage.removeItem('me26_user_id');
             localStorage.removeItem('me26_user_name');
             localStorage.removeItem('me26_ref_link');
-            localStorage.removeItem('me26_kaos_rengi'); // Rengi de sıfırla
+            localStorage.removeItem('me26_kaos_rengi');
             document.documentElement.classList.remove('is-logged-in');
             location.reload();
         };
 
-        // 5. TERMİNAL ANİMASYONU VE YÖNLENDİRME
         function runTerminalAnimation(globalSmartID, uyeAd, durumMesaji) {
             topBanner.classList.add('hidden'); 
             landingView.classList.add('hidden');
@@ -666,17 +759,10 @@
                 canliSandigiBaslat();
                 kullaniciTeklifleriniGetir();
                 
-                if(davetEdilenUyeSayisi >= 5) {
-                    document.getElementById('btn-kilitli-teklif').classList.add('hidden');
-                    document.getElementById('btn-yeni-teklif').classList.remove('hidden');
-                }
             }, delay + 800);
         }
 
-        // GERİ SAYIM SAYACI
         const hedefTarih = new Date("May 26, 2026 20:26:00").getTime();
-        let davetEdilenUyeSayisi = 5; 
-
         setInterval(function() {
             const simdi = new Date().getTime();
             const fark = hedefTarih - simdi;
@@ -703,7 +789,6 @@
             }
         }, 1000);
 
-        // KULLANICI TEKLİFLERİ
         async function kullaniciTeklifleriniGetir() {
             const globalId = localStorage.getItem('me26_user_id');
             if (!globalId || !supabaseClient) return;
@@ -753,7 +838,6 @@
             } catch (err) { alert("Hata oluştu. Lütfen tekrar deneyin."); }
         }
 
-        // CANLI OYLAMA SİSTEMİ
         const ANKET_KODU = 'sari_tema_ilk_oylama';
         async function canliOylariHesapla() {
             if (!supabaseClient) return;
@@ -785,7 +869,7 @@
                 }, { onConflict: 'uye_id,anket_kodu' });
                 if (error) throw error;
                 
-                canliOylariHesapla(); // OTO-GÜNCELLEME İÇİN EKLENDİ
+                canliOylariHesapla(); 
                 
                 const overlay = document.getElementById('cetvel-overlay');
                 const msg = document.getElementById('cetvel-mesaj');
@@ -800,13 +884,8 @@
             } catch (err) { alert("Hata yaşandı. Lütfen tekrar deneyin."); }
         };
         
-        // Modal aç-kapat fonksiyonları
-        window.mobilMenuAc = function() {
-            document.getElementById('mobile-menu').classList.remove('menu-closed');
-        };
-        window.mobilMenuKapat = function() {
-            document.getElementById('mobile-menu').classList.add('menu-closed');
-        };
+        window.mobilMenuAc = function() { document.getElementById('mobile-menu').classList.remove('menu-closed'); };
+        window.mobilMenuKapat = function() { document.getElementById('mobile-menu').classList.add('menu-closed'); };
         window.teklifModalAc = function() {
             const popup = document.getElementById('teklif-popup');
             const icerik = document.getElementById('teklif-content');
