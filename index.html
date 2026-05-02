@@ -408,7 +408,7 @@
 
     <!-- SİSTEM MOTORU VE SUPABASE ENTEGRASYONU -->
     <script>
-        // SUPABASE BİLGİLERİ (Kendi Keyin Zaten Ekli)
+        // SUPABASE BİLGİLERİ
         const supabaseUrl = 'https://ukmkojfntsmueikjcrvz.supabase.co'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw';
 
@@ -425,7 +425,7 @@
         let pendingGoogleUser = { email: '' };
 
         /* =====================================================================
-           DİJİTAL DİRENİŞ MOTORU: ACIMASIZ KAOS RENKLERİ
+           DİJİTAL DİRENİŞ MOTORU: ACIMASIZ KAOS RENKLERİ (HERKESE AÇIK SÜRÜM)
            ===================================================================== */
         const kaosRenkleri = [
             '#FF007F', '#7FFF00', '#00FFFF', '#FF00FF', '#FFFF00',
@@ -433,23 +433,28 @@
         ];
 
         window.kaosRenginiBas = function() {
-            const rastgeleRenk = kaosRenkleri[Math.floor(Math.random() * kaosRenkleri.length)];
+            // Rengi hafızadan al, yoksa yeni bir tane oluştur ve kaydet
+            let aktifKaosRengi = localStorage.getItem('me26_kaos_rengi');
+            if (!aktifKaosRengi) {
+                aktifKaosRengi = kaosRenkleri[Math.floor(Math.random() * kaosRenkleri.length)];
+                localStorage.setItem('me26_kaos_rengi', aktifKaosRengi);
+            }
             
             const bodyEmanet = document.getElementById('ana-body');
             if(bodyEmanet) {
                 bodyEmanet.classList.remove('bg-zemin', 'bg-slate-900', 'bg-transparent');
-                bodyEmanet.setAttribute('style', `background-color: ${rastgeleRenk} !important;`);
+                bodyEmanet.setAttribute('style', `background-color: ${aktifKaosRengi} !important;`);
             }
             
             const nav = document.getElementById('ana-nav');
             const footer = document.getElementById('ana-footer');
             if(nav) { 
                 nav.classList.remove('bg-zemin'); 
-                nav.setAttribute('style', `background-color: ${rastgeleRenk} !important;`); 
+                nav.setAttribute('style', `background-color: ${aktifKaosRengi} !important;`); 
             }
             if(footer) { 
                 footer.classList.remove('bg-[#050810]'); 
-                footer.setAttribute('style', `background-color: ${rastgeleRenk} !important;`); 
+                footer.setAttribute('style', `background-color: ${aktifKaosRengi} !important;`); 
             }
         }
 
@@ -464,8 +469,12 @@
             } catch (err) { alert("Google bağlantısı kurulamadı. Lütfen tekrar deneyin."); }
         };
 
-        // 2. OTURUM DURUMU DİNLEYİCİSİ
+        // 2. OTURUM DURUMU VE SAYFA YÜKLENME DİNLEYİCİSİ
         document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- ŞEFİM İŞTE YENİ EKLENEN KISIM BURASI: HERKESE KAOS! ---
+            window.kaosRenginiBas();
+
             if (localStorage.getItem('me26_user_id') && localStorage.getItem('me26_user_name')) {
                 landingView.classList.add('hidden');
                 dashboardView.classList.remove('hidden');
@@ -481,9 +490,6 @@
                 }
                 document.getElementById('davet-linki').innerText = "me26.com/davet/REF-" + savedRef;
                 
-                // Kaos Motorunu Acımasızca Çalıştır!
-                window.kaosRenginiBas();
-
                 canliSandigiBaslat();
                 kullaniciTeklifleriniGetir();
                 return;
@@ -580,6 +586,7 @@
             localStorage.removeItem('me26_user_id');
             localStorage.removeItem('me26_user_name');
             localStorage.removeItem('me26_ref_link');
+            localStorage.removeItem('me26_kaos_rengi'); // Rengi de sıfırla
             document.documentElement.classList.remove('is-logged-in');
             location.reload();
         };
@@ -633,9 +640,6 @@
                 
                 topBanner.classList.remove('hidden'); 
                 window.scrollTo(0, 0); 
-
-                // --- TERMİNALDEN SONRA KAOSU PATLAT ---
-                window.kaosRenginiBas();
 
                 canliSandigiBaslat();
                 kullaniciTeklifleriniGetir();
