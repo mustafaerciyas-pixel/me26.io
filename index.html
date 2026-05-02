@@ -34,14 +34,30 @@ boxShadow: { 'kaos': '0 0 15px rgba(var(--neon-rgb), 0.4)', 'kaos-lg': '0 0 40px
 }
 </script>
 
-<!-- KATLANIR SARI CETVEL CSS MOTORU -->
+<!-- ZIG-ZAG KATLANIR SARI CETVEL MOTORU -->
 <style>
-.cetvel-parca { transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1); transform: scaleX(0); }
-.cetvel-parca-1 { transform-origin: left; transition-delay: 0s; }
-.cetvel-parca-2 { transform-origin: right; transition-delay: 0.1s; }
-.cetvel-parca-3 { transform-origin: left; transition-delay: 0.2s; }
-.cetvel-parca-4 { transform-origin: right; transition-delay: 0.3s; }
-#cetvel-overlay.active .cetvel-parca { transform: scaleX(1); }
+.cetvel-kok {
+    width: 60px; height: 12px; background-color: #FFD700;
+    border: 2px solid #222; border-radius: 4px; position: relative;
+    transform-origin: left center;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+}
+.cetvel-p {
+    width: 100%; height: 100%; background-color: #FFD700;
+    border: 2px solid #222; border-radius: 4px;
+    position: absolute; top: -2px; left: calc(100% - 8px);
+    transform-origin: 8px 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.2);
+}
+.cetvel-percin {
+    width: 6px; height: 6px; background-color: #222; border-radius: 50%;
+    position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
+}
+.fold-up { transform: rotate(-165deg); }
+.fold-down { transform: rotate(165deg); }
+.cetvel-kok.active .fold-up, .cetvel-kok.active .fold-down { transform: rotate(0deg); }
 </style>
 
 <!-- ANTI-FLICKER (Göz Kırpma Engelleyici) -->
@@ -60,18 +76,40 @@ document.documentElement.classList.add('is-logged-in');
 </head>
 <body id="ana-body" class="antialiased flex flex-col min-h-screen relative pt-10 bg-zemin text-white transition-colors duration-1000">
 
-<!-- KATLANIR SARI CETVEL OVERLAY -->
-<div id="cetvel-overlay" class="fixed inset-0 z-[99999] pointer-events-none flex flex-col">
-    <div class="h-1/4 w-full bg-[#FFD700] border-b-[6px] border-black cetvel-parca cetvel-parca-1 flex items-center px-10"><span class="text-black font-black text-2xl md:text-5xl opacity-20 font-mono tracking-widest">10 11 12 13 14 15 16</span></div>
-    <div class="h-1/4 w-full bg-[#E5C100] border-b-[6px] border-black cetvel-parca cetvel-parca-2 flex items-center justify-end px-10"><span class="text-black font-black text-2xl md:text-5xl opacity-20 font-mono tracking-widest">20 21 22 23 24 25 26</span></div>
-    <div class="h-1/4 w-full bg-[#FFD700] border-b-[6px] border-black cetvel-parca cetvel-parca-3 flex items-center px-10"><span class="text-black font-black text-2xl md:text-5xl opacity-20 font-mono tracking-widest">30 31 32 33 34 35 36</span></div>
-    <div class="h-1/4 w-full bg-[#E5C100] cetvel-parca cetvel-parca-4 flex items-center justify-end px-10"><span class="text-black font-black text-2xl md:text-5xl opacity-20 font-mono tracking-widest">40 41 42 43 44 45 46</span></div>
+<!-- KATLANIR SARI CETVEL OVERLAY (TIK TIK AÇILAN) -->
+<div id="cetvel-overlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] hidden flex-col items-center justify-center overflow-hidden">
     
-    <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 delay-500" id="cetvel-text-container">
-        <div class="bg-black border-4 border-[#FFD700] px-8 py-5 md:px-12 md:py-8 rounded-xl shadow-2xl transform -skew-x-6 flex items-center space-x-4">
-            <span class="text-3xl md:text-5xl">📐</span>
-            <h2 id="cetvel-mesaj" class="text-2xl md:text-5xl font-black text-[#FFD700] uppercase tracking-tighter">İŞLENİYOR...</h2>
+    <!-- Cetvel Gövdesi -->
+    <div class="cetvel-kok scale-[2] md:scale-[2.5] mb-20" style="transform: translateX(-80px);">
+        <div class="cetvel-percin" style="left: auto; right: 5px;"></div>
+        
+        <!-- 1. Parça (Yukarı Katlı) -->
+        <div class="cetvel-p fold-up" style="transition-delay: 0.1s; z-index: 10;">
+            <div class="cetvel-percin"></div>
+            <div class="cetvel-percin" style="left: auto; right: 5px;"></div>
+            
+            <!-- 2. Parça (Aşağı Katlı) -->
+            <div class="cetvel-p fold-down" style="transition-delay: 0.25s; z-index: 9;">
+                <div class="cetvel-percin"></div>
+                <div class="cetvel-percin" style="left: auto; right: 5px;"></div>
+                
+                <!-- 3. Parça (Yukarı Katlı) -->
+                <div class="cetvel-p fold-up" style="transition-delay: 0.4s; z-index: 8;">
+                    <div class="cetvel-percin"></div>
+                    <div class="cetvel-percin" style="left: auto; right: 5px;"></div>
+                    
+                    <!-- 4. Parça (Aşağı Katlı) -->
+                    <div class="cetvel-p fold-down" style="transition-delay: 0.55s; z-index: 7;">
+                        <div class="cetvel-percin"></div>
+                        <div class="cetvel-percin" style="left: auto; right: 5px;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+    
+    <div id="cetvel-text-container" class="opacity-0 transition-opacity duration-300 delay-[600ms]">
+        <h2 id="cetvel-mesaj" class="text-xl md:text-3xl font-black text-[#FFD700] uppercase tracking-widest font-mono">İŞLENİYOR...</h2>
     </div>
 </div>
 
@@ -318,7 +356,7 @@ BELGEYİ ONAYLA VE AĞA KATIL
 <div class="flex items-center space-x-4 relative z-10">
 <div class="w-28 h-16 bg-black border border-kaos rounded-lg flex items-center justify-center text-kaos font-black text-xs shadow-lg flex-col leading-none text-center px-1">
 <span class="text-[8px] tracking-widest">KURUCU ÜYE</span>
-<span class="text-white mt-1 text-base tracking-widest font-mono font-black" id="dash-id-main">TR-IA-100</span>
+<span class="text-white mt-1 text-base tracking-widest font-mono font-black" id="dash-id-main">TR-IA-000</span>
 </div>
 <div>
 <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-none" id="dash-isim">İSİM SOYİSİM</h2>
@@ -435,8 +473,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.4 (Sıralı TR-IA Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.5 (Katlanır Sarı Cetvel)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 6.0 (Tık Tık Tık Katlanır Cetvel)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 6.1 (RLS Hata Yakalayıcı)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -521,27 +559,38 @@ const topBanner = document.getElementById('top-banner-sayac');
 let pendingKullanici = { email: '', isim: '', telefon: '' };
 
 // ---------------------------------------------------------
-// KATLANIR SARI CETVEL GEÇİŞ MOTORU
+// TIK TIK TIK KATLANIR SARI CETVEL GEÇİŞ MOTORU
 // ---------------------------------------------------------
 window.cetvelGecis = function(mesaj, islemCallback) {
     const overlay = document.getElementById('cetvel-overlay');
     const msg = document.getElementById('cetvel-mesaj');
     const txtContainer = document.getElementById('cetvel-text-container');
+    const cetvel = document.querySelector('.cetvel-kok');
     
-    if(overlay && msg && txtContainer) {
+    if(overlay && msg && txtContainer && cetvel) {
         msg.innerHTML = mesaj;
-        overlay.classList.add('active');
-        txtContainer.classList.remove('opacity-0');
-        txtContainer.classList.add('opacity-100');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
         
-        // Cetvel kapanırken arka planda görüntüyü değiştir
+        // Biraz bekle ve katlanan cetveli tık tık tık aç
+        setTimeout(() => {
+            cetvel.classList.add('active');
+            txtContainer.classList.remove('opacity-0');
+        }, 50);
+        
+        // İşlemi yap ve cetveli geri kapat
         setTimeout(() => {
             if(islemCallback) islemCallback(); 
             
             setTimeout(() => {
-                txtContainer.classList.remove('opacity-100');
+                cetvel.classList.remove('active');
                 txtContainer.classList.add('opacity-0');
-                overlay.classList.remove('active');
+                
+                // Tamamen kaybolmasını bekle
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    overlay.classList.remove('flex');
+                }, 500); 
             }, 1000); 
         }, 800); 
     } else {
@@ -808,7 +857,13 @@ try {
 
     btnPdf.innerText = "AĞA YAZILIYOR...";
     const { data, error } = await supabaseClient.from('uyeler').insert([kesinKullaniciVerisi]).select();
+    
     if (error) throw error; 
+    
+    // RLS (GÜVENLİK KALKANI) OKUMAYI ENGELLERSE BURASI ÇALIŞACAK
+    if (!data || data.length === 0) {
+        throw new Error("Veritabanına yazıldı ancak RLS kalkanı yüzünden geri okunamadı. Lütfen SQL Editör'den RLS'yi kapatın.");
+    }
 
     const uretilenID = data[0].id;
     const uyeNo = data[0].uye_no;
@@ -839,10 +894,13 @@ try {
     });
 
 } catch (err) {
-    if (err.code === '23505' || (err.message && err.message.toLowerCase().includes('duplicate'))) {
+    console.error("HATA:", err);
+    let errorMsg = err.message || JSON.stringify(err);
+    
+    if (err.code === '23505' || errorMsg.toLowerCase().includes('duplicate')) {
         alert("REDDEDİLDİ: Bu e-Devlet Belgesi veya TC kimlik numarası zaten sisteme kayıtlı.");
     } else {
-        alert(err.message || "Belge okunamadı. Lütfen geçerli bir e-Devlet PDF'i yüklediğinizden emin olun.");
+        alert("SİSTEM HATASI: " + errorMsg);
     }
     btnPdf.innerText = "BELGEYİ ONAYLA VE AĞA KATIL";
     btnPdf.disabled = false;
