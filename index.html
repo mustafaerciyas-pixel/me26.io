@@ -209,6 +209,7 @@ Sistem güvenliği için lütfen iletişim numaranızı giriniz. (Ülke koduna g
 <span>Hoş Geldiniz</span>
 <span class="text-blue-400" id="gosterilecek-isim">İsim Yükleniyor...</span>
 </label>
+<p class="text-[9px] text-gray-500 mt-1">İsminiz e-Devlet belgenizi yüklediğinizde otonom olarak resmileştirilecektir.</p>
 </div>
 
 <div>
@@ -225,7 +226,7 @@ Sistem güvenliği için lütfen iletişim numaranızı giriniz. (Ülke koduna g
 <option value="+994">🇦🇿 +994</option>
 <option value="+359">🇧🇬 +359</option>
 </select>
-<!-- Dinamik limit özelliği eklendi -->
+<!-- Dinamik limit özelliği -->
 <input type="tel" id="lobby-telefon" oninput="telefonFormatla(this)" maxlength="10" placeholder="5XX XXX XX XX" class="w-full bg-transparent text-white p-2 font-medium outline-none text-sm tracking-widest">
 </div>
 <p id="telefon-uyari" class="text-[9px] text-gray-500 mt-2 flex justify-between"><span>*Seçilen ülkeye göre hane sınırı aktiftir.</span> <span id="telefon-sayac" class="text-kaos">0/10</span></p>
@@ -409,8 +410,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.1 (Esnek Belge Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.2 (Anti-Trol Kalkanı)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.3 (Otonom İsim Ezme)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.4 (Kasa Optimizasyonu)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -634,7 +635,7 @@ runTerminalAnimation(data.id, data.isim, "Kimlik Doğrulandı. Ağa Bağlanılı
 pendingKullanici.email = googleEmail;
 pendingKullanici.isim = googleIsim;
 
-// Ad Soyad sorusunu kaldırdık, sadece ekranda gösteriyoruz
+// Sadece ekranda gösteriyoruz, asıl isim PDF'ten gelecek
 document.getElementById('gosterilecek-isim').innerText = googleIsim.toUpperCase('tr-TR');
 
 landingView.classList.add('hidden');
@@ -757,18 +758,41 @@ try {
     
     tamMetin = tamMetin.toUpperCase('tr-TR');
 
-    // DİNAMİK VE ESNEK CIMBIZLAMA MOTORU (YÖK ve SGK Formatları için)
-    // 1. Sadece 11 haneli sayıları ara
+    // DİNAMİK CIMBIZLAMA MOTORU (Google ismini ezip Devlet İsmini alır)
     const tcMatch = tamMetin.match(/(\d{11})/);
-    // 2. 15 ile 25 karakter arası harf ve rakam barındıran şifreleri ara (Barkod)
     const barkodMatch = tamMetin.match(/([A-Z0-9]{15,25})/);
     
-    // Üniversite ve yıl için basit kelime avı, bulamazsa boş geçer
+    // İsmi PDF'ten Yakala (Adı Soyadı veya Adı yazan yerin karşısını alır)
+    const isimMatch = tamMetin.match(/(?:ADI\s*SOYADI|ADI).*?:\s*([A-ZÇĞİÖŞÜ\s]+)(?=BABA|ANNE|DOĞUM|PROGRAM|TC)/);
+    // Doğum Tarihini Yakala
+    const dogumTarihiMatch = tamMetin.match(/DOĞUM\s*TARİHİ.*?:\s*(\d{2}\.\d{2}\.\d{4})/);
+    
     const universiteMatch = tamMetin.match(/(?:PROGRAM|ÜNİVERSİTE).*?:\s*([^\/]+)/);
+    
+    // Fakülte ve Bölümü ayırmak için (eğer slash ile ayrılmışsa)
+    const programSatiri = tamMetin.match(/(?:PROGRAM).*?:\s*(.*)/);
+    let fakulte = "Belirtilmemiş";
+    let bolum = "Belirtilmemiş";
+    
+    if (programSatiri && programSatiri[1]) {
+        const parcalar = programSatiri[1].split('/');
+        if (parcalar.length > 1) {
+            fakulte = parcalar[1].trim();
+        }
+        if (parcalar.length > 2) {
+            bolum = parcalar[2].trim();
+        } else if (parcalar.length === 2) {
+             bolum = parcalar[1].trim(); // Bazen fakülte yazmaz, direkt bölüm yazar
+             fakulte = "Belirtilmemiş";
+        }
+    }
+
     const yilMatch = tamMetin.match(/(?:MEZUNİYET|KAYIT).*?(\d{4})/);
 
     const tcInput = tcMatch ? tcMatch[1] : null;
     const edevletBarkod = barkodMatch ? barkodMatch[1] : null;
+    const resmiIsim = isimMatch ? isimMatch[1].trim() : pendingKullanici.isim; // Bulamazsa Google'dakini kullanır
+    const dogumTarihi = dogumTarihiMatch ? dogumTarihiMatch[1] : null;
     const universite = universiteMatch ? universiteMatch[1].trim() : "Belirtilmemiş";
     const mezuniyet_yili = yilMatch ? yilMatch[1] : null;
 
@@ -776,20 +800,27 @@ try {
         throw new Error("HATA: Belgeden Barkod veya T.C. Kimlik okunamadı. Lütfen metin tabanlı geçerli bir e-Devlet PDF'i yüklediğinizden emin olun.");
     }
 
-    // KASAYA GİDECEK VERİ PAKETİ HAZIRLANIYOR
+    // KASAYA GİDECEK KUSURSUZ 17 SÜTUNLUK VERİ PAKETİ
     const durum = mezuniyet_yili ? 'İçmimar' : 'İçmimarlık Öğrencisi';
     
     const kesinKullaniciVerisi = { 
-        isim: pendingKullanici.isim, 
-        email: pendingKullanici.email, 
-        telefon: pendingKullanici.telefon, 
+        // A. Kimlik Grubu
+        tam_isim: resmiIsim, 
         tc_kimlik: tcInput,
-        durum: durum, 
-        edevlet_barkod: edevletBarkod,
+        dogum_tarihi: dogumTarihi,
+        telefon: pendingKullanici.telefon, 
+        email: pendingKullanici.email, 
+        // B. Liyakat Grubu
         universite: universite,
+        fakulte: fakulte,
+        bolum: bolum,
+        statu: durum, 
         mezuniyet_yili: mezuniyet_yili,
-        liyakat_puani: 10,
-        onay_durumu: 'BEKLİYOR'
+        edevlet_barkod: edevletBarkod,
+        // C. Otonom Grup
+        onay_durumu: 'BEKLİYOR',
+        liyakat_puani: 10
+        // id, kayit_tarihi, kendi_davet_kodu gibi alanları Supabase otomatik atayacak.
     };
 
     btnPdf.innerText = "AĞA YAZILIYOR...";
@@ -801,13 +832,13 @@ try {
 
     const uretilenID = data[0].id;
     localStorage.setItem('me26_user_id', uretilenID);
-    localStorage.setItem('me26_user_name', kesinKullaniciVerisi.isim);
+    localStorage.setItem('me26_user_name', kesinKullaniciVerisi.tam_isim);
 
     document.getElementById('pdf-modal').classList.add('hidden');
     document.getElementById('pdf-modal').classList.remove('flex');
 
     // TERMİNAL ANİMASYONUNU BAŞLAT VE GİRİŞ YAP
-    runTerminalAnimation(uretilenID, kesinKullaniciVerisi.isim, "Liyakat Kanıtı Alındı. Lider Onayı Bekleniyor.");
+    runTerminalAnimation(uretilenID, kesinKullaniciVerisi.tam_isim, "Liyakat Kanıtı Alındı. Lider Onayı Bekleniyor.");
 
 } catch (err) {
     console.error("PDF Hatası:", err);
