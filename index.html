@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="ME26 Ağı: İçmimarlık mesleğine değer katan, aidat ve masraf barındırmayan ortak akıl platformu.">
+<meta name="description" content="ME26 Ağı: İçmimarlık mesleğine değer katan, aidat ve masraf barındırmayan ortak akıl simülasyonu.">
 <title>ME26 Ağı | İnsan Yönetici Yok. Liyakat ve Kurallar Var.</title>
 
 <link rel="icon" type="image/png" href="favicon.png">
@@ -150,7 +150,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition">
 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
 </button>
-<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('dao'); mobilMenuKapat();">DAO Nedir?</a>
+<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('otonom'); mobilMenuKapat();">Otonom Ağ Nedir?</a>
 <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('nedir'); mobilMenuKapat();">Ne Yapacağız?</a>
 <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('kurallar'); mobilMenuKapat();">Kurallarımız</a>
 <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('gizlilik'); mobilMenuKapat();">Gizlilik Zırhı</a>
@@ -166,7 +166,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 </a>
 
 <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
-<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('dao')">DAO Nedir?</a>
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('otonom')">Otonom Ağ Nedir?</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
 <a id="nav-btn-desktop" href="#kayit" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos cursor-pointer">Numaranı Al</a>
@@ -202,24 +202,24 @@ Aidat Yok. Masraf Yok.<br>
 
 <div class="space-y-4 text-gray-300 text-sm md:text-base leading-relaxed font-medium relative z-10">
 <p>
-Şu an ekranda gördüğün bu rastgele ve cırtlak renk, <strong class="text-white">"merkezi"</strong> bir kararın, yani tek bir kurucunun kişisel zevkinin binlerce kişiye dayatılmasıdır. Klasik, yönetici odaklı sistemler tam olarak böyle göz yorar; <span class="text-kaos font-bold">onlar karar verir, sen katlanırsın.</span>
+Şu an ekranda gördüğün bu rastgele ve cırtlak renk, "merkezi" bir kararın, yani tek bir karar vericinin kişisel zevkinin binlerce kişiye dayatılmasıdır. Mevcut hantal yapılar ve aidat toplayan sistemler tam olarak böyle göz yorar; <span class="text-kaos font-bold">onlar karar verir, meslektaş katlanır.</span>
 </p>
 <p>
-Ancak ME26, <strong class="text-white">merkeziyetsiz (decentralized)</strong> bir otonom ağdır. Burada patron yok, başkan yok! Tek bir kişinin zevkine katlanmak zorunda değilsin. 
+Ancak ME26, gücü tek bir merkezden alıp meslektaşlarına dağıtan dijital bir <strong>Otonom Karar Ağıdır.</strong> Burada başkan yok, aidat sömürüsü yok! Tek bir kişinin zevkine veya kararına katlanmak zorunda değilsin.
 </p>
 <p class="bg-slate-900 border border-slate-700 p-4 rounded-lg mt-2">
-Hemen e-Devlet kapısından geçerek <strong class="text-white">Kurucu Üye</strong> ol, ağa bağlan ve bu renk kaosuna müdahale et. Merkeziyetsiz gücünü kullanarak sistemi 26 Mayıs'ta resmi <strong class="text-[#FFD700]">"İçmimari Altın Sarısı"</strong> rengine döndürecek ilk isyan oyunu kullan!
+Hemen e-Devlet kapısından geçerek liyakatini kanıtla, ağa bağlan ve bu renk kaosuna müdahale et. Ortak akıl gücünü kullanarak sistemi 26 Mayıs'ta resmi <strong class="text-[#FFD700]">"İçmimari Altın Sarısı"</strong> rengine döndürecek ilk isyan oyunu kullan!
 </p>
 </div>
 </div>
 
 <div class="bg-black/50 border border-kaos rounded-xl p-6 md:p-8 max-w-2xl w-full text-left shadow-kaos mb-6 backdrop-blur-sm mx-auto">
-<div class="text-kaos font-black tracking-widest text-sm mb-4 border-b border-slate-800 pb-2">OTONOM SİSTEM KURALLARI:</div>
+<div class="text-kaos font-black tracking-widest text-sm mb-4 border-b border-slate-800 pb-2">ME26 ŞANTİYE KURALLARI:</div>
 <ul class="space-y-4 text-gray-300 font-medium text-sm md:text-base">
-<li class="flex items-start"><span class="mr-3 text-lg">🚫</span> <span>Para yok. Kavga yok. Kötü söz yok.</span></li>
-<li class="flex items-start"><span class="mr-3 text-lg">👑</span> <span>Başkan yok. İnsan yönetici yok. Birlikte karar vermek var.</span></li>
-<li class="flex items-start"><span class="mr-3 text-lg">🎭</span> <span>Kimse kimsenin adını bilmez. Ağdaki adın, sana özel <strong>GLOBAL ID</strong> numarandır.</span></li>
-<li class="flex items-start"><span class="mr-3 text-lg">🇹🇷</span> <span>Ağa sızmaları engellemek için mutlak <strong>e-Devlet Belge Kontrolü</strong> uygulanır.</span></li>
+<li class="flex items-start"><span class="mr-3 text-lg">🚫</span> <span>Aidat yok. Masraf yok. Çıkar ilişkisi yok.</span></li>
+<li class="flex items-start"><span class="mr-3 text-lg">👑</span> <span>Başkan yok. Üstünlük yok. Oylamayla ortak karar almak var.</span></li>
+<li class="flex items-start"><span class="mr-3 text-lg">🎭</span> <span>Kimse kimsenin adını bilmez. Ağdaki adın, sana özel <strong>Global ID</strong> (TR-IA) numarandır.</span></li>
+<li class="flex items-start"><span class="mr-3 text-lg">🇹🇷</span> <span>Trolleri engellemek için mutlak <strong>e-Devlet Belge Kontrolü</strong> uygulanır.</span></li>
 </ul>
 </div>
 </div>
@@ -233,28 +233,29 @@ Hemen e-Devlet kapısından geçerek <strong class="text-white">Kurucu Üye</str
 <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">TÜRKİYE'DEN DÜNYAYA:<br><span class="text-kaos">İKİ BAŞLI KARTALIN GÜCÜ</span></h2>
 </div>
 <p class="text-gray-300 text-base md:text-lg leading-relaxed font-medium mb-5">
-Şu an Türkiye'de tam <strong>80 BİN İçmimar</strong> ve <strong>15 BİN İçmimarlık Öğrencisi</strong> var. Bu devasa gücü tek bir otonom ağda birleştiriyoruz. Dünyaya yön verecek bu devrimde kapıdan ilk giren 2000 kişi "Kurucu Üye" olur.
+Şu an Türkiye'de tam <strong>80 BİN İçmimar</strong> ve <strong>15 BİN İçmimarlık Öğrencisi</strong> var. Bu devasa gücü aidatsız, masrafsız, başkansız tek bir dijital şantiyede birleştiriyoruz. Dünyaya yön verecek bu devrimde kapıdan ilk giren 2000 kişi "Kurucu Üye" olur.
 </p>
 </div>
 
 <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-sm mb-6 relative">
 <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
-<h3 class="text-xl font-bold text-white">11 Liderlik Grubu</h3>
+<h3 class="text-xl font-bold text-white">Sistem İçmimarları ve Stajyerler</h3>
 <span class="bg-black border border-kaos text-kaos text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest hidden sm:inline-block">Eşit Dağılım</span>
 </div>
+<p class="text-xs text-gray-400 mb-4">Ağın kapısında e-Devlet onaylarını sağlamak ve sistemi temiz tutmakla görevli olan, Usta-Çırak liyakatiyle belirlenen hizmetkar düğümler.</p>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-300">
-<div><span class="text-kaos font-bold mr-2">1.</span> Hukuk Lideri</div>
-<div><span class="text-kaos font-bold mr-2">2.</span> Etik Lideri</div>
-<div><span class="text-kaos font-bold mr-2">3.</span> Dayanışma Lideri</div>
-<div><span class="text-kaos font-bold mr-2">4.</span> Akademi Lideri</div>
-<div><span class="text-kaos font-bold mr-2">5.</span> Öğrenci Lideri</div>
-<div><span class="text-kaos font-bold mr-2">6.</span> Tasarım Lideri</div>
-<div><span class="text-kaos font-bold mr-2">7.</span> İletişim Lideri</div>
-<div><span class="text-kaos font-bold mr-2">8.</span> Yayınlar Lideri</div>
-<div><span class="text-kaos font-bold mr-2">9.</span> Standartlar Lideri</div>
-<div><span class="text-kaos font-bold mr-2">10.</span> Etkinlik Lideri</div>
-<div class="col-span-1 md:col-span-2"><span class="text-kaos font-bold mr-2">11.</span> Projeler Lideri</div>
+<div><span class="text-kaos font-bold mr-2">1.</span> Hukuk İşleri Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">2.</span> Mesleki Etik Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">3.</span> Mesleki Dayanışma Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">4.</span> Akademik İlişkiler Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">5.</span> Öğrenci Hakları Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">6.</span> Tasarım Standartları Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">7.</span> İletişim ve Yayın Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">8.</span> Şantiye Denetim Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">9.</span> Etkinlik ve Organizasyon Düğümü</div>
+<div><span class="text-kaos font-bold mr-2">10.</span> Bilişim ve Sistem Düğümü</div>
+<div class="col-span-1 md:col-span-2"><span class="text-kaos font-bold mr-2">11.</span> Projeler Düğümü</div>
 </div>
 </div>
 </div>
@@ -272,7 +273,7 @@ Sisteme sahte hesapların girmesini engellemek için <strong class="text-white">
 </p>
 
 <!-- GOOGLE GİRİŞ BUTONU -->
-<button onclick="window.googleIleGiris()" class="w-full bg-white text-slate-900 font-black tracking-widest uppercase py-4 rounded-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:bg-gray-100 transition hover:scale-[1.02] flex items-center justify-center relative z-50">
+<button onclick="window.googleIleGiris()" class="w-full bg-white text-slate-900 font-black tracking-widest uppercase py-4 rounded-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:bg-gray-100 transition hover:scale-[1.02] flex items-center justify-center relative z-50 cursor-pointer">
 <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
 Google İle Güvenli Giriş
 </button>
@@ -363,7 +364,7 @@ Telefon doğrulamanız başarılı! Ağa katılabilmeniz için son adım olarak 
 <span class="text-red-500 mr-2 text-base">🇹🇷</span> Öğrenci veya Mezun Belgesi (PDF)
 </label>
 <input type="file" id="pdf-yukle" accept="application/pdf" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-kaos file:text-white hover:file:opacity-80 transition cursor-pointer" required>
-<p class="text-[9px] text-gray-500 mt-2">*Belgeniz cihazınızda otonom okunur, sunucuya yüklenmez. <br><strong class="text-red-400">(Maksimum Dosya Boyutu: 300 KB)</strong></p>
+<p class="text-[9px] text-gray-500 mt-2">*Belgeniz cihazınızda okunur, sunucuya yüklenmeden imha edilir. <br><strong class="text-red-400">(Maksimum Dosya Boyutu: 300 KB)</strong></p>
 </div>
 
 <label class="flex items-start cursor-pointer mt-4 bg-slate-900 p-3 rounded-lg border border-slate-800 hover:border-slate-600 transition">
@@ -391,7 +392,7 @@ BELGEYİ ONAYLA VE AĞA KATIL
 <div>
 <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-none" id="dash-isim">İSİM SOYİSİM</h2>
 <div class="mt-2 flex space-x-2">
-                        <span id="rozet-bekliyor" class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest animate-pulse">E-DEVLET ONAYI BEKLİYOR</span>
+                        <span id="rozet-bekliyor" class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest animate-pulse">SİSTEM İÇMİMARI ONAYI BEKLİYOR</span>
                         <span id="rozet-onayli" class="bg-green-500/10 text-green-500 border border-green-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest hidden">DOĞRULANDI</span>
                         <span id="rozet-reddedildi" class="bg-red-900/40 text-red-500 border border-red-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest hidden">ONAY REDDEDİLDİ</span>
 </div>
@@ -424,7 +425,7 @@ Sistem Kararları <span class="ml-2 bg-slate-800 text-gray-400 border border-sla
 <div class="text-[10px] text-[#FFD700] font-bold uppercase tracking-widest mb-2 border-b border-slate-800 pb-2 flex items-center">BİLDİRİ / SİSTEMİN İLK KARARI</div>
 <h3 class="text-3xl font-black text-white mb-4 leading-tight tracking-tight">Bu Rengi Hemen Değiştirelim Mi?</h3>
 <p class="text-base text-gray-300 mb-6 leading-relaxed font-medium bg-slate-900 p-4 rounded-lg border border-slate-800">
-<strong class="text-white">Patron yok, başkan yok!</strong> Tek bir kişinin zevkine katlanmak zorunda değilsin. Bu göz yoran geçici renge müdahale et. Kurucu Üye ol, oyunu hemen ver! Karar 26 Mayıs Dünya İçmimarlar Günü'nde bilgisayar tarafından otomatik uygulansın. Sistemin resmi rengi <span class="text-[#FFD700] font-black underline">"İçmimari Altın Sarısı"</span> aktif edilsin mi?
+<strong class="text-white">Patron yok, başkan yok!</strong> Tek bir kişinin zevkine katlanmak zorunda değilsin. Bu göz yoran geçici renge müdahale et. Kurucu Üye ol, oyunu hemen ver! Karar 26 Mayıs Dünya İçmimarlar Günü'nde Otonom Sistem Algoritmaları tarafından otomatik uygulansın. Sistemin resmi rengi <span class="text-[#FFD700] font-black underline">"İçmimari Altın Sarısı"</span> aktif edilsin mi?
 </p>
 </div>
 
@@ -448,7 +449,7 @@ AĞA SUNDUĞUN TEKLİFLER
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg">
 <h4 class="text-yellow-500 font-bold text-xs uppercase tracking-widest mb-3 flex items-center">
-<span class="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse"></span> Lider Onayı Bekleyenler
+<span class="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse"></span> Otonom Onay Bekleyenler
 </h4>
 <div id="liste-bekleyen" class="space-y-2 text-sm text-gray-400"><div class="text-[11px] opacity-50 italic">Yükleniyor...</div></div>
 </div>
@@ -466,7 +467,7 @@ AĞA SUNDUĞUN TEKLİFLER
 <div class="bg-black/80 backdrop-blur-sm border border-slate-700 p-6 rounded-xl shadow-lg">
 <h3 class="text-lg font-black text-white mb-3 flex items-center border-b border-slate-700 pb-3">LİYAKAT VE DAVET GÜCÜ</h3>
 <p class="text-[12px] text-gray-400 mb-4 leading-relaxed">
-Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) gücün artar. Hedefleri tamamla:
+Ağa getirdiğin ve e-Devlet onayı alan her meslektaşın için liyakat (oy) gücün artar. Hedefleri tamamla:
 </p>
 
 <div class="bg-black border border-slate-700 rounded-lg p-3 mb-5 relative group">
@@ -482,11 +483,11 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 </div>
 
 <div class="space-y-2">
-<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">5 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+0.5 Oy Gücü</span></div>
-<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">15 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+1.0 Oy Gücü</span></div>
-<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">25 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+1.5 Oy Gücü</span></div>
-<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">40 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+2.0 Oy Gücü</span></div>
-<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">55 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+2.5 Oy Gücü</span></div>
+<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">5 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+0.5 Liyakat Gücü</span></div>
+<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">15 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+1.0 Liyakat Gücü</span></div>
+<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">25 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+1.5 Liyakat Gücü</span></div>
+<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">40 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+2.0 Liyakat Gücü</span></div>
+<div class="bg-slate-900 border border-slate-700 p-3 rounded hover:border-slate-500 transition flex justify-between items-center"><strong class="text-white text-sm">55 Üye</strong><span class="text-white font-bold text-xs bg-slate-800 px-2 py-1 rounded">+2.5 Liyakat Gücü</span></div>
 <div class="bg-black border border-kaos p-3 rounded shadow-kaos relative overflow-hidden flex justify-between items-center">
 <div class="absolute right-0 top-0 bottom-0 w-16 bg-kaos opacity-10"></div>
 <strong class="text-white text-sm relative z-10">70 Üye</strong><span class="text-kaos font-black text-xs border border-kaos px-2 py-1 rounded uppercase tracking-widest relative z-10">+3.0 MAKSİMUM</span>
@@ -504,12 +505,12 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 8.2 (Otonom Menü Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.0 (Otonom Manifestolar)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.1 (Harbi Sistem Mimarisi)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.2 (Otonom Karar Motoru)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
-<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('dao')">DAO Nedir?</a>
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('otonom')">Otonom Ağ Nedir?</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('gizlilik')">Gizlilik ve Hukuk</a>
 </div>
@@ -523,7 +524,7 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <!-- YENİ BİLGİ MODALLARI (SİSTEMDEN ÇIKARMADAN EKRANDA AÇILAN) -->
 <div id="bilgi-popup" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[99999] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300" onclick="if(event.target === this) sistemBilgiKapat()">
 <div class="bg-slate-900 border border-kaos rounded-2xl max-w-2xl w-full p-6 md:p-10 shadow-kaos-lg transform scale-95 transition-transform duration-300 relative max-h-[85vh] flex flex-col" id="bilgi-content">
-    <button onclick="sistemBilgiKapat()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center z-10">
+    <button onclick="sistemBilgiKapat()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center z-10 cursor-pointer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     <h3 id="bilgi-baslik" class="text-2xl md:text-3xl font-black text-white mb-6 border-b border-slate-800 pb-4 flex items-center uppercase tracking-widest"><span class="text-kaos mr-3 w-2 h-8 bg-kaos"></span> YÜKLENİYOR...</h3>
@@ -548,8 +549,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 </div>
 </div>
 <div class="flex space-x-3">
-<button type="button" onclick="teklifModalKapat()" class="w-1/3 bg-slate-800 text-white font-bold tracking-widest py-3.5 rounded-lg hover:bg-slate-700 transition">İPTAL</button>
-<button type="button" onclick="teklifGonder()" class="w-2/3 bg-kaos text-white font-black tracking-widest uppercase py-3.5 rounded-lg hover:opacity-90 transition shadow-kaos">AĞA GÖNDER</button>
+<button type="button" onclick="teklifModalKapat()" class="w-1/3 bg-slate-800 text-white font-bold tracking-widest py-3.5 rounded-lg hover:bg-slate-700 transition cursor-pointer">İPTAL</button>
+<button type="button" onclick="teklifGonder()" class="w-2/3 bg-kaos text-white font-black tracking-widest uppercase py-3.5 rounded-lg hover:opacity-90 transition shadow-kaos cursor-pointer">AĞA GÖNDER</button>
 </div>
 </div>
 </div>
@@ -557,7 +558,7 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <!-- SİSTEM MOTORU -->
 <script>
 // ---------------------------------------------------------
-// BUTON ZEKASI: GİRİŞ YAPMIŞ LİDERE NUMARA ALDIRTMA
+// BUTON ZEKASI: GİRİŞ YAPMIŞ İÇMİMARA NUMARA ALDIRTMA
 // ---------------------------------------------------------
 window.butonlariGuncelle = function() {
     const btnDesktop = document.getElementById('nav-btn-desktop');
@@ -610,17 +611,17 @@ const topBanner = document.getElementById('top-banner-sayac');
 let pendingKullanici = { email: '', isim: '', telefon: '' };
 
 // ---------------------------------------------------------
-// BİLGİ SAYFALARI (SPA) VERİ TABANI - ŞANTİYE MANİFESTOSU
+// BİLGİ SAYFALARI (SPA) VERİ TABANI - ŞANTİYE MANİFESTOSU (GÜNCELLENDİ)
 // ---------------------------------------------------------
 const sistemBilgileri = {
-    'dao': {
-        baslik: "DAO (OTONOM AĞ) NEDİR?",
+    'otonom': {
+        baslik: "OTONOM AĞ SİMÜLASYONU",
         metin: `
-            <p class="mb-4 font-bold text-white text-lg">Geleceğin meslek örgütlenmesi: Merkeziyetsiz, Şeffaf ve Adil.</p>
-            <p class="mb-4">DAO (Decentralized Autonomous Organization), patronu, başkanı veya karar verici bir yönetim kurulu olmayan dijital bir yapıdır. Kurallar kişilerin inisiyatifine göre değil, bilgisayar kodlarına (akıllı kontratlara) göre işler.</p>
+            <p class="mb-4 font-bold text-white text-lg">Geleceğin meslek örgütlenmesi: Hiyerarşisiz, Şeffaf ve Liyakatli.</p>
+            <p class="mb-4">Otonom Karar Simülasyonu, patronu, başkanı veya karar verici bir yönetim kurulu olmayan dijital bir yapıdır. Kurallar kişilerin inisiyatifine veya egolarına göre değil, sistem algoritmalarına (Otonom SQL Kurallarına) göre işler.</p>
             <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
                 <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">⚖️</span> Otorite Değil, Ortak Akıl</strong>
-                <p>ME26 bir DAO olarak tasarlandı. Bu ağda kararları tek bir başkan veya heyet almaz. Her kurucu üyenin eşit söz hakkı vardır ve sistem kararları şeffaf oylama ile belirlenir. Sistem, gücü merkezden alıp liyakat sahibi meslektaşlara dağıtır.</p>
+                <p>ME26 hiyerarşik bir dernek değil, devasa bir Ortak Akıl Simülasyonu olarak tasarlandı. Bu ağda kararları tek bir heyet almaz. Her kurucu üyenin eşit söz hakkı vardır ve sistem kararları şeffaf oylama ile belirlenir. Sistem, gücü merkezden alıp liyakat sahibi meslektaşlara dağıtır.</p>
             </div>
         `
     },
@@ -628,14 +629,14 @@ const sistemBilgileri = {
         baslik: "SİSTEM KURAN İÇMİMARLIK",
         metin: `
             <p class="mb-4 font-bold text-white text-lg">Bizler dekoratif illüzyonlara sığınanlar değil, yapısal gerçeği inşa edenleriz.</p>
-            <p class="mb-4">Yıllarca piyasadaki dağınık yapıyı ve mevcut merkezi kurumların hantallığını, meslektaşın sorunlarına ne kadar uzak kaldıklarını gördük. "Sarı Cetvel" manifestomuzla başlattığımız yürüyüşü, şimdi ME26 Otonom Ağı (DAO) ile bağımsız ve güçlü bir <strong class="text-kaos">İçmimarlar Konseyi'ne</strong> dönüştürüyoruz.</p>
+            <p class="mb-4">Yıllarca piyasadaki dağınık yapıyı ve mevcut hantal kurumların meslektaşın sorunlarına ne kadar uzak kaldıklarını gördük. "Sarı Cetvel" manifestomuzla başlattığımız yürüyüşü, şimdi ME26 Otonom Ağı ile bağımsız ve güçlü bir <strong class="text-kaos">İçmimarlar Konseyi'ne</strong> dönüştürüyoruz.</p>
             <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
                 <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">📐</span> 80 Bin Güç, Tek Akıl</strong>
-                <p>Türkiye'deki 80.000 İçmimar ve 15.000 öğrenciyi aidatsız, masrafsız, başkansız tek bir dijital şantiyede birleştiriyoruz. 2017'de kapanan 20.000 üyeli icmimar.com'un ruhunu, 2026 model merkeziyetsiz teknolojiyle diriltiyoruz.</p>
+                <p>Türkiye'deki 80.000 İçmimar ve 15.000 öğrenciyi aidatsız, masrafsız, başkansız tek bir dijital şantiyede birleştiriyoruz. 2017'de kapanan 20.000 üyeli icmimar.com'un usta-çırak ruhunu, 2026 model teknolojiyle diriltiyoruz.</p>
             </div>
             <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
-                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">⚙️</span> Liderler Masası ve Karar Alma</strong>
-                <p>11 Liderlik Grubu (Hukuk, Etik, Tasarım vb.) sistemin patronu değil, dişlisidir. Taban fiyatlar, şantiye standartları ve mesleki haklar ağa teklif edilir. %51'i geçen karar otonom olarak yasalaşır.</p>
+                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">⚙️</span> Kararları Kim Alacak?</strong>
+                <p>Mesleki haklar, öğrenci problemleri veya taban fiyatlar gibi konular ağa teklif edilir. Oylamaya sunulan teklif %51 onay alırsa, sistem tarafından otonom olarak uygulamaya veya eyleme dönüştürülür.</p>
             </div>
         `
     },
@@ -653,7 +654,7 @@ const sistemBilgileri = {
                 </li>
                 <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
                     <span class="mr-3 text-kaos text-2xl font-black">3.</span> 
-                    <div><strong class="text-white text-base block mb-1">Liyakat ve TR-IA Kimliği:</strong> Ağa sızmaları önlemek için mutlak e-Devlet onayı şarttır. Ancak içeride herkes eşittir. Ünvanlar silinir, herkes "GLOBAL ID" (Örn: TR-IA-100) şifresiyle konuşur. Oylar isme değil, fikre verilir.</div>
+                    <div><strong class="text-white text-base block mb-1">Maskelenmiş Kimlik (Global ID):</strong> Ağa sızmaları önlemek için mutlak e-Devlet onayı şarttır. Ancak içeride herkes eşittir. Ünvanlar silinir, herkes Küresel Ağ Numarası (Örn: TR-IA-100) ile konuşur. Oylar isme değil, fikre verilir.</div>
                 </li>
                 <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
                     <span class="mr-3 text-kaos text-2xl font-black">4.</span> 
@@ -665,19 +666,19 @@ const sistemBilgileri = {
     'gizlilik': {
         baslik: "KVKK VE GİZLİLİK ZIRHI",
         metin: `
-            <p class="mb-4 font-medium text-gray-300">ME26 ağı, Hukuk Liderliğimizin denetiminde "Merkeziyetsizlik" felsefesinin en uç güvenlik protokolleriyle korunmaktadır.</p>
+            <p class="mb-4 font-medium text-gray-300">ME26 ağı, verilerinizi satmayı veya kendi lehine kullanmayı reddeden harbi bir felsefe üzerine inşa edilmiştir.</p>
             <div class="grid gap-4">
                 <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
-                    <strong class="text-white block mb-1">Cihaz İçi PDF Okuma (Zero-Log)</strong>
-                    <p class="text-sm">Yüklediğin e-Devlet Mezun/Öğrenci belgesi, doğrudan senin cihazının RAM'inde okunur. Barkod ve TC yakalandıktan sonra PDF dosyası <span class="text-kaos font-bold">hiçbir sunucuya yüklenmeden anında imha edilir</span>.</p>
+                    <strong class="text-white block mb-1">Sistem İçmimarları Ne Yapar?</strong>
+                    <p class="text-sm">Ağa botların sızmasını önlemek için e-Devlet belgeniz talep edilir. "Sistem İçmimarları", sadece bu belgelerin doğruluğunu teyit eden kapı görevlileridir, içeride karar alma güçleri yoktur.</p>
                 </div>
                 <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
-                    <strong class="text-white block mb-1">Kripto Maskeleme</strong>
-                    <p class="text-sm">Sisteme girdiğin an gerçek adın, TC'n ve iletişim bilgilerin banka düzeyinde (256-bit) şifrelenerek kasaya kilitlenir. Ekranda sadece kriptografik "TR-IA" numaran görünür.</p>
+                    <strong class="text-white block mb-1">Cihaz İçi PDF Okuma (Zero-Log)</strong>
+                    <p class="text-sm">Yüklediğin e-Devlet belgesi, doğrudan senin cihazının RAM'inde okunur. Barkod ve TC yakalandıktan sonra belge <span class="text-kaos font-bold">hiçbir sunucuya yüklenmeden anında imha edilir</span>.</p>
                 </div>
                 <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
                     <strong class="text-white block mb-1">Sonsuz Düşünce Özgürlüğü</strong>
-                    <p class="text-sm">Kimliğin maskelendiği için, mevcut yapıların veya işverenlerin baskısından korkmadan mesleki sorunları dile getirebilir, oylamalara hür iradenle katılabilirsin. Ağ seni korur.</p>
+                    <p class="text-sm">Kimliğin "TR-IA" şifresiyle maskelendiği için, mevcut yapıların veya işverenlerin baskısından korkmadan mesleki sorunları dile getirebilir, oylamalara hür iradenle katılabilirsin. Ağ seni korur.</p>
                 </div>
             </div>
         `
@@ -765,7 +766,7 @@ window.kopyalaLink = function(event) {
 window.whatsappPaylas = function() {
     const linkText = document.getElementById('davet-linki').innerText;
     const tamLink = linkText.includes('http') ? linkText : 'https://' + linkText;
-    const mesaj = "İçmimarlık mesleği için aidatsız ve masrafsız yeni otonom ağ ME26 kuruluyor. Benim şifreli davet linkimle Kurucu Üye olarak katılabilirsin: " + tamLink;
+    const mesaj = "İçmimarlık mesleği için aidatsız ve masrafsız otonom bir ağ kuruluyor. Benim şifreli davet linkimle Kurucu Üye olarak katılabilirsin: " + tamLink;
     window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(mesaj), '_blank');
 };
 
