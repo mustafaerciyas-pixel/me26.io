@@ -503,7 +503,7 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
                     <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 8.2 (Otonom Menü Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 8.3 (Kesintisiz Oturum)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.0 (Manifesto Metinleri)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -555,7 +555,7 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <!-- SİSTEM MOTORU -->
 <script>
 // ---------------------------------------------------------
-// BUTON ZEKASI: GİRİŞ YAPMIŞ LİDERE NUMARA ALDIRTMA (YENİ EKLENDİ)
+// BUTON ZEKASI: GİRİŞ YAPMIŞ LİDERE NUMARA ALDIRTMA
 // ---------------------------------------------------------
 window.butonlariGuncelle = function() {
     const btnDesktop = document.getElementById('nav-btn-desktop');
@@ -608,44 +608,65 @@ const topBanner = document.getElementById('top-banner-sayac');
 let pendingKullanici = { email: '', isim: '', telefon: '' };
 
 // ---------------------------------------------------------
-// BİLGİ SAYFALARI (SPA) VERİ TABANI
+// BİLGİ SAYFALARI (SPA) VERİ TABANI - ŞANTİYE MANİFESTOSU
 // ---------------------------------------------------------
 const sistemBilgileri = {
     'nedir': {
-        baslik: "Birlikte Ne Yapacağız?",
+        baslik: "SİSTEM KURAN İÇMİMARLIK",
         metin: `
-            <p class="mb-4">TMMOB İçmimarlar Odası ve piyasadaki dağınık yapıyı tek bir otonom ağda (DAO) birleştiriyoruz. Burası, mesleki vizyonu olan ama merkezi sistemlerin bürokrasisinden bunalan İçmimarların özgür şantiyesidir.</p>
+            <p class="mb-4 font-bold text-white text-lg">Bizler dekoratif illüzyonlara sığınanlar değil, yapısal gerçeği inşa edenleriz.</p>
+            <p class="mb-4">Yıllarca TMMOB İçmimarlar Odası gibi merkezi yapıların hantallığını, meslektaşın sorunlarına ne kadar uzak kaldıklarını gördük. "Sarı Cetvel" manifestomuzla başlattığımız yürüyüşü, şimdi ME26 Otonom Ağı (DAO) ile bir <strong class="text-kaos">İçmimarlar Konseyi'ne</strong> dönüştürüyoruz.</p>
             <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
-                <strong class="text-white block mb-2 text-kaos">1. Kararları Kim Alıyor?</strong>
-                <p>Başkan veya yönetim kurulu yoktur. Kod ve otonom kontratlar vardır. Ağa sunulan her teklif (öğrenci hakları, taban fiyatlar, şantiye standartları) üyeler tarafından oylanır. %51'i geçen karar sistem tarafından otonom olarak uygulamaya alınır.</p>
+                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">📐</span> 80 Bin Güç, Tek Akıl</strong>
+                <p>Türkiye'deki 80.000 İçmimar ve 15.000 öğrenciyi aidatsız, masrafsız, başkansız tek bir dijital şantiyede birleştiriyoruz. 2017'de kapanan 20.000 üyeli icmimar.com'un ruhunu, 2026 model merkeziyetsiz teknolojiyle diriltiyoruz.</p>
             </div>
             <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
-                <strong class="text-white block mb-2 text-kaos">2. Liderler Masası Nedir?</strong>
-                <p>11 farklı Lider (Hukuk, Etik, Tasarım vb.) sadece ağın düzgün işlemesi için "moderatör" görevi görür. Üstünlükleri veya fazladan oy hakları yoktur. Görevleri, meslektaşların hakkını savunmaktır.</p>
+                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">⚙️</span> Liderler Masası ve Karar Alma</strong>
+                <p>11 Liderlik Grubu (Hukuk, Etik, Tasarım vb.) sistemin patronu değil, dişlisidir. Taban fiyatlar, şantiye standartları ve mesleki haklar ağa teklif edilir. %51'i geçen karar otonom olarak yasalaşır.</p>
             </div>
-            <p>ME26, bir dijital isyan ve sistem kuran bir felsefedir. Orijinal İçmimari Altın Sarısı'nı sistemin kalbine işlemek için oylamaya katılın.</p>
         `
     },
     'kurallar': {
-        baslik: "ME26 Otonom Kuralları",
+        baslik: "ME26 ŞANTİYE KURALLARI",
         metin: `
-            <ul class="space-y-4">
-                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">1.</span> <div><strong class="text-white">Para Yoktur:</strong> ME26 ağı aidat, giriş ücreti, bağış veya herhangi bir gizli masraf talep etmez. Satılamaz, devredilemez.</div></li>
-                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">2.</span> <div><strong class="text-white">Kimlik Gizliliği:</strong> Kimse diğerinin ismini, cismini bilemez. Sistemde sadece "GLOBAL ID" (Örn: TR-IA-100) numaranızla işlem yapar, fikir üretir ve oy kullanırsınız. Liyakat isme değil, fikre verilir.</div></li>
-                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">3.</span> <div><strong class="text-white">Kavga ve Siyaset Yoktur:</strong> Ağa siyasi parti argümanları taşımak, meslektaşlara hakaret etmek veya manipülasyon yapmak sistemden "otonom ihraç" sebebidir.</div></li>
-                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">4.</span> <div><strong class="text-white">Emeğin Korunması:</strong> Ağ içinde paylaşılan fikirleri dışarıda kendi menfaatine kullananlar Liderler Masası kararıyla uzaklaştırılır. Ustaya ve meslektaşa saygı esastır.</div></li>
+            <ul class="space-y-5">
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                    <span class="mr-3 text-kaos text-2xl font-black">1.</span> 
+                    <div><strong class="text-white text-base block mb-1">Aidat ve Sömürü Yok:</strong> Sistem para toplamaz, makam satmaz. Meslektaşın emeği üzerinden rant üretilmesine geçit vermez.</div>
+                </li>
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                    <span class="mr-3 text-kaos text-2xl font-black">2.</span> 
+                    <div><strong class="text-white text-base block mb-1">Usta-Çırak Felsefesi:</strong> Kariyer atölyelerde ve şantiyelerde başlar. Öğrenciler mesleğin özüdür. "Şantiye Sofrası"nda herkese yer vardır; tecrübe aktarılır, hiyerarşik ezilmeye müsaade edilmez.</div>
+                </li>
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                    <span class="mr-3 text-kaos text-2xl font-black">3.</span> 
+                    <div><strong class="text-white text-base block mb-1">Liyakat ve TR-IA Kimliği:</strong> Ağa sızmaları önlemek için mutlak e-Devlet onayı şarttır. Ancak içeride herkes eşittir. Ünvanlar silinir, herkes "GLOBAL ID" (Örn: TR-IA-100) şifresiyle konuşur. Oylar isme değil, fikre verilir.</div>
+                </li>
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                    <span class="mr-3 text-kaos text-2xl font-black">4.</span> 
+                    <div><strong class="text-white text-base block mb-1">Kavga Değil, Sistem:</strong> Siyasi tartışmalar, şahsi husumetler ve dekoratif kavgalar ağdan otonom ihraç sebebidir. Sadece yapısal sorunlar ve mesleki çözümler konuşulur.</div>
+                </li>
             </ul>
         `
     },
     'gizlilik': {
-        baslik: "Gizlilik ve KVKK Zırhı",
+        baslik: "KVKK VE GİZLİLİK ZIRHI",
         metin: `
-            <p class="mb-4">Bu sistem "Merkeziyetsizlik" ilkesi üzerine kurulmuştur. Verilerinizi toplamak, satmak veya depolamak sistemin felsefesine aykırıdır.</p>
-            <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
-                <strong class="text-white block mb-2 text-kaos">e-Devlet Neden Gerekli?</strong>
-                <p>İçmimarlık mesleğini korumak ve oylamalarda %100 adalet sağlamak için ağa botların veya meslek dışı kişilerin sızmasını engellemek zorundayız. Cihazınızda PDF dosyanız okunur, <span class="text-white font-bold">okuma bittikten sonra dosya sunuculara YÜKLENMEDEN imha edilir.</span> Sadece liyakat sonucunuz kasaya yazılır.</p>
+            <p class="mb-4 font-medium text-gray-300">ME26 ağı, Hukuk Liderliğimizin denetiminde "Merkeziyetsizlik" felsefesinin en uç güvenlik protokolleriyle korunmaktadır.</p>
+            <div class="grid gap-4">
+                <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
+                    <strong class="text-white block mb-1">Cihaz İçi PDF Okuma (Zero-Log)</strong>
+                    <p class="text-sm">Yüklediğin e-Devlet Mezun/Öğrenci belgesi, doğrudan senin cihazının RAM'inde okunur. Barkod ve TC yakalandıktan sonra PDF dosyası <span class="text-kaos font-bold">hiçbir sunucuya yüklenmeden anında imha edilir</span>.</p>
+                </div>
+                <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
+                    <strong class="text-white block mb-1">Kripto Maskeleme</strong>
+                    <p class="text-sm">Sisteme girdiğin an gerçek adın, TC'n ve iletişim bilgilerin banka düzeyinde (256-bit) şifrelenerek kasaya kilitlenir. Ekranda sadece kriptografik "TR-IA" numaran görünür.</p>
+                </div>
+                <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
+                    <strong class="text-white block mb-1">Sonsuz Düşünce Özgürlüğü</strong>
+                    <p class="text-sm">Kimliğin maskelendiği için, odaların veya işverenlerin baskısından korkmadan mesleki sorunları dile getirebilir, oylamalara hür iradenle katılabilirsin. Ağ seni korur.</p>
+                </div>
             </div>
-            <p class="mb-2">Ağdaki telefon numaranız veya bilgileriniz 256-bit şifreleme ile kasada tutulur ve 3. şahıslarla asla paylaşılmaz.</p>
         `
     }
 };
@@ -822,7 +843,6 @@ landingView.classList.add('hidden');
 dashboardView.classList.remove('hidden');
 dashboardView.classList.add('flex');
 
-// MENÜ DÖNÜŞÜM MOTORU TETİKLENİYOR
 window.butonlariGuncelle();
 
 document.getElementById('dash-isim').innerText = localStorage.getItem('me26_user_name').toLocaleUpperCase('tr-TR');
@@ -864,7 +884,6 @@ cetvelGecis("AĞA BAĞLANILIYOR...", () => {
     dashboardView.classList.add('flex');
     window.scrollTo(0, 0);
     
-    // MENÜ DÖNÜŞÜM MOTORU TETİKLENİYOR
     window.butonlariGuncelle();
     
     document.getElementById('dash-isim').innerText = data.tam_isim.toLocaleUpperCase('tr-TR');
@@ -1041,7 +1060,6 @@ try {
         dashboardView.classList.add('flex');
         window.scrollTo(0, 0);
 
-        // MENÜ DÖNÜŞÜM MOTORU TETİKLENİYOR
         window.butonlariGuncelle();
 
         document.getElementById('dash-isim').innerText = kesinKullaniciVerisi.tam_isim.toLocaleUpperCase('tr-TR');
