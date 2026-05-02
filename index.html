@@ -410,8 +410,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.3 (Otonom İsim Ezme)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.4 (Kasa Optimizasyonu)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.0 (Supabase Kasa Entegresi)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.1 (Kimlik ve Liyakat Motoru)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -623,13 +623,13 @@ const user = session.user;
 const googleEmail = user.email;
 const googleIsim = user.user_metadata.full_name || "";
 
-const { data, error } = await supabaseClient.from('uyeler').select('id, isim').eq('email', googleEmail).single();
+const { data, error } = await supabaseClient.from('uyeler').select('id, tam_isim').eq('email', googleEmail).single();
 
 if (data) {
 // ESKİ ÜYE DOĞRUDAN GİRİŞ YAPIYOR
 localStorage.setItem('me26_user_id', data.id);
-localStorage.setItem('me26_user_name', data.isim);
-runTerminalAnimation(data.id, data.isim, "Kimlik Doğrulandı. Ağa Bağlanılıyor...");
+localStorage.setItem('me26_user_name', data.tam_isim);
+runTerminalAnimation(data.id, data.tam_isim, "Kimlik Doğrulandı. Ağa Bağlanılıyor...");
 } else {
 // YENİ ÜYE - LOBİ AÇILIYOR
 pendingKullanici.email = googleEmail;
@@ -758,18 +758,18 @@ try {
     
     tamMetin = tamMetin.toUpperCase('tr-TR');
 
-    // DİNAMİK CIMBIZLAMA MOTORU (Google ismini ezip Devlet İsmini alır)
+    // DİNAMİK CIMBIZLAMA MOTORU
     const tcMatch = tamMetin.match(/(\d{11})/);
     const barkodMatch = tamMetin.match(/([A-Z0-9]{15,25})/);
     
-    // İsmi PDF'ten Yakala (Adı Soyadı veya Adı yazan yerin karşısını alır)
+    // İsmi PDF'ten Yakala
     const isimMatch = tamMetin.match(/(?:ADI\s*SOYADI|ADI).*?:\s*([A-ZÇĞİÖŞÜ\s]+)(?=BABA|ANNE|DOĞUM|PROGRAM|TC)/);
     // Doğum Tarihini Yakala
     const dogumTarihiMatch = tamMetin.match(/DOĞUM\s*TARİHİ.*?:\s*(\d{2}\.\d{2}\.\d{4})/);
     
     const universiteMatch = tamMetin.match(/(?:PROGRAM|ÜNİVERSİTE).*?:\s*([^\/]+)/);
     
-    // Fakülte ve Bölümü ayırmak için (eğer slash ile ayrılmışsa)
+    // Fakülte ve Bölümü ayırma
     const programSatiri = tamMetin.match(/(?:PROGRAM).*?:\s*(.*)/);
     let fakulte = "Belirtilmemiş";
     let bolum = "Belirtilmemiş";
@@ -782,7 +782,7 @@ try {
         if (parcalar.length > 2) {
             bolum = parcalar[2].trim();
         } else if (parcalar.length === 2) {
-             bolum = parcalar[1].trim(); // Bazen fakülte yazmaz, direkt bölüm yazar
+             bolum = parcalar[1].trim(); 
              fakulte = "Belirtilmemiş";
         }
     }
@@ -791,7 +791,7 @@ try {
 
     const tcInput = tcMatch ? tcMatch[1] : null;
     const edevletBarkod = barkodMatch ? barkodMatch[1] : null;
-    const resmiIsim = isimMatch ? isimMatch[1].trim() : pendingKullanici.isim; // Bulamazsa Google'dakini kullanır
+    const resmiIsim = isimMatch ? isimMatch[1].trim() : pendingKullanici.isim;
     const dogumTarihi = dogumTarihiMatch ? dogumTarihiMatch[1] : null;
     const universite = universiteMatch ? universiteMatch[1].trim() : "Belirtilmemiş";
     const mezuniyet_yili = yilMatch ? yilMatch[1] : null;
@@ -800,27 +800,23 @@ try {
         throw new Error("HATA: Belgeden Barkod veya T.C. Kimlik okunamadı. Lütfen metin tabanlı geçerli bir e-Devlet PDF'i yüklediğinizden emin olun.");
     }
 
-    // KASAYA GİDECEK KUSURSUZ 17 SÜTUNLUK VERİ PAKETİ
+    // KASAYA GİDECEK KUSURSUZ 13 SÜTUNLUK VERİ PAKETİ
     const durum = mezuniyet_yili ? 'İçmimar' : 'İçmimarlık Öğrencisi';
     
     const kesinKullaniciVerisi = { 
-        // A. Kimlik Grubu
         tam_isim: resmiIsim, 
         tc_kimlik: tcInput,
         dogum_tarihi: dogumTarihi,
         telefon: pendingKullanici.telefon, 
         email: pendingKullanici.email, 
-        // B. Liyakat Grubu
         universite: universite,
         fakulte: fakulte,
         bolum: bolum,
         statu: durum, 
         mezuniyet_yili: mezuniyet_yili,
         edevlet_barkod: edevletBarkod,
-        // C. Otonom Grup
         onay_durumu: 'BEKLİYOR',
         liyakat_puani: 10
-        // id, kayit_tarihi, kendi_davet_kodu gibi alanları Supabase otomatik atayacak.
     };
 
     btnPdf.innerText = "AĞA YAZILIYOR...";
