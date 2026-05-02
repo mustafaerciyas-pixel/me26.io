@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ME26 Ağı'nın sınırsız otonom vizyonu. Kurumları çalıştırabilir, fabrikalar kurabilir, projeler geliştirebiliriz.">
+    <title>Birlikte Ne Yapacağız? | ME26 Ağı</title>
+    
+    <meta property="og:title" content="Birlikte Ne Yapacağız? | ME26 Ağı">
+    <meta property="og:description" content="Biz sadece motoru kurduk, rotayı birlikte çizeceğiz. Ortak akılla kurumları çalıştırmaya, fabrikalar kurmaya hazır mısınız?">
+    <meta property="og:image" content="https://me26.com/paylasim-gorseli-altin.jpg">
+    <meta property="og:url" content="https://me26.com/dao-nedir.html">
+    <meta property="og:type" content="website">
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <script src="app.js"></script>
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { kaos: 'var(--neon-hex)', zemin: '#0f172a' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    boxShadow: { 'kaos': '0 0 15px rgba(var(--neon-rgb), 0.4)', 'kaos-lg': '0 0 40px rgba(var(--neon-rgb), 0.5)' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased flex flex-col min-h-screen relative">
+
+    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 flex flex-col items-center justify-center space-y-8 pt-10 menu-closed">
+        <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <a href="dao-nedir.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Ne Yapacağız?</a>
+        <a href="kurallar.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Kurallarımız</a>
+        <a href="gizlilik.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Gizlilik Zırhı</a>
+        <a href="index.html" class="bg-kaos text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos">Sisteme Dön</a>
+    </div>
+
+    <nav class="bg-zemin text-white py-5 shadow-xl relative z-20 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition">
+                <div class="w-1.5 h-6 bg-kaos mr-2"></div>
+                <span><span class="text-kaos">ME26</span> AĞI</span>
+            </a>
+            
+            <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide items-center">
+                <a href="dao-nedir.html" class="text-kaos font-bold transition">Birlikte Ne Yapacağız?</a>
+                <a href="kurallar.html" class="hover:opacity-80 transition">Kurallarımız</a>
+                <a href="index.html" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos">Sisteme Dön</a>
+            </div>
+
+            <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <header class="pt-16 pb-10 text-center px-4 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-radial-kaos-lg"></div>
+        <div class="max-w-3xl mx-auto relative z-10">
+            <div class="inline-block bg-kaos text-white font-bold px-4 py-1 rounded-full text-xs mb-4 tracking-widest uppercase shadow-kaos">SINIRSIZ POTANSİYEL</div>
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 leading-tight tracking-tighter text-outline-kaos uppercase">
+                BİRLİKTE NE YAPACAĞIZ?
+            </h1>
+            <p class="text-lg md:text-xl font-light text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                Aslında en güzel yanı da bu: Birlikte ne yapacağımıza dair önceden yazılmış, dayatılan bir görev listesi yok. Kararı hep birlikte, otonom ağın içinde vereceğiz.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pb-20 flex-grow relative z-10">
+        
+        <div class="bg-slate-900 border border-kaos p-8 md:p-12 rounded-2xl shadow-kaos-lg mb-16 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-kaos opacity-5 rounded-bl-full"></div>
+            
+            <h2 class="text-3xl font-black text-white mb-6 uppercase tracking-wider relative z-10">
+                Biz Sadece "Motoru" Kurduk, <br><span class="text-kaos">Rotayı Siz Çizeceksiniz</span>
+            </h2>
+            
+            <div class="space-y-5 text-gray-300 leading-relaxed text-sm md:text-base font-medium relative z-10">
+                <p>
+                    Bir otonom ağın gücü, o ağın içindeki insanların hayal gücüyle sınırlıdır. Bizim burada inşa ettiğimiz şey; şeffaf, adil, liyakati ölçen ve kimsenin hile yapamayacağı devasa bir teknolojik motordur.
+                </p>
+                <p>
+                    İçeri girdiğimizde asgari bedeller üzerinde uzlaşmak, ortak bir satın alma gücüyle indirimler yaratmak veya kendi içimizde iş paslaşmak... Bunlar masada konuşacağımız ufak tefek antrenmanlardan, verebileceğimiz basit örneklerden ibarettir. <strong>Peki vizyonumuzu neden bunlarla sınırlayalım?</strong>
+                </p>
+                <div class="bg-black border-l-4 border-kaos p-6 rounded-r-xl shadow-lg my-8">
+                    <p class="text-white text-lg font-bold mb-4">Eğer Türkiye'deki on binlerce içmimar tek bir zeka, tek bir organizma gibi hareket edebilirse;</p>
+                    <ul class="space-y-4 text-gray-400">
+                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🏛️</span> <span>Binlerce kişilik tek sesli ve otonom bir lobi gücüyle <strong>devlet kurumlarını İçmimarlık için çalıştırabilir</strong>; bakanlıklara ve belediyelere mesleğimiz lehine yeni yönetmelikler ve yasalar yazdırabiliriz.</span></li>
+                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🎓</span> <span>Bürokrasinin çözemediği sorunları aşıp, üniversitelerdeki <strong>eğitim müfredatını</strong> sahanın gerçeklerine göre yeniden şekillendirecek akademik baskıyı tek merkezden kurabiliriz.</span></li>
+                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🏭</span> <span>Yarın oylamaya sunup, doğrudan mesleğimize ve ağımıza özel devasa <strong>üretim fabrikaları</strong> kurabiliriz.</span></li>
+                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🏢</span> <span>İçmimarların doğrudan ortak olduğu, global çapta iş yapan dev <strong>holdingler</strong> inşa edebiliriz.</span></li>
+                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🏗️</span> <span>Ortak fonlarla <strong>arsalar satın alıp</strong>, projelerini tamamen kendimiz tasarlayıp, kendi <strong>inşaatlarımızı</strong> yapabiliriz.</span></li>
+                    </ul>
+                </div>
+                <p>
+                    Özetle; ağın limitlerini biz belirleyeceğiz. Altyapıyı biz kurduk, üzerine hangi imparatorluğu inşa edeceğimizi içeride, omuz omuza konuşacağız.
+                </p>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-black text-center text-white mb-10 tracking-tighter uppercase text-outline-kaos">
+            Peki Bu Hedefleri Hangi Sistemle Başaracağız?
+        </h2>
+        <div class="text-center mb-12">
+            <p class="text-gray-400 leading-relaxed text-sm md:text-base max-w-3xl mx-auto">
+                Yukarıdaki devasa hedeflere ulaşmak için eski nesil hiyerarşik yapılar veya klasik şirket modelleri yetersiz kalır. Bize liyakati ölçen, duygusuzca çalışan ve sadece adaleti sağlayan kusursuz bir <strong>"Otonom Organizasyon"</strong> lazım. İşte ME26 ağının altyapısı:
+            </p>
+        </div>
+
+        <div class="bg-black border border-slate-800 p-8 rounded-2xl shadow-xl mb-8 relative overflow-hidden">
+            <h2 class="text-2xl font-black text-white mb-4 uppercase tracking-wider flex items-center">
+                <span class="text-kaos mr-3">1.</span> DAO (Otonom Organizasyon) Nedir?
+            </h2>
+            <p class="text-gray-300 leading-relaxed mb-4 text-sm md:text-base">
+                DAO (Decentralized Autonomous Organization), geleneksel şirketlerin veya merkezi yapıların aksine; bir patronu, başkanı veya yönetim kurulu olmayan dijital kurumlardır. Kurallar önceden bilgisayar kodlarıyla (akıllı kontratlar) yazılır ve sisteme gömülür.
+            </p>
+            <p class="text-gray-300 leading-relaxed text-sm md:text-base">
+                Organizasyon içindeki tüm kararlar, ağa üye olan kişilerin oylamasıyla alınır ve kodlar tarafından anında, duygusuzca uygulanır. DAO'larda kimse sistemi kendi lehine esnetemez, torpil yapamaz ve şeffaflık her zaman en üst düzeydedir.
+            </p>
+        </div>
+
+        <div class="bg-black border border-slate-800 p-8 rounded-2xl shadow-xl mb-8 relative overflow-hidden">
+            <h2 class="text-2xl font-black text-white mb-6 uppercase tracking-wider flex items-center">
+                <span class="text-kaos mr-3">2.</span> Dünyadan İlham Veren DAO Örnekleri
+            </h2>
+            <p class="text-gray-400 leading-relaxed mb-6 text-sm md:text-base">
+                Bu sistem bilim kurgu değil, bugün dünyanın en yenilikçi toplulukları tarafından başarıyla kullanılıyor. Lider olmadan nelerin başarılabildiğine bakalım:
+            </p>
+            <div class="space-y-6">
+                <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl border-l-2 border-l-blue-500">
+                    <h3 class="text-white font-bold mb-2 flex items-center"><span class="mr-2">📜</span> ConstitutionDAO</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        2021 yılında, dünyanın dört bir yanından birbirini hiç tanımayan binlerce insan internet üzerinden organize oldu. Hiçbir yöneticileri veya banka hesapları olmadan, sadece <strong class="text-white">72 saat içinde 47 milyon dolar</strong> topladılar ve ABD Anayasası'nın nadir bir kopyasını almak için ortak hareket ettiler. Ortak akıl, imkansızı başardı.
+                    </p>
+                </div>
+                <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl border-l-2 border-l-green-500">
+                    <h3 class="text-white font-bold mb-2 flex items-center"><span class="mr-2">🧬</span> VitaDAO</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Bilimsel araştırmaları fonlamak için kurulan bu otonom ağ, klasik büyük şirketlerin tekelini kırıyor. Dünyanın dört bir yanındaki bilim insanlarının sunduğu projelere, ağdaki üyelerin oylarıyla doğrudan fon sağlanıyor.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-black border border-slate-800 p-8 rounded-2xl shadow-xl mb-16 relative overflow-hidden hover-border-kaos transition duration-300 border-l-4 border-l-yellow-500">
+            <h2 class="text-2xl font-black text-white mb-4 uppercase tracking-wider flex items-center">
+                <span class="text-yellow-500 mr-3">3.</span> ME26 Neden Bir "DAO Simülasyonu"dur?
+            </h2>
+            <p class="text-gray-400 leading-relaxed mb-4 text-sm md:text-base">
+                Gerçek ve saf bir DAO, blokzincir (blockchain) teknolojisi üzerinde çalışır. Ancak, ülkemizdeki yasal mevzuatların buna tam uygun olmaması ve ağa katılacak her meslektaşımızın kripto cüzdan kullanmayı bilmeme ihtimali, saf bir DAO kurmayı zorlaştırıyordu.
+            </p>
+            <p class="text-gray-400 leading-relaxed mb-4 text-sm md:text-base font-medium text-white">
+                Bu nedenle biz, mesleğimiz için pratik bir "DAO Simülasyonu" tasarladık:
+            </p>
+            <ul class="space-y-3 text-sm text-gray-400 border-l-2 border-slate-700 pl-4">
+                <li><strong class="text-white">Altyapı:</strong> Blokzincir yerine, devletlerin ve bankaların güvendiği şifreli bulut (Cloud) merkezleri kullanıyoruz. Bu, e-Devlet entegrasyonu ve KVKK için şarttır.</li>
+                <li><strong class="text-white">Sahiplik:</strong> Sistem teknolojik olarak ME26 Teknoloji A.Ş.'nin sorumluluğundadır. Ancak şirket içerideki kararlara müdahale etmez; sadece sistemin çalışmasını sağlar.</li>
+                <li><strong class="text-white">İşleyiş:</strong> Tıpkı gerçek bir DAO gibi içeride patron yoktur. Tüm adımlar, Liyakat Puanı sahibi üyelerin oylarıyla şekillenir.</li>
+            </ul>
+        </div>
+
+        <h2 class="text-3xl font-black text-center text-white mb-10 tracking-tighter uppercase text-outline-kaos">
+            Ağın 4 Temel Sütunu
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+            <div class="bg-black border border-slate-800 p-6 rounded-xl shadow-lg relative overflow-hidden transition duration-300">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-xl mr-3">🧭</div>
+                    <h3 class="text-lg font-black text-white uppercase tracking-wider">Ortak Akıl</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    Eskimiş dikey hiyerarşiler yerine; herkesin eşit söz hakkına sahip olduğu yatay bir yapı. Kararların omuz omuza alındığı, yöneticisi olmayan dijital zemin.
+                </p>
+            </div>
+
+            <div class="bg-black border border-slate-800 p-6 rounded-xl shadow-lg relative overflow-hidden transition duration-300 border-l-2 border-l-kaos">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-xl mr-3">⚖️</div>
+                    <h3 class="text-lg font-black text-white uppercase tracking-wider">Liyakat Skoru</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    Meslektaşlarına destek olan herkesin çabası "Liyakat Skoru" ile görünür olur. Torpil ve kayırmacılığın yerini salt emek ve matematiksel adalet alır.
+                </p>
+            </div>
+            
+            <div class="bg-black border border-slate-800 p-6 rounded-xl shadow-lg relative overflow-hidden transition duration-300">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-xl mr-3">🏗️</div>
+                    <h3 class="text-lg font-black text-white uppercase tracking-wider">Kolektif İstihdam</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    İş yoğunluğu olan ofislerin yüklerini içeride paylaştığı, genç meslektaşların yeteneklerini sergileyebildiği, paranın sektörde kaldığı bir mikro ekonomi.
+                </p>
+            </div>
+
+            <div class="bg-black border border-slate-800 p-6 rounded-xl shadow-lg relative overflow-hidden transition duration-300">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-xl mr-3">🧪</div>
+                    <h3 class="text-lg font-black text-white uppercase tracking-wider">Güvenli Liman</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    Burası vitrin değil, mutfaktır. Fikirlerin çalınma korkusu olmadan paylaşılabildiği, salt mesleki gelişimin yaşandığı yalıtılmış bir tasarım laboratuvarı.
+                </p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="index.html" class="bg-kaos hover:opacity-90 text-white font-black py-4 px-12 rounded-xl text-lg shadow-kaos-lg transition transform hover:-translate-y-1 inline-block uppercase tracking-widest">
+                AĞA DÖN VE KAYIT OL
+            </a>
+        </div>
+    </main>
+
+    <footer class="bg-[#050810] border-t border-slate-800 text-gray-600 py-6 text-center text-xs mt-auto relative z-10">
+        <div class="flex justify-center space-x-4 mb-3 uppercase tracking-widest font-bold">
+            <a href="kurallar.html" class="hover:opacity-80 transition">Kurallarımız</a>
+            <a href="dao-nedir.html" class="text-kaos transition">Ne Yapacağız?</a>
+            <a href="gizlilik.html" class="hover:opacity-80 transition">Gizlilik ve Hukuk</a>
+        </div>
+        <p class="opacity-50 text-kaos mb-1">İNSAN YÖNETİCİ YOK. LİYAKAT VE KURALLAR VAR.</p>
+        <p>&copy; 2026 ME26 Teknoloji A.Ş. • TÜM HAKLARI SAKLIDIR.</p>
+    </footer>
+
+</body>
+</html>

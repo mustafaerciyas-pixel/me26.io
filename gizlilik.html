@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ME26 Ağı Gizlilik ve Hukuk Zırhı: Kişisel verileriniz şifreli kasada korunur, ağ içinde mutlak anonimlik sağlanır.">
+    <title>Gizlilik ve Hukuk | ME26 Ağı</title>
+    
+    <meta property="og:title" content="Gizlilik ve Hukuk Zırhı | ME26 Ağı">
+    <meta property="og:description" content="Kişisel verileriniz satılmaz, fikirleriniz çalınmaz. Bu ağ, şeffaf ve banka düzeyinde güvenli bir kaledir.">
+    <meta property="og:image" content="https://me26.com/paylasim-gorseli-altin.jpg">
+    <meta property="og:url" content="https://me26.com/gizlilik.html">
+    <meta property="og:type" content="website">
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <script src="app.js"></script>
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { kaos: 'var(--neon-hex)', zemin: '#0f172a' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    boxShadow: { 'kaos': '0 0 15px rgba(var(--neon-rgb), 0.4)', 'kaos-lg': '0 0 40px rgba(var(--neon-rgb), 0.5)' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased flex flex-col min-h-screen relative">
+
+    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 flex flex-col items-center justify-center space-y-8 pt-10 menu-closed">
+        <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <a href="dao-nedir.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Ne Yapacağız?</a>
+        <a href="kurallar.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Kurallarımız</a>
+        <a href="gizlilik.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Gizlilik Zırhı</a>
+        <a href="index.html" class="bg-kaos text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos">Sisteme Dön</a>
+    </div>
+
+    <nav class="bg-zemin text-white py-5 shadow-xl relative z-20 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition">
+                <div class="w-1.5 h-6 bg-kaos mr-2"></div>
+                <span><span class="text-kaos">ME26</span> AĞI</span>
+            </a>
+            
+            <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide items-center">
+                <a href="dao-nedir.html" class="hover:opacity-80 transition">Birlikte Ne Yapacağız?</a>
+                <a href="kurallar.html" class="hover:opacity-80 transition">Kurallarımız</a>
+                <a href="index.html" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos">Sisteme Dön</a>
+            </div>
+
+            <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <header class="pt-16 pb-12 text-center px-4 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-radial-kaos-lg"></div>
+        <div class="max-w-3xl mx-auto relative z-10">
+            <div class="inline-block bg-kaos text-white font-bold px-4 py-1 rounded-full text-xs mb-4 tracking-widest uppercase shadow-kaos">ME26 Teknoloji Altyapısı</div>
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 leading-tight tracking-tighter text-outline-kaos uppercase">
+                Gizlilik ve Hukuk Zırhı
+            </h1>
+            <p class="text-xl font-light text-gray-300 max-w-2xl mx-auto">
+                Kişisel verileriniz satılmaz, fikirleriniz çalınmaz. Bu ağ, şeffaf ve güvenli bir kaledir.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pb-20 flex-grow relative z-10">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl mb-12">
+            <p class="text-lg text-gray-300 leading-relaxed font-medium">
+                Piyasadaki standart uzun sözleşmeleri bir kenara bırakalım. Haklarınızı ve verilerinizi nasıl koruduğumuzu en net haliyle aşağıda özetledik.
+            </p>
+        </div>
+
+        <div class="space-y-6 mb-16">
+            <div class="bg-black border border-slate-800 p-8 rounded-xl shadow-lg relative overflow-hidden hover-border-kaos">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-2xl mr-4">🥷</div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-wider">Şifreli Kasa, Banka Altyapısı ve Anonimlik</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    Kayıt aşamasında verdiğiniz iletişim bilgileri, platform arayüzünde <strong>ASLA</strong> görünmez. Ağa bağlandığınız an diğer üyeler sizi sadece rastgele atanan "ME26 Üye Numaranız" ile tanır. 
+                    <br><br>
+                    <strong>Bankalar Seviyesinde Altyapı:</strong> Sahte hesapları engellemek amacıyla verdiğiniz gerçek kimliğiniz; ofisimizdeki bir bilgisayarda değil, bankaların ve global devlerin kullandığı uluslararası, uçtan uca şifrelenmiş bulut (Cloud) veri merkezlerinde muhafaza edilir. ME26 Teknoloji A.Ş., bu devasa güvenlik altyapısını sizin için kiralayan ve faturasını cebinden ödeyen kurumdur. Verileriniz asla satılmaz ve paylaşılamaz.
+                </p>
+            </div>
+
+            <div class="bg-black border border-slate-800 p-8 rounded-xl shadow-lg relative overflow-hidden hover-border-kaos border-l-4 border-l-kaos shadow-kaos">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-2xl mr-4">🔐</div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-wider">3 Aşamalı KYC ve Barkod Doğrulaması (Sıfır Risk)</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    Ağa sahte isimlerin, trollerin veya meslek dışı kişilerin sızması imkansızdır. Bunu 3 aşamalı katı bir güvenlik duvarı (KYC - Müşterini Tanı) ile sağlıyoruz:
+                    <br><br>
+                    <strong>1. Mail ve Telefon Doğrulaması:</strong> Sisteme girilen e-posta ve cep telefonu numarası otonom sistem tarafından OTP (Tek Kullanımlık Şifre) veya doğrulama linki ile teyit edilir. Sahte veya tek kullanımlık iletişim bilgileri anında reddedilir.
+                    <br><br>
+                    <strong>2. e-Devlet Barkod Kontrolü:</strong> Sizden <strong>ASLA e-Devlet şifreniz istenmez.</strong> Sadece e-Devlet üzerinden alacağınız "Mezuniyet Belgesi" veya "Öğrenci Belgesi"nin üzerindeki <strong>Barkod Numarasını</strong> sisteme girmeniz istenir. Makine bu barkodu e-Devlet'in herkese açık doğrulama ekranından sorgulayarak mesleğinizi teyit eder.
+                    <br><br>
+                    Bu süreçlerin tamamı 6698 Sayılı Kişisel Verilerin Korunması Kanunu (KVKK) standartlarına %100 uyumludur. Özel hayatınıza veya şifrelerinize erişimimiz yoktur ve teknik olarak olamaz.
+                </p>
+            </div>
+
+            <div class="bg-black border border-slate-800 hover-border-kaos p-8 rounded-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-kaos opacity-5 rounded-bl-full"></div>
+                <div class="flex items-center mb-4 relative z-10">
+                    <div class="w-12 h-12 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-2xl mr-4">🛡️</div>
+                    <h3 class="text-xl font-black text-kaos uppercase tracking-wider">Fikri Mülkiyet Zırhı</h3>
+                </div>
+                <p class="text-gray-300 leading-relaxed text-sm relative z-10">
+                    Sisteme kayıt olan her üye, <strong>Fikri Mülkiyet Taahhütnamesi'ni</strong> kabul etmiş sayılır. Ağ içinde paylaşılan projelerin ME26 Ağı dışında izinsiz kopyalanması durumunda, ME26 hukuk birimi doğrudan yasal işlem başlatma hakkına sahiptir. Otonom ağ, yaratıcının emeğini korur.
+                </p>
+            </div>
+
+            <div class="bg-black border border-slate-800 p-8 rounded-xl shadow-lg relative overflow-hidden hover-border-kaos">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-2xl mr-4">⚖️</div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-wider">Hukuki Altyapı ve Sorumluluk</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    Bu sistem, teknolojik altyapı olarak ME26 Teknoloji A.Ş.'ye aittir. Sistem içindeki oylamaları kurum kurgulamaz, sadece uygular. Oylamalardan doğacak hukuki sonuçlar kuruma atfedilemez. Topluluğun huzurunu bozan durumlarda otonom sistem, ilgili hesabın ağ bağlantısını kesme yetkisine sahiptir.
+                </p>
+            </div>
+
+            <div class="bg-black border border-slate-800 p-8 rounded-xl shadow-lg relative overflow-hidden hover-border-kaos">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-slate-800 text-kaos flex items-center justify-center rounded-lg font-black text-2xl mr-4">🚪</div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-wider">Unutulma Hakkı (Çıkış Özgürlüğü)</h3>
+                </div>
+                <p class="text-gray-400 leading-relaxed text-sm">
+                    Bu ağda kimse zorla tutulmaz. İstediğiniz an tek bir butona tıklayarak ağdan tamamen çıkabilirsiniz. Çıkış yaptığınız saniye; adınız, soyadınız ve iletişim bilgileriniz veritabanından <strong>geri döndürülemez şekilde, kalıcı olarak silinir.</strong> Ağın mimarisini bozmamak adına sadece geçmişte kullandığınız oylar "anonim bir ME-ID numarası" altında sistemde kalmaya devam eder, ancak bu numarayı kimse bir daha sizinle eşleştiremez.
+                </p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="index.html" class="bg-kaos hover:opacity-90 text-white font-black py-4 px-12 rounded-xl text-lg shadow-kaos-lg transition transform hover:-translate-y-1 inline-block uppercase tracking-widest">
+                AĞA DÖN VE KAYIT OL
+            </a>
+        </div>
+    </main>
+
+    <footer class="bg-[#050810] border-t border-slate-800 text-gray-600 py-6 text-center text-xs mt-auto relative z-10">
+        <div class="flex justify-center space-x-4 mb-3 uppercase tracking-widest font-bold">
+            <a href="kurallar.html" class="hover:opacity-80 transition">Kurallarımız</a>
+            <a href="dao-nedir.html" class="hover:opacity-80 transition">Ne Yapacağız?</a>
+            <a href="gizlilik.html" class="text-kaos transition">Gizlilik ve Hukuk</a>
+        </div>
+        <p class="opacity-50 text-kaos mb-1">İNSAN YÖNETİCİ YOK. LİYAKAT VE KURALLAR VAR.</p>
+        <p>&copy; 2026 ME26 Teknoloji A.Ş. • TÜM HAKLARI SAKLIDIR.</p>
+    </footer>
+
+</body>
+</html>

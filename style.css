@@ -1,0 +1,64 @@
+/* ==========================================
+   ME26 AĞI - MERKEZİ STİL DOSYASI (style.css)
+   ========================================== */
+
+html { scroll-behavior: smooth; }
+body { background-color: #050810; font-family: 'Inter', sans-serif; }
+
+/* Arka plan kaos desenleri */
+.bg-radial-kaos-lg { background-image: radial-gradient(var(--neon-hex) 1px, transparent 1px); background-size: 30px 30px; }
+.bg-radial-kaos-sm { background-image: radial-gradient(var(--neon-hex) 1px, transparent 1px); background-size: 20px 20px; }
+
+/* Yazı ve Seçim Efektleri */
+.text-outline-kaos { -webkit-text-stroke: 2px #0f172a; color: white; text-shadow: 3px 3px 0px var(--neon-hex); }
+::selection { background-color: var(--neon-hex); color: #000; }
+
+/* Özel Scrollbar */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--neon-rgb), 0.3); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(var(--neon-rgb), 0.6); }
+
+/* Giriş Durumuna Göre Ekran Değişimi (Göz Kırpma Engelleyici Destek) */
+html.is-logged-in #landing-view { display: none !important; }
+html:not(.is-logged-in) #dashboard-view { display: none !important; }
+html.is-logged-in .btn-numarani-al { display: none !important; }
+
+/* Form Etkileşimleri */
+.telefon-satiri:focus-within { border-color: var(--neon-hex) !important; box-shadow: 0 0 15px rgba(var(--neon-rgb),0.3) !important; }
+.telefon-satiri input:focus { box-shadow: none !important; }
+
+/* Şifreli Terminal Animasyonları */
+.terminal-text { overflow: hidden; white-space: nowrap; border-right: .15em solid var(--neon-hex); animation: typing 1s steps(40, end), blink-caret .75s step-end infinite; }
+@keyframes typing { from { width: 0 } to { width: 100% } }
+@keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--neon-hex); } }
+
+/* Gerçekçi Katlanır Sarı Cetvel Animasyonu (Yenilendi) */
+.ruler-overlay { position: fixed; inset: 0; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(5px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s; pointer-events: none; }
+.ruler-overlay.active { opacity: 1; pointer-events: auto; }
+.cetvel-box { position: relative; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; transform: scale(1.3); margin-bottom: 25px; }
+.cetvel-text { font-weight: 900; font-size: 18px; color: #facc15; letter-spacing: 1px; text-align: center; text-shadow: 0 0 20px rgba(250,204,21,0.4); background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 10px; border: 1px solid rgba(250,204,21,0.2); }
+
+/* Cetvel Parçaları */
+.cetvel { width: 90px; height: 20px; background-color: #facc15; border: 1px solid #b45309; border-radius: 10px; position: absolute; transform-origin: 10px 10px; box-shadow: inset 0 2px 3px rgba(255,255,255,0.6), 2px 4px 6px rgba(0,0,0,0.4); background-image: linear-gradient(90deg, #1e1e1e 1.5px, transparent 1px), linear-gradient(90deg, #1e1e1e 1px, transparent 1px); background-size: 7px 30%, 35px 60%; background-position: 0 top, 0 top; background-repeat: repeat-x; }
+/* Ekleme Perçinleri (Metal Görünüm) */
+.cetvel::after { content: ''; position: absolute; left: 5px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, #f8fafc, #64748b); border: 1px solid #334155; box-shadow: 0 1px 2px rgba(0,0,0,0.6), inset 0 1px 1px white; }
+
+/* Matematiksel Kusursuz Ortalama (Tam 300px açılır, 150px sola kaydırılır) */
+.c1 { left: calc(50% - 150px); top: 20px; z-index: 4; }
+.c2 { left: 70px; top: -1px; z-index: 3; transform: rotate(170deg); }
+.c3 { left: 70px; top: -1px; z-index: 2; transform: rotate(-170deg); }
+.c4 { left: 70px; top: -1px; z-index: 1; transform: rotate(170deg); }
+
+/* Gerçekçi Esneme Efekti ile Açılış */
+.ruler-overlay.active .c2 { animation: snapOpen 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.ruler-overlay.active .c3 { animation: snapOpenNeg 0.5s 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.ruler-overlay.active .c4 { animation: snapOpen 0.5s 1.0s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+@keyframes snapOpen { 0% { transform: rotate(170deg); } 100% { transform: rotate(0deg); } }
+@keyframes snapOpenNeg { 0% { transform: rotate(-170deg); } 100% { transform: rotate(0deg); } }
+
+/* Mobil Menü */
+#mobile-menu { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+#mobile-menu.menu-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+#mobile-menu.menu-closed { transform: translateY(-100%); opacity: 0; pointer-events: none; }
