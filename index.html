@@ -49,24 +49,24 @@
         <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
-        <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='/dao-nedir'>Ne Yapacağız?</a>
-        <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='/kurallar'>Kurallarımız</a>
-        <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='/gizlilik'>Gizlilik Zırhı</a>
-        <a class='bg-kaos text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos' href='/#kayit' onclick='mobilMenuKapat()'>Numaranı Al</a>
+        <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='dao-nedir.html'>Ne Yapacağız?</a>
+        <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='kurallar.html'>Kurallarımız</a>
+        <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='gizlilik.html'>Gizlilik Zırhı</a>
+        <a class='bg-kaos text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos' href='index.html#kayit' onclick='mobilMenuKapat()'>Numaranı Al</a>
     </div>
 
     <!-- ÜST MENÜ -->
     <nav id="ana-nav" class="bg-zemin text-white py-5 shadow-xl relative z-20 border-b border-slate-800 w-full transition-colors duration-1000">
         <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-            <a class='text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition' href='/'>
+            <a class='text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition' href='index.html'>
                 <div class="w-1.5 h-6 bg-kaos mr-2"></div>
                 <span><span class="text-kaos">ME26</span> AĞI</span>
             </a>
             
             <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide items-center">
-                <a class='hover:opacity-80 transition' href='/dao-nedir'>Birlikte Ne Yapacağız?</a>
-                <a class='hover:opacity-80 transition' href='/kurallar'>Kurallarımız</a>
-                <a href="#kayit" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos">Numaranı Al</a>
+                <a class='hover:opacity-80 transition' href='dao-nedir.html'>Birlikte Ne Yapacağız?</a>
+                <a class='hover:opacity-80 transition' href='kurallar.html'>Kurallarımız</a>
+                <a href="index.html#kayit" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos">Numaranı Al</a>
             </div>
 
             <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2">
@@ -352,9 +352,9 @@
                 </div>
             </div>
             <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
-                <a class='hover:opacity-80 transition' href='/kurallar'>Kurallarımız</a>
-                <a class='hover:opacity-80 transition' href='/dao-nedir'>Birlikte Ne Yapacağız?</a>
-                <a class='hover:opacity-80 transition' href='/gizlilik'>Gizlilik ve Hukuk</a>
+                <a class='hover:opacity-80 transition' href='kurallar.html'>Kurallarımız</a>
+                <a class='hover:opacity-80 transition' href='dao-nedir.html'>Birlikte Ne Yapacağız?</a>
+                <a class='hover:opacity-80 transition' href='gizlilik.html'>Gizlilik ve Hukuk</a>
             </div>
             <div class="text-right text-[10px] text-gray-600 font-mono">
                 <div class="mb-1">&copy; 2026 ME26 TEKNOLOJİ A.Ş. TÜM HAKLARI SAKLIDIR.</div>
@@ -453,7 +453,7 @@
             }
         }
 
-        // 1. GOOGLE BUTONU TETİKLEYİCİSİ (DÜZELTİLDİ!)
+        // 1. GOOGLE BUTONU TETİKLEYİCİSİ
         window.googleIleGiris = async function() {
             try {
                 const { error } = await supabaseClient.auth.signInWithOAuth({
