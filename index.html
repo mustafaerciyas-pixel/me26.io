@@ -390,7 +390,7 @@ BELGEYİ ONAYLA VE AĞA KATIL
 </div>
 </div>
 <div class="flex items-center space-x-6 relative z-10">
-<button onclick="cikisYap()" class="bg-red-500/10 text-red-400 border border-red-500/30 px-4 py-2 rounded hover:bg-red-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition">Ağdan Çıkış</button>
+<button onclick="cikisYap()" class="bg-red-500/10 text-red-400 border border-red-500/30 px-4 py-2 rounded hover:bg-red-500 hover:text-white text-[10px] font-bold uppercase tracking-widest transition cursor-pointer">Ağdan Çıkış</button>
 </div>
 </div>
 
@@ -467,8 +467,9 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 </div>
 <div class="text-kaos font-mono text-sm tracking-tight break-all mb-3" id="davet-linki">me26.com/davet/REF-XXXXXX</div>
 <div class="flex space-x-2">
-<button onclick="kopyalaLink()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-[10px] py-2 rounded border border-slate-600 transition flex items-center justify-center font-bold tracking-widest">KOPYALA</button>
-<button onclick="whatsappPaylas()" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-[10px] py-2 rounded border border-green-500 transition flex items-center justify-center font-bold tracking-widest">WHATSAPP</button>
+<!-- KOPYALA VE WHATSAPP BUTONLARI -->
+<button onclick="kopyalaLink(event)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-[10px] py-2 rounded border border-slate-600 transition flex items-center justify-center font-bold tracking-widest cursor-pointer">KOPYALA</button>
+<button onclick="whatsappPaylas()" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-[10px] py-2 rounded border border-green-500 transition flex items-center justify-center font-bold tracking-widest cursor-pointer">WHATSAPP</button>
 </div>
 </div>
 
@@ -495,8 +496,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 7.0 (Anti-Asılı Kalma Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 7.1 (Tık Tık Gerçek Cetvel)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 7.2 (Kır ve Çık Motoru)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 7.3 (Davet Dişlileri)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -620,6 +621,53 @@ window.cetvelGecis = function(mesaj, islemCallback) {
         if(islemCallback) islemCallback();
     }
 }
+
+// ---------------------------------------------------------
+// PAYLAŞIM VE LİNK DİŞLİLERİ (YENİ EKLENDİ)
+// ---------------------------------------------------------
+window.kopyalaLink = function(event) {
+    const linkText = document.getElementById('davet-linki').innerText;
+    const tamLink = linkText.includes('http') ? linkText : 'https://' + linkText;
+    
+    navigator.clipboard.writeText(tamLink).then(() => {
+        const btn = event.currentTarget;
+        const eskiMetin = btn.innerText;
+        btn.innerText = "KOPYALANDI!";
+        btn.classList.replace('bg-slate-800', 'bg-green-600');
+        
+        setTimeout(() => {
+            btn.innerText = eskiMetin;
+            btn.classList.replace('bg-green-600', 'bg-slate-800');
+        }, 2000);
+    }).catch(err => { alert("Davet linkiniz: " + tamLink); });
+};
+
+window.whatsappPaylas = function() {
+    const linkText = document.getElementById('davet-linki').innerText;
+    const tamLink = linkText.includes('http') ? linkText : 'https://' + linkText;
+    const mesaj = "İçmimarlık mesleği için aidatsız ve masrafsız yeni otonom ağ ME26 kuruluyor. Benim şifreli davet linkimle Kurucu Üye olarak katılabilirsin: " + tamLink;
+    window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(mesaj), '_blank');
+};
+
+// ---------------------------------------------------------
+// ÇIKIŞ BUTONU (KIR VE ÇIK MOTORU - YENİ EKLENDİ)
+// ---------------------------------------------------------
+window.cikisYap = async function() {
+    // 1. Sunuculara çıkış emri ver (Asılı kalmaması için try-catch)
+    try { if(supabaseClient) await supabaseClient.auth.signOut(); } catch(e) { console.warn("Supabase çıkış gecikmesi atlandı."); }
+    try { await auth.signOut(); } catch(e) { console.warn("Firebase çıkış gecikmesi atlandı."); } 
+    
+    // 2. Cihazdaki tüm çerezleri acımasızca parçala
+    localStorage.removeItem('me26_user_id');
+    localStorage.removeItem('me26_user_name');
+    localStorage.removeItem('me26_ref_link');
+    localStorage.removeItem('me26_kaos_rengi');
+    localStorage.removeItem('me26_uye_no');
+    
+    // 3. Kapı dışarı et
+    document.documentElement.classList.remove('is-logged-in');
+    location.reload();
+};
 
 // ---------------------------------------------------------
 // TELEFON NUMARASI DİNAMİK STANDART MOTORU
@@ -934,18 +982,6 @@ try {
     btnPdf.disabled = false;
 }
 }
-
-window.cikisYap = async function() {
-if(supabaseClient) await supabaseClient.auth.signOut();
-try { await auth.signOut(); } catch(e) {} 
-localStorage.removeItem('me26_user_id');
-localStorage.removeItem('me26_user_name');
-localStorage.removeItem('me26_ref_link');
-localStorage.removeItem('me26_kaos_rengi');
-localStorage.removeItem('me26_uye_no');
-document.documentElement.classList.remove('is-logged-in');
-location.reload();
-};
 
 window.rozetDurumunuGuncelle = async function() {
     const globalId = localStorage.getItem('me26_user_id');
