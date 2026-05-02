@@ -707,6 +707,17 @@
             location.reload();
         };
 
+        // EKSİK KALAN DİĞER ALAN KONTROL FONKSİYONU
+        window.digerAlanKontrol = function() {
+            const durum = document.getElementById('lobby-durum').value;
+            const digerKutu = document.getElementById('diger-kutu');
+            if (durum === 'Diğer') {
+                digerKutu.classList.remove('hidden');
+            } else {
+                digerKutu.classList.add('hidden');
+            }
+        };
+
         function runTerminalAnimation(globalSmartID, uyeAd, durumMesaji) {
             topBanner.classList.add('hidden'); 
             landingView.classList.add('hidden');
