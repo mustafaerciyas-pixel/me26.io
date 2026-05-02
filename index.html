@@ -291,9 +291,9 @@ BELGEYİ ONAYLA VE AĞA KATIL
 <div class="w-full max-w-6xl flex justify-between items-center bg-black/60 backdrop-blur-sm p-4 rounded-xl shadow-2xl border border-slate-700 mb-8 relative overflow-hidden mt-6">
 <div class="absolute inset-0 opacity-10 bg-radial-kaos-sm"></div>
 <div class="flex items-center space-x-4 relative z-10">
-<div class="w-20 h-16 bg-black border border-kaos rounded-lg flex items-center justify-center text-kaos font-black text-xs shadow-lg flex-col leading-none text-center px-1">
+<div class="w-24 h-16 bg-black border border-kaos rounded-lg flex items-center justify-center text-kaos font-black text-xs shadow-lg flex-col leading-none text-center px-1">
 <span class="text-[8px] tracking-widest">GLOBAL ID</span>
-<span class="text-white mt-1 text-sm tracking-widest" id="dash-id-main">TR-000</span>
+<span class="text-white mt-1 text-sm tracking-widest font-mono" id="dash-id-main">TR-000000</span>
 </div>
 <div>
 <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-none" id="dash-isim">İSİM SOYİSİM</h2>
@@ -410,8 +410,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.0 (Supabase Kasa Entegresi)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.1 (Kimlik ve Liyakat Motoru)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.2 (Kripto ID Motoru)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 5.3 (Görsel Güvenlik)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -602,7 +602,11 @@ dashboardView.classList.remove('hidden');
 dashboardView.classList.add('flex');
 
 document.getElementById('dash-isim').innerText = localStorage.getItem('me26_user_name').toLocaleUpperCase('tr-TR');
-document.getElementById('dash-id-main').innerText = localStorage.getItem('me26_user_id');
+
+// KRİPTO ID GÖSTERİMİ
+let hamID = localStorage.getItem('me26_user_id');
+let kisaID = "TR-" + hamID.substring(0, 6).toUpperCase();
+document.getElementById('dash-id-main').innerText = kisaID;
 
 let savedRef = localStorage.getItem('me26_ref_link');
 if(!savedRef) {
@@ -890,11 +894,15 @@ terminalView.classList.add('flex');
 window.scrollTo(0, 0);
 
 const terminalContent = document.getElementById('terminal-content');
+
+// KRİPTO ID EKRANI İÇİN KESME İŞLEMİ
+let kriptoID = "TR-" + globalSmartID.substring(0, 6).toUpperCase();
+
 const messages = [
 "BAŞLATILIYOR: Şifreli ME26 Bağlantısı...",
 "Güvenlik duvarı aşıldı. Kriptografik tünel açılıyor.",
 `[SİSTEM] ${durumMesaji}`,
-`KÜRESEL ID BELİRLENDİ: ${globalSmartID}`,
+`KÜRESEL ID BELİRLENDİ: ${kriptoID}`,
 "Ortak akıl oylama sistemine bağlanılıyor..."
 ];
 
@@ -919,7 +927,7 @@ dashboardView.classList.remove('hidden');
 dashboardView.classList.add('flex');
 
 document.getElementById('dash-isim').innerText = uyeAd.toLocaleUpperCase('tr-TR');
-document.getElementById('dash-id-main').innerText = globalSmartID;
+document.getElementById('dash-id-main').innerText = kriptoID;
 
 let savedRef = localStorage.getItem('me26_ref_link');
 if(!savedRef) {
