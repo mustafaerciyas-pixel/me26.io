@@ -409,8 +409,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.9 (Otonom Belge Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.0 (Anti-Trol Kalkanı)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.1 (Esnek Belge Motoru)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.2 (Anti-Trol Kalkanı)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -757,14 +757,15 @@ try {
     
     tamMetin = tamMetin.toUpperCase('tr-TR');
 
-    // DİNAMİK VE ESNEK CIMBIZLAMA MOTORU
-    // 1. "KİMLİK" kelimesinden sonra gelen ilk 11 haneli sayı
-    const tcMatch = tamMetin.match(/KİMLİK.*?(\d{11})/);
-    // 2. "BARKOD" kelimesinden sonra gelen, harf, rakam ve TİRE içeren kod
-    const barkodMatch = tamMetin.match(/BARKOD.*?([A-Z0-9\-]{8,})/);
-    // 3. Bulursa alır, bulamazsa boş geçer (Belgeyi reddetmez)
-    const universiteMatch = tamMetin.match(/(?:ÜNİVERSİTESİ|ÜNİVERSİTE|KURUM).*?:\s*([^\/]+)/);
-    const yilMatch = tamMetin.match(/(?:MEZUNİYET|KAYIT|TARİHİ).*?(\d{4})/);
+    // DİNAMİK VE ESNEK CIMBIZLAMA MOTORU (YÖK ve SGK Formatları için)
+    // 1. Sadece 11 haneli sayıları ara
+    const tcMatch = tamMetin.match(/(\d{11})/);
+    // 2. 15 ile 25 karakter arası harf ve rakam barındıran şifreleri ara (Barkod)
+    const barkodMatch = tamMetin.match(/([A-Z0-9]{15,25})/);
+    
+    // Üniversite ve yıl için basit kelime avı, bulamazsa boş geçer
+    const universiteMatch = tamMetin.match(/(?:PROGRAM|ÜNİVERSİTE).*?:\s*([^\/]+)/);
+    const yilMatch = tamMetin.match(/(?:MEZUNİYET|KAYIT).*?(\d{4})/);
 
     const tcInput = tcMatch ? tcMatch[1] : null;
     const edevletBarkod = barkodMatch ? barkodMatch[1] : null;
