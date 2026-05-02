@@ -205,6 +205,13 @@ Sistem güvenliği için lütfen iletişim numaranızı giriniz. (Ülke koduna g
 
 <div class="space-y-5">
 <div>
+<label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest flex justify-between">
+<span>Hoş Geldiniz</span>
+<span class="text-blue-400" id="gosterilecek-isim">İsim Yükleniyor...</span>
+</label>
+</div>
+
+<div>
 <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest">Telefon Numaranız</label>
 <div class="flex items-stretch border border-slate-700 rounded-lg overflow-hidden bg-slate-900 focus-within:border-kaos transition">
 <select id="lobby-ulke-kodu" onchange="telefonSiniriniGuncelle()" class="bg-kaos text-white font-black text-xs px-2 outline-none cursor-pointer border-r border-slate-800 text-center appearance-none min-w-[60px]">
@@ -262,7 +269,7 @@ Telefon doğrulamanız başarılı! Ağa katılabilmeniz için son adım olarak 
 <span class="text-red-500 mr-2 text-base">🇹🇷</span> Öğrenci veya Mezun Belgesi (PDF)
 </label>
 <input type="file" id="pdf-yukle" accept="application/pdf" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-kaos file:text-white hover:file:opacity-80 transition cursor-pointer" required>
-<p class="text-[9px] text-gray-500 mt-2">*Belgeniz cihazınızda otonom olarak okunur, sunucularımıza ASLA yüklenmez. (Maks: 300 KB)</p>
+<p class="text-[9px] text-gray-500 mt-2">*Belgeniz cihazınızda otonom okunur, sunucuya yüklenmez. <br><strong class="text-red-400">(Maksimum Dosya Boyutu: 300 KB)</strong></p>
 </div>
 
 <label class="flex items-start cursor-pointer mt-4 bg-slate-900 p-3 rounded-lg border border-slate-800 hover:border-slate-600 transition">
@@ -402,8 +409,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.7 (Esnek e-Devlet Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.8 (Anti-Trol Kalkanı)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.9 (Otonom Belge Motoru)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 4.0 (Anti-Trol Kalkanı)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -627,6 +634,9 @@ runTerminalAnimation(data.id, data.isim, "Kimlik Doğrulandı. Ağa Bağlanılı
 pendingKullanici.email = googleEmail;
 pendingKullanici.isim = googleIsim;
 
+// Ad Soyad sorusunu kaldırdık, sadece ekranda gösteriyoruz
+document.getElementById('gosterilecek-isim').innerText = googleIsim.toUpperCase('tr-TR');
+
 landingView.classList.add('hidden');
 lobbyView.classList.remove('hidden');
 lobbyView.classList.add('flex');
@@ -747,11 +757,14 @@ try {
     
     tamMetin = tamMetin.toUpperCase('tr-TR');
 
-    // SADECE TC VE BARKOD ARANIYOR (İçmimarlık kelimesi kontrolü kaldırıldı)
-    const tcMatch = tamMetin.match(/T\.C\.\s*KİMLİK\s*NO\s*:\s*(\d{11})/);
-    const barkodMatch = tamMetin.match(/BARKOD\s*NUMARASI\s*:\s*([A-Z0-9]+)/);
-    const universiteMatch = tamMetin.match(/PROGRAM\s*:\s*(.*?)\//);
-    const yilMatch = tamMetin.match(/MEZUNİYET\s*TARİHİ\s*:\s*.*?\.(20\d{2})/);
+    // DİNAMİK VE ESNEK CIMBIZLAMA MOTORU
+    // 1. "KİMLİK" kelimesinden sonra gelen ilk 11 haneli sayı
+    const tcMatch = tamMetin.match(/KİMLİK.*?(\d{11})/);
+    // 2. "BARKOD" kelimesinden sonra gelen, harf, rakam ve TİRE içeren kod
+    const barkodMatch = tamMetin.match(/BARKOD.*?([A-Z0-9\-]{8,})/);
+    // 3. Bulursa alır, bulamazsa boş geçer (Belgeyi reddetmez)
+    const universiteMatch = tamMetin.match(/(?:ÜNİVERSİTESİ|ÜNİVERSİTE|KURUM).*?:\s*([^\/]+)/);
+    const yilMatch = tamMetin.match(/(?:MEZUNİYET|KAYIT|TARİHİ).*?(\d{4})/);
 
     const tcInput = tcMatch ? tcMatch[1] : null;
     const edevletBarkod = barkodMatch ? barkodMatch[1] : null;
@@ -759,7 +772,7 @@ try {
     const mezuniyet_yili = yilMatch ? yilMatch[1] : null;
 
     if (!tcInput || !edevletBarkod) {
-        throw new Error("HATA: Belgeden Barkod veya T.C. Kimlik okunamadı. Lütfen geçerli bir e-Devlet formatı yükleyin.");
+        throw new Error("HATA: Belgeden Barkod veya T.C. Kimlik okunamadı. Lütfen metin tabanlı geçerli bir e-Devlet PDF'i yüklediğinizden emin olun.");
     }
 
     // KASAYA GİDECEK VERİ PAKETİ HAZIRLANIYOR
