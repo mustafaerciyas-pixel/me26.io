@@ -83,32 +83,34 @@
                 <div class="inline-block border-kaos text-kaos font-bold px-5 py-2 rounded-full text-xs md:text-sm mb-6 tracking-widest shadow-kaos border bg-black/50 backdrop-blur-sm lowercase">
                     2017 yılında kapanan 20.000 üyeli icmimar.com kurucusu <a href="https://mustafaerciyas.com.tr" target="_blank" class="underline hover:text-white transition">mustafa erciyas</a> 2026 model projesidir.
                 </div>
+                
                 <h1 class="text-5xl md:text-7xl font-extrabold mb-8 leading-tight tracking-tighter">
                     Aidat Yok. Masraf Yok.<br>
                     <span class="text-kaos">İçmimarlığı Yüceltmek Var.</span>
                 </h1>
+
                 <!-- DİJİTAL İSYAN MANİFESTOSU -->
-<div class="bg-black/80 border-2 border-kaos p-6 md:p-8 rounded-2xl shadow-kaos-lg w-full max-w-3xl text-left mb-10 relative overflow-hidden backdrop-blur-md mx-auto">
-    <div class="absolute top-0 right-0 w-32 h-32 bg-kaos opacity-10 rounded-bl-full animate-pulse"></div>
-    
-    <h3 class="text-xl md:text-2xl font-black text-white mb-4 uppercase tracking-tighter leading-tight relative z-10">
-        <span class="text-kaos mr-2">⚠️</span> BİR İÇMİMAR OLARAK GÖZÜNÜN KANADIĞINI BİLİYORUZ.<br><span class="text-gray-400 text-lg">BİLEREK YAPTIK.</span>
-    </h3>
-    
-    <div class="space-y-4 text-gray-300 text-sm md:text-base leading-relaxed font-medium relative z-10">
-        <p>
-            Şu an ekranda gördüğün bu rastgele ve cırtlak renk, <strong class="text-white">"merkezi"</strong> bir kararın, yani tek bir kurucunun kişisel zevkinin binlerce kişiye dayatılmasıdır. Klasik, yönetici odaklı sistemler tam olarak böyle göz yorar; <span class="text-kaos font-bold">onlar karar verir, sen katlanırsın.</span>
-        </p>
-        <p>
-            Ancak ME26, <strong class="text-white">merkeziyetsiz (decentralized)</strong> bir otonom ağdır. Burada patron yok, başkan yok! Tek bir kişinin zevkine katlanmak zorunda değilsin. 
-        </p>
-        <p class="bg-slate-900 border border-slate-700 p-4 rounded-lg mt-2">
-            Hemen e-Devlet kapısından geçerek <strong class="text-white">Kurucu Üye</strong> ol, ağa bağlan ve bu renk kaosuna müdahale et. Merkeziyetsiz gücünü kullanarak sistemi 26 Mayıs'ta resmi <strong class="text-[#FFD700]">"İçmimari Altın Sarısı"</strong> rengine döndürecek ilk isyan oyunu kullan!
-        </p>
-    </div>
-</div>
+                <div class="bg-black/80 border-2 border-kaos p-6 md:p-8 rounded-2xl shadow-kaos-lg w-full max-w-3xl text-left mb-10 relative overflow-hidden backdrop-blur-md mx-auto">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-kaos opacity-10 rounded-bl-full animate-pulse"></div>
+                    
+                    <h3 class="text-xl md:text-2xl font-black text-white mb-4 uppercase tracking-tighter leading-tight relative z-10">
+                        <span class="text-kaos mr-2">⚠️</span> BİR İÇMİMAR OLARAK GÖZÜNÜN KANADIĞINI BİLİYORUZ.<br><span class="text-gray-400 text-lg">BİLEREK YAPTIK.</span>
+                    </h3>
+                    
+                    <div class="space-y-4 text-gray-300 text-sm md:text-base leading-relaxed font-medium relative z-10">
+                        <p>
+                            Şu an ekranda gördüğün bu rastgele ve cırtlak renk, <strong class="text-white">"merkezi"</strong> bir kararın, yani tek bir kurucunun kişisel zevkinin binlerce kişiye dayatılmasıdır. Klasik, yönetici odaklı sistemler tam olarak böyle göz yorar; <span class="text-kaos font-bold">onlar karar verir, sen katlanırsın.</span>
+                        </p>
+                        <p>
+                            Ancak ME26, <strong class="text-white">merkeziyetsiz (decentralized)</strong> bir otonom ağdır. Burada patron yok, başkan yok! Tek bir kişinin zevkine katlanmak zorunda değilsin. 
+                        </p>
+                        <p class="bg-slate-900 border border-slate-700 p-4 rounded-lg mt-2">
+                            Hemen e-Devlet kapısından geçerek <strong class="text-white">Kurucu Üye</strong> ol, ağa bağlan ve bu renk kaosuna müdahale et. Merkeziyetsiz gücünü kullanarak sistemi 26 Mayıs'ta resmi <strong class="text-[#FFD700]">"İçmimari Altın Sarısı"</strong> rengine döndürecek ilk isyan oyunu kullan!
+                        </p>
+                    </div>
+                </div>
                 
-                <div class="bg-black/50 border border-kaos rounded-xl p-6 md:p-8 max-w-2xl w-full text-left shadow-kaos mb-6 backdrop-blur-sm">
+                <div class="bg-black/50 border border-kaos rounded-xl p-6 md:p-8 max-w-2xl w-full text-left shadow-kaos mb-6 backdrop-blur-sm mx-auto">
                     <div class="text-kaos font-black tracking-widest text-sm mb-4 border-b border-slate-800 pb-2">OTONOM SİSTEM KURALLARI:</div>
                     <ul class="space-y-4 text-gray-300 font-medium text-sm md:text-base">
                         <li class="flex items-start"><span class="mr-3 text-lg">🚫</span> <span>Para yok. Kavga yok. Kötü söz yok.</span></li>
@@ -782,6 +784,8 @@
                     uye_id: globalId, anket_kodu: ANKET_KODU, tercih: tercih, kullanilan_oy_gucu: 1.0 
                 }, { onConflict: 'uye_id,anket_kodu' });
                 if (error) throw error;
+                
+                canliOylariHesapla(); // OTO-GÜNCELLEME İÇİN EKLENDİ
                 
                 const overlay = document.getElementById('cetvel-overlay');
                 const msg = document.getElementById('cetvel-mesaj');
