@@ -191,24 +191,31 @@ Google İle Güvenli Giriş
 </main>
 </div>
 
-<!-- LOBİ EKRANI (ADIM 2: POPUP, SADECE TELEFON VE PDF) -->
+<!-- LOBİ EKRANI (ADIM 2: POPUP, SADECE TELEFON GİRİŞİ) -->
 <div id="lobby-view" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[60] flex-col items-center justify-center p-4">
 <!-- Görünmez reCAPTCHA divi -->
 <div id="recaptcha-container"></div>
 
 <div class="bg-black border border-kaos p-8 rounded-2xl max-w-md w-full shadow-kaos-lg relative overflow-hidden">
 <div class="absolute top-0 left-0 w-full h-1 bg-kaos"></div>
-<h3 class="text-2xl font-black text-white mb-2 uppercase text-center mt-2">Son Bir Adım</h3>
+<h3 class="text-2xl font-black text-white mb-2 uppercase text-center mt-2">Güvenlik Doğrulaması</h3>
 <p class="text-gray-400 text-[11px] text-center mb-6 leading-relaxed">
-Ağa sadece teyit edilmiş gerçek meslektaşlarımız girebilir. Lütfen <strong class="text-white">e-Devlet PDF belgenizi</strong> yükleyin ve iletişim numaranızı giriniz.
+Sistem güvenliği için lütfen iletişim numaranızı giriniz. (Ülke koduna göre giriş sınırı uygulanmaktadır.)
 </p>
 
-<div class="space-y-4">
+<div class="space-y-5">
+<div>
+<label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest flex justify-between">
+<span>Adınız ve Soyadınız</span>
+<span class="text-blue-400">Düzeltilebilir</span>
+</label>
+<input type="text" id="lobby-isim" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 outline-none focus:border-kaos transition text-sm font-medium">
+</div>
 
 <div>
 <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest">Telefon Numaranız</label>
 <div class="flex items-stretch border border-slate-700 rounded-lg overflow-hidden bg-slate-900 focus-within:border-kaos transition">
-<select id="lobby-ulke-kodu" class="bg-kaos text-white font-black text-xs px-2 outline-none cursor-pointer border-r border-slate-800 text-center appearance-none min-w-[60px]">
+<select id="lobby-ulke-kodu" onchange="telefonSiniriniGuncelle()" class="bg-kaos text-white font-black text-xs px-2 outline-none cursor-pointer border-r border-slate-800 text-center appearance-none min-w-[60px]">
 <option value="+90">🇹🇷 +90</option>
 <option value="+49">🇩🇪 +49</option>
 <option value="+44">🇬🇧 +44</option>
@@ -219,31 +226,20 @@ Ağa sadece teyit edilmiş gerçek meslektaşlarımız girebilir. Lütfen <stron
 <option value="+994">🇦🇿 +994</option>
 <option value="+359">🇧🇬 +359</option>
 </select>
-<input type="tel" id="lobby-telefon" placeholder="XXX XXX XX XX" class="w-full bg-transparent text-white p-2 font-medium outline-none text-sm">
+<!-- Dinamik limit özelliği eklendi -->
+<input type="tel" id="lobby-telefon" oninput="telefonFormatla(this)" maxlength="10" placeholder="5XX XXX XX XX" class="w-full bg-transparent text-white p-2 font-medium outline-none text-sm tracking-widest">
 </div>
-</div>
-
-<div class="bg-slate-800/50 border border-slate-700 p-3 rounded-lg relative overflow-hidden group">
-<label class="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest flex items-center">
-<span class="text-red-500 mr-2 text-base">🇹🇷</span> Liyakat Kanıtı (e-Devlet PDF)
-</label>
-<input type="file" id="pdf-yukle" accept="application/pdf" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-kaos file:text-white hover:file:opacity-80 transition cursor-pointer" required>
-<p class="text-[9px] text-gray-500 mt-2">*Belgeniz sadece cihazınızda okunur, sunucularımıza yüklenmez.</p>
+<p id="telefon-uyari" class="text-[9px] text-gray-500 mt-2 flex justify-between"><span>*Seçilen ülkeye göre hane sınırı aktiftir.</span> <span id="telefon-sayac" class="text-kaos">0/10</span></p>
 </div>
 
-<label class="flex items-start cursor-pointer mt-4 bg-slate-900 p-3 rounded-lg border border-slate-800 hover:border-slate-600 transition">
-<input id="kvkk-genel-onay" type="checkbox" class="w-5 h-5 mt-0.5 bg-slate-800 rounded cursor-pointer">
-<div class="ml-3 text-[10px] text-gray-400 font-medium leading-relaxed">Ağa katılım güvenlik şartlarını ve <button type="button" onclick="popUpiAc()" class="text-kaos underline font-bold">Aydınlatma Metni'ni</button> okudum, kabul ediyorum.</div>
-</label>
-
-<button onclick="profiliKasayaYaz()" id="btn-lobby-kaydet" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos mt-2 hover:opacity-90 transition">
-PROFİLİ TAMAMLA VE SMS GÖNDER
+<button onclick="profiliVeTeliOnayla()" id="btn-lobby-kaydet" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos hover:opacity-90 transition">
+SMS KODU GÖNDER
 </button>
 </div>
 </div>
 </div>
 
-<!-- SMS KODU DOĞRULAMA MODALI -->
+<!-- SMS KODU DOĞRULAMA MODALI (ADIM 3) -->
 <div id="sms-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[70] flex-col items-center justify-center p-4">
 <div class="bg-black border border-kaos p-8 rounded-2xl max-w-sm w-full shadow-kaos-lg relative overflow-hidden text-center">
 <h3 class="text-2xl font-black text-white mb-2 uppercase mt-2">SMS DOĞRULAMA</h3>
@@ -252,10 +248,43 @@ PROFİLİ TAMAMLA VE SMS GÖNDER
 <input type="tel" id="sms-kodu-input" placeholder="000000" maxlength="6" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-4 outline-none focus:border-kaos transition text-center text-2xl tracking-[0.5em] font-mono mb-6 shadow-[0_0_15px_rgba(var(--neon-rgb),0.1)]">
 
 <button onclick="smsKoduOnayla()" id="btn-sms-onayla" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos hover:opacity-90 transition">
-KODU ONAYLA VE GİRİŞ YAP
+KODU ONAYLA VE İLERLE
 </button>
 </div>
 </div>
+
+<!-- PDF YÜKLEME MODALI (ADIM 4: SON AŞAMA) -->
+<div id="pdf-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[75] flex-col items-center justify-center p-4">
+<div class="bg-black border border-kaos p-8 rounded-2xl max-w-md w-full shadow-kaos-lg relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-kaos"></div>
+<div class="text-center mb-6">
+<h3 class="text-2xl font-black text-white mb-2 uppercase mt-2">Liyakat Kanıtı</h3>
+<p class="text-gray-400 text-[11px] leading-relaxed">
+Telefon doğrulamanız başarılı! Ağa katılabilmeniz için son adım olarak <strong class="text-white">e-Devlet belgenizi</strong> yüklemeniz gerekmektedir.
+</p>
+</div>
+
+<div class="space-y-4">
+<div class="bg-slate-800/50 border border-slate-700 p-3 rounded-lg relative overflow-hidden group">
+<label class="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest flex items-center">
+<span class="text-red-500 mr-2 text-base">🇹🇷</span> Öğrenci veya Mezun Belgesi (PDF)
+</label>
+<input type="file" id="pdf-yukle" accept="application/pdf" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-kaos file:text-white hover:file:opacity-80 transition cursor-pointer" required>
+<p class="text-[9px] text-gray-500 mt-2">*Belgeniz cihazınızda otonom olarak okunur, sunucularımıza ASLA yüklenmez.</p>
+</div>
+
+<label class="flex items-start cursor-pointer mt-4 bg-slate-900 p-3 rounded-lg border border-slate-800 hover:border-slate-600 transition">
+<input id="kvkk-genel-onay" type="checkbox" class="w-5 h-5 mt-0.5 bg-slate-800 rounded cursor-pointer">
+<div class="ml-3 text-[10px] text-gray-400 font-medium leading-relaxed">Ağa katılım güvenlik şartlarını ve <button type="button" onclick="popUpiAc()" class="text-kaos underline font-bold">Aydınlatma Metni'ni</button> okudum, kabul ediyorum.</div>
+</label>
+
+<button onclick="belgeyiAnalizEtVeAgaKatil()" id="btn-pdf-onayla" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos mt-2 hover:opacity-90 transition">
+BELGEYİ ONAYLA VE AĞA KATIL
+</button>
+</div>
+</div>
+</div>
+
 
 <!-- OTONOM KONTROL PANELİ (DASHBOARD) -->
 <div id="dashboard-view" class="hidden flex-grow w-full flex-col items-center p-0 md:p-6 relative pb-20 z-10 transition-colors duration-1000">
@@ -295,7 +324,7 @@ Sistem Kararları <span class="ml-2 bg-slate-800 text-gray-400 border border-sla
 <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6 px-4">
 <div class="lg:col-span-2 flex flex-col space-y-6">
 
-<!-- CANLI SANDIK (BİLDİRİ MANİFESTOSU) -->
+<!-- CANLI SANDIK -->
 <div class="bg-black border-2 border-slate-700 border-l-8 border-l-[#FFD700] p-6 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.8)] relative flex flex-col justify-between overflow-hidden">
 <div id="gerisayim-sayaci-ic" class="absolute top-4 right-4 bg-black border border-[#FFD700] text-[#FFD700] text-[10px] font-black px-3 py-1.5 rounded uppercase tracking-widest shadow-[0_0_15px_rgba(255,215,0,0.3)]">HESAPLANIYOR...</div>
 <div class="mt-4">
@@ -381,8 +410,8 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.3 (Global SMS)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.4 (Otonom e-Devlet)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.5 (Aşamalı Kayıt)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.6 (Dinamik SMS)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -475,8 +504,46 @@ const terminalView = document.getElementById('terminal-view');
 const dashboardView = document.getElementById('dashboard-view');
 const topBanner = document.getElementById('top-banner-sayac');
 
-let pendingGoogleUser = { email: '', isim: '' };
-let gecerliKullaniciVerisi = {}; 
+// Kullanıcının geçici verilerini tuttuğumuz obje
+let pendingKullanici = { email: '', isim: '', telefon: '' };
+
+// ---------------------------------------------------------
+// TELEFON NUMARASI DİNAMİK STANDART MOTORU
+// ---------------------------------------------------------
+const ulkeNumaraSinirlari = {
+    '+90': 10, '+49': 11, '+44': 10, '+1': 10,
+    '+31': 9, '+33': 9, '+43': 10, '+994': 9, '+359': 9
+};
+
+window.telefonSiniriniGuncelle = function() {
+    const secilenKod = document.getElementById('lobby-ulke-kodu').value;
+    const sinir = ulkeNumaraSinirlari[secilenKod] || 10;
+    const telInput = document.getElementById('lobby-telefon');
+    const sayac = document.getElementById('telefon-sayac');
+    
+    telInput.maxLength = sinir;
+    telInput.value = telInput.value.substring(0, sinir); // Eğer değiştirirken uzunsa kes
+    sayac.innerText = `${telInput.value.length}/${sinir}`;
+};
+
+window.telefonFormatla = function(input) {
+    const secilenKod = document.getElementById('lobby-ulke-kodu').value;
+    const sinir = ulkeNumaraSinirlari[secilenKod] || 10;
+    
+    // Sadece rakamlara izin ver
+    input.value = input.value.replace(/\D/g, '');
+    
+    const sayac = document.getElementById('telefon-sayac');
+    sayac.innerText = `${input.value.length}/${sinir}`;
+    
+    if(input.value.length === sinir) {
+        sayac.classList.remove('text-kaos');
+        sayac.classList.add('text-green-500');
+    } else {
+        sayac.classList.add('text-kaos');
+        sayac.classList.remove('text-green-500');
+    }
+};
 
 // ---------------------------------------------------------
 // DİJİTAL DİRENİŞ MOTORU: ACIMASIZ KAOS RENKLERİ
@@ -566,8 +633,8 @@ localStorage.setItem('me26_user_name', data.isim);
 runTerminalAnimation(data.id, data.isim, "Kimlik Doğrulandı. Ağa Bağlanılıyor...");
 } else {
 // YENİ ÜYE - LOBİ AÇILIYOR
-pendingGoogleUser.email = googleEmail;
-pendingGoogleUser.isim = googleIsim;
+pendingKullanici.email = googleEmail;
+document.getElementById('lobby-isim').value = googleIsim;
 
 landingView.classList.add('hidden');
 lobbyView.classList.remove('hidden');
@@ -579,23 +646,96 @@ window.scrollTo(0,0);
 });
 
 // ---------------------------------------------------------
-// 3. AŞAMA: OTONOM PDF OKUMA & SMS GÖNDERME
+// 3. AŞAMA: TELEFONU ONAYLA VE SMS GÖNDER
 // ---------------------------------------------------------
-window.profiliKasayaYaz = async function() {
+window.profiliVeTeliOnayla = async function() {
 const btnSubmit = document.getElementById('btn-lobby-kaydet');
-
+const isim = document.getElementById('lobby-isim').value.trim();
 const ulkeKodu = document.getElementById('lobby-ulke-kodu').value;
-const telInput = document.getElementById('lobby-telefon').value.trim().replace(/[^0-9]/g, '');
+const telInput = document.getElementById('lobby-telefon').value.trim();
+
+const sinir = ulkeNumaraSinirlari[ulkeKodu] || 10;
+
+if (!isim) { alert("EKSİK BİLGİ: Lütfen adınızı ve soyadınızı girin."); return; }
+if (telInput.length !== sinir) { alert(`HATA: ${ulkeKodu} alan kodu için numaranız tam ${sinir} haneli olmalıdır.`); return; }
+
+pendingKullanici.isim = isim;
+const tamTelefon = ulkeKodu + telInput;
+pendingKullanici.telefon = tamTelefon;
+
+btnSubmit.innerText = "SMS GÖNDERİLİYOR...";
+btnSubmit.disabled = true;
+
+try {
+    // FİREBASE SMS ATEŞLENİYOR
+    confirmationResult = await auth.signInWithPhoneNumber(tamTelefon, window.recaptchaVerifier);
+
+    lobbyView.classList.add('hidden');
+    lobbyView.classList.remove('flex');
+    document.getElementById('sms-modal').classList.remove('hidden');
+    document.getElementById('sms-modal').classList.add('flex');
+
+} catch (err) {
+    console.error("SMS Hatası:", err);
+    alert("SMS gönderilemedi. Numaranızı kontrol edin veya sayfayı yenileyip tekrar deneyin.");
+    btnSubmit.innerText = "SMS KODU GÖNDER";
+    btnSubmit.disabled = false;
+
+    try {
+        window.recaptchaVerifier.render().then(function(widgetId) {
+            grecaptcha.reset(widgetId);
+        });
+    } catch(e) {}
+}
+};
+
+// ---------------------------------------------------------
+// 4. AŞAMA: SMS KODUNU DOĞRULA (SONRA PDF'E GEÇ)
+// ---------------------------------------------------------
+window.smsKoduOnayla = async function() {
+const code = document.getElementById('sms-kodu-input').value.trim();
+if(code.length !== 6) { alert("Eksik giriş: Lütfen 6 haneli kodu girin."); return; }
+
+const smsBtn = document.getElementById('btn-sms-onayla');
+smsBtn.innerText = "DOĞRULANIYOR...";
+smsBtn.disabled = true;
+
+try {
+    const result = await confirmationResult.confirm(code);
+
+    // SMS BAŞARILI! ŞİMDİ PDF EKRANINA GEÇ
+    document.getElementById('sms-modal').classList.add('hidden');
+    document.getElementById('sms-modal').classList.remove('flex');
+    
+    document.getElementById('pdf-modal').classList.remove('hidden');
+    document.getElementById('pdf-modal').classList.add('flex');
+
+} catch (error) {
+    console.error("Hata:", error);
+    if(error.code === 'auth/invalid-verification-code') {
+        alert("Hatalı kod girdiniz. Lütfen kontrol edip tekrar deneyin.");
+    } else {
+        alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+    }
+    smsBtn.innerText = "KODU ONAYLA VE İLERLE";
+    smsBtn.disabled = false;
+}
+}
+
+// ---------------------------------------------------------
+// 5. AŞAMA: OTONOM PDF OKUMA & SUPABASE KAYIT
+// ---------------------------------------------------------
+window.belgeyiAnalizEtVeAgaKatil = async function() {
+const btnPdf = document.getElementById('btn-pdf-onayla');
 const genelOnay = document.getElementById('kvkk-genel-onay').checked;
 const fileInput = document.getElementById('pdf-yukle');
 const file = fileInput.files[0];
 
-if (telInput.length < 5) { alert("EKSİK BİLGİ: Lütfen geçerli bir telefon numarası girin."); return; }
 if (!file) { alert("GÜVENLİK: e-Devlet PDF belgenizi yüklemeniz zorunludur."); return; }
 if (!genelOnay) { alert("ONAY GEREKLİ: Aydınlatma metnini kabul etmelisiniz."); return; }
 
-btnSubmit.innerText = "BELGE ANALİZ EDİLİYOR...";
-btnSubmit.disabled = true;
+btnPdf.innerText = "BELGE ANALİZ EDİLİYOR...";
+btnPdf.disabled = true;
 
 try {
     // PDF OKUMA MOTORU ÇALIŞIYOR
@@ -619,6 +759,7 @@ try {
     const bolumMatch = tamMetin.match(/PROGRAM\s*:\s*.*?\/(.*?MİMARLIK.*?)/);
     const yilMatch = tamMetin.match(/MEZUNİYET\s*TARİHİ\s*:\s*.*?\.(20\d{2})/);
 
+    // Kalkan 1: İçmimarlık mı? (Birleşik ve ayrı yazımı tek hamlede kontrol ediyoruz)
     if (!bolumMatch || !bolumMatch[1].replace(/\s+/g, '').includes("İÇMİMARLIK")) {
         throw new Error("SİSTEM REDDİ: Bu belge bir İçmimarlık belgesi değil.");
     }
@@ -632,14 +773,13 @@ try {
         throw new Error("HATA: Belgeden Barkod veya TC okunamadı. Lütfen geçerli belge yükleyin.");
     }
 
-    // MEZUNİYET YILI VARSA 'İçmimar', YOKSA 'İçmimarlık Öğrencisi' OLARAK KASAYA KAYDET
+    // KASAYA GİDECEK VERİ PAKETİ HAZIRLANIYOR
     const durum = mezuniyet_yili ? 'İçmimar' : 'İçmimarlık Öğrencisi';
-    const tamTelefon = ulkeKodu + telInput;
-
-    gecerliKullaniciVerisi = { 
-        isim: pendingGoogleUser.isim, 
-        email: pendingGoogleUser.email, 
-        telefon: tamTelefon, 
+    
+    const kesinKullaniciVerisi = { 
+        isim: pendingKullanici.isim, 
+        email: pendingKullanici.email, 
+        telefon: pendingKullanici.telefon, 
         tc_kimlik: tcInput,
         durum: durum, 
         edevlet_barkod: edevletBarkod,
@@ -649,70 +789,35 @@ try {
         onay_durumu: 'BEKLİYOR'
     };
 
-    btnSubmit.innerText = "SMS GÖNDERİLİYOR...";
+    btnPdf.innerText = "AĞA YAZILIYOR...";
 
-    // FİREBASE SMS ATEŞLENİYOR
-    confirmationResult = await auth.signInWithPhoneNumber(tamTelefon, window.recaptchaVerifier);
+    // SUPABASE'E KAYDET
+    const { data, error } = await supabaseClient.from('uyeler').insert([kesinKullaniciVerisi]).select();
 
-    lobbyView.classList.add('hidden');
-    lobbyView.classList.remove('flex');
-    document.getElementById('sms-modal').classList.remove('hidden');
-    document.getElementById('sms-modal').classList.add('flex');
+    if (error) throw error; 
+
+    const uretilenID = data[0].id;
+    localStorage.setItem('me26_user_id', uretilenID);
+    localStorage.setItem('me26_user_name', kesinKullaniciVerisi.isim);
+
+    document.getElementById('pdf-modal').classList.add('hidden');
+    document.getElementById('pdf-modal').classList.remove('flex');
+
+    // TERMİNAL ANİMASYONUNU BAŞLAT VE GİRİŞ YAP
+    runTerminalAnimation(uretilenID, kesinKullaniciVerisi.isim, "Liyakat Kanıtı Alındı. Lider Onayı Bekleniyor.");
 
 } catch (err) {
-    console.error("İşlem Hatası:", err);
-    alert(err.message || "İşlem başarısız oldu. Numaranızı ve belgenizi kontrol edin.");
-    btnSubmit.innerText = "PROFİLİ TAMAMLA VE SMS GÖNDER";
-    btnSubmit.disabled = false;
-
-    try {
-        window.recaptchaVerifier.render().then(function(widgetId) {
-            grecaptcha.reset(widgetId);
-        });
-    } catch(e) {}
-}
-};
-
-// ---------------------------------------------------------
-// 4. AŞAMA: SMS KODUNU ONAYLA VE KASAYA (SUPABASE) YAZ
-// ---------------------------------------------------------
-window.smsKoduOnayla = async function() {
-const code = document.getElementById('sms-kodu-input').value.trim();
-if(code.length !== 6) { alert("Eksik giriş: Lütfen 6 haneli kodu girin."); return; }
-
-const smsBtn = document.getElementById('btn-sms-onayla');
-smsBtn.innerText = "ŞİFRELENİYOR...";
-smsBtn.disabled = true;
-
-try {
-const result = await confirmationResult.confirm(code);
-
-const { data, error } = await supabaseClient.from('uyeler').insert([gecerliKullaniciVerisi]).select();
-
-if (error) throw error; 
-
-const uretilenID = data[0].id;
-localStorage.setItem('me26_user_id', uretilenID);
-localStorage.setItem('me26_user_name', gecerliKullaniciVerisi.isim);
-
-document.getElementById('sms-modal').classList.add('hidden');
-document.getElementById('sms-modal').classList.remove('flex');
-
-runTerminalAnimation(uretilenID, gecerliKullaniciVerisi.isim, "Güvenlik Duvarı Aşıldı. Lider Onayı Bekleniyor.");
-
-} catch (error) {
-console.error("Hata:", error);
-if(error.code === 'auth/invalid-verification-code') {
-alert("Hatalı kod girdiniz. Lütfen kontrol edip tekrar deneyin.");
-} else if (error.code === '23505' || (error.message && error.message.toLowerCase().includes('duplicate'))) {
-alert("REDDEDİLDİ: Bu Telefon, T.C. Kimlik veya Barkod zaten sisteme kayıtlı.");
-} else {
-alert("Bir hata oluştu. Lütfen tekrar deneyin.");
-}
-smsBtn.innerText = "KODU ONAYLA VE GİRİŞ YAP";
-smsBtn.disabled = false;
+    console.error("PDF Hatası:", err);
+    if (err.code === '23505' || (err.message && err.message.toLowerCase().includes('duplicate'))) {
+        alert("REDDEDİLDİ: Bu e-Devlet Belgesi zaten sisteme kayıtlı.");
+    } else {
+        alert(err.message || "Belge okunamadı. Lütfen geçerli bir PDF yüklediğinizden emin olun.");
+    }
+    btnPdf.innerText = "BELGEYİ ONAYLA VE AĞA KATIL";
+    btnPdf.disabled = false;
 }
 }
+
 
 window.cikisYap = async function() {
 if(supabaseClient) await supabaseClient.auth.signOut();
