@@ -289,9 +289,11 @@
                 </div>
                 <div>
                     <h2 class="text-2xl font-black text-white uppercase tracking-tighter leading-none" id="dash-isim">İSİM SOYİSİM</h2>
+                    <!-- YENİ OTONOM E-DEVLET ROZETLERİ -->
                     <div class="mt-2 flex space-x-2">
-                        <span class="bg-red-500/10 text-red-500 border border-red-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest animate-pulse">E-DEVLET ONAYI BEKLİYOR</span>
-                        <span class="bg-green-500/10 text-green-500 border border-green-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest hidden" id="rozet-onayli">DOĞRULANDI</span>
+                        <span id="rozet-bekliyor" class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest animate-pulse">E-DEVLET ONAYI BEKLİYOR</span>
+                        <span id="rozet-onayli" class="bg-green-500/10 text-green-500 border border-green-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest hidden">DOĞRULANDI</span>
+                        <span id="rozet-reddedildi" class="bg-red-900/40 text-red-500 border border-red-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest hidden">ONAY REDDEDİLDİ</span>
                     </div>
                 </div>
             </div>
@@ -401,7 +403,7 @@
                 <div class="w-2 h-8 bg-kaos mr-3"></div>
                 <div>
                     <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.3 (Global SMS)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 3.4 (Otonom e-Devlet)</div>
                 </div>
             </div>
             <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
@@ -416,7 +418,7 @@
         </div>
     </footer>
 
-    <!-- MODALLAR, CETVEL VE TERMİNAL -->
+    <!-- MODALLAR VE TERMİNAL -->
     <div id="teklif-popup" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-slate-900 border border-kaos rounded-2xl max-w-lg w-full p-6 md:p-8 shadow-kaos transform scale-95 transition-transform duration-300" id="teklif-content">
             <h3 class="text-xl font-black text-white mb-4 border-b border-slate-800 pb-3 flex items-center"><span class="text-kaos mr-2">⚡</span>Ağa Yeni Karar Teklif Et</h3>
@@ -566,6 +568,7 @@
                 
                 canliSandigiBaslat();
                 kullaniciTeklifleriniGetir();
+                rozetDurumunuGuncelle(); // E-DEVLET KONTROLÜ TETİĞİ
                 return;
             }
 
@@ -623,7 +626,7 @@
             btnSubmit.innerText = "SMS GÖNDERİLİYOR...";
             btnSubmit.disabled = true;
 
-            const tamTelefon = ulkeKodu + telInput; // Artık Supabase ve Firebase için tek global format
+            const tamTelefon = ulkeKodu + telInput;
 
             gecerliKullaniciVerisi = { 
                 isim: isim, 
@@ -707,7 +710,6 @@
             location.reload();
         };
 
-        // EKSİK KALAN DİĞER ALAN KONTROL FONKSİYONU
         window.digerAlanKontrol = function() {
             const durum = document.getElementById('lobby-durum').value;
             const digerKutu = document.getElementById('diger-kutu');
@@ -716,6 +718,29 @@
             } else {
                 digerKutu.classList.add('hidden');
             }
+        };
+
+        // YENİ: ROZET DURUMUNU KASADAN (OTONOM ROBOTTAN) OKUYAN FONKSİYON
+        window.rozetDurumunuGuncelle = async function() {
+            const globalId = localStorage.getItem('me26_user_id');
+            if (!globalId || !supabaseClient) return;
+            
+            try {
+                const { data } = await supabaseClient.from('uyeler').select('onay_durumu').eq('id', globalId).single();
+                if (data) {
+                    document.getElementById('rozet-bekliyor').classList.add('hidden');
+                    document.getElementById('rozet-onayli').classList.add('hidden');
+                    document.getElementById('rozet-reddedildi').classList.add('hidden');
+                    
+                    if (data.onay_durumu === 'DOĞRULANDI') {
+                        document.getElementById('rozet-onayli').classList.remove('hidden');
+                    } else if (data.onay_durumu === 'REDDEDİLDİ') {
+                        document.getElementById('rozet-reddedildi').classList.remove('hidden');
+                    } else {
+                        document.getElementById('rozet-bekliyor').classList.remove('hidden');
+                    }
+                }
+            } catch(e) { console.error("Rozet güncellenemedi:", e); }
         };
 
         function runTerminalAnimation(globalSmartID, uyeAd, durumMesaji) {
@@ -769,6 +794,7 @@
 
                 canliSandigiBaslat();
                 kullaniciTeklifleriniGetir();
+                rozetDurumunuGuncelle(); // E-DEVLET KONTROLÜ TETİĞİ
                 
             }, delay + 800);
         }
