@@ -80,6 +80,12 @@ boxShadow: { 'kaos': '0 0 15px rgba(var(--neon-rgb), 0.4)', 'kaos-lg': '0 0 40px
 .cetvel-kok.active .c4 { transform: rotate(150deg); transition-delay: 0.55s; }
 .cetvel-kok.active .c5 { transform: rotate(-150deg); transition-delay: 0.7s; }
 .cetvel-kok.active .c6 { transform: rotate(150deg); transition-delay: 0.85s; }
+
+/* Scrollbar Düzeni */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); rounded-lg; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.6); }
 </style>
 
 <!-- ANTI-FLICKER (Göz Kırpma Engelleyici) -->
@@ -144,10 +150,10 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition">
 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
 </button>
-<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='dao-nedir.html'>Ne Yapacağız?</a>
-<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='kurallar.html'>Kurallarımız</a>
-<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest' href='gizlilik.html'>Gizlilik Zırhı</a>
-<a class='bg-kaos text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos' href='index.html#kayit' onclick='mobilMenuKapat()'>Numaranı Al</a>
+<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('nedir'); mobilMenuKapat();">Ne Yapacağız?</a>
+<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('kurallar'); mobilMenuKapat();">Kurallarımız</a>
+<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('gizlilik'); mobilMenuKapat();">Gizlilik Zırhı</a>
+<a class='bg-kaos text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer' href='index.html#kayit' onclick='mobilMenuKapat()'>Numaranı Al</a>
 </div>
 
 <!-- ÜST MENÜ -->
@@ -159,8 +165,8 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 </a>
 
 <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide items-center">
-<a class='hover:opacity-80 transition' href='dao-nedir.html'>Birlikte Ne Yapacağız?</a>
-<a class='hover:opacity-80 transition' href='kurallar.html'>Kurallarımız</a>
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
 <a href="index.html#kayit" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos">Numaranı Al</a>
 </div>
 
@@ -269,7 +275,7 @@ Sisteme sahte hesapların girmesini engellemek için <strong class="text-white">
 Google İle Güvenli Giriş
 </button>
 
-<p class="text-[10px] text-gray-600 mt-6 font-mono uppercase tracking-widest">Giriş Yaparak ME26 Ağ Kurallarını Kabul Etmiş Olursunuz.</p>
+<p class="text-[10px] text-gray-600 mt-6 font-mono uppercase tracking-widest cursor-pointer hover:text-white transition" onclick="sistemBilgiAc('kurallar')">Giriş Yaparak ME26 Ağ Kurallarını Kabul Etmiş Olursunuz.</p>
 </div>
 </div>
 </div>
@@ -360,7 +366,7 @@ Telefon doğrulamanız başarılı! Ağa katılabilmeniz için son adım olarak 
 
 <label class="flex items-start cursor-pointer mt-4 bg-slate-900 p-3 rounded-lg border border-slate-800 hover:border-slate-600 transition">
 <input id="kvkk-genel-onay" type="checkbox" class="w-5 h-5 mt-0.5 bg-slate-800 rounded cursor-pointer">
-<div class="ml-3 text-[10px] text-gray-400 font-medium leading-relaxed">Ağa katılım güvenlik şartlarını ve <button type="button" onclick="popUpiAc()" class="text-kaos underline font-bold">Aydınlatma Metni'ni</button> okudum, kabul ediyorum.</div>
+<div class="ml-3 text-[10px] text-gray-400 font-medium leading-relaxed">Ağa katılım güvenlik şartlarını ve <span class="text-kaos underline font-bold" onclick="sistemBilgiAc('gizlilik'); event.preventDefault();">Aydınlatma Metni'ni</span> okudum, kabul ediyorum.</div>
 </label>
 
 <button onclick="belgeyiAnalizEtVeAgaKatil()" id="btn-pdf-onayla" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos mt-2 hover:opacity-90 transition">
@@ -496,14 +502,14 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div class="w-2 h-8 bg-kaos mr-3"></div>
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 7.2 (Kır ve Çık Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 7.3 (Davet Dişlileri)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 8.0 (Tek Sayfa Mimarisi - SPA)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 8.1 (Kesintisiz Oturum)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
-<a class='hover:opacity-80 transition' href='kurallar.html'>Kurallarımız</a>
-<a class='hover:opacity-80 transition' href='dao-nedir.html'>Birlikte Ne Yapacağız?</a>
-<a class='hover:opacity-80 transition' href='gizlilik.html'>Gizlilik ve Hukuk</a>
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('gizlilik')">Gizlilik ve Hukuk</a>
 </div>
 <div class="text-right text-[10px] text-gray-600 font-mono">
 <div class="mb-1">&copy; 2026 ME26 TEKNOLOJİ A.Ş. TÜM HAKLARI SAKLIDIR.</div>
@@ -512,7 +518,20 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 </div>
 </footer>
 
-    <!-- MODALLAR -->
+<!-- YENİ BİLGİ MODALLARI (SİSTEMDEN ÇIKARMADAN EKRANDA AÇILAN) -->
+<div id="bilgi-popup" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[99999] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300" onclick="if(event.target === this) sistemBilgiKapat()">
+<div class="bg-slate-900 border border-kaos rounded-2xl max-w-2xl w-full p-6 md:p-10 shadow-kaos-lg transform scale-95 transition-transform duration-300 relative max-h-[85vh] flex flex-col" id="bilgi-content">
+    <button onclick="sistemBilgiKapat()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center z-10">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+    <h3 id="bilgi-baslik" class="text-2xl md:text-3xl font-black text-white mb-6 border-b border-slate-800 pb-4 flex items-center uppercase tracking-widest"><span class="text-kaos mr-3 w-2 h-8 bg-kaos"></span> YÜKLENİYOR...</h3>
+    <div id="bilgi-metin" class="space-y-4 text-sm md:text-base text-gray-300 leading-relaxed overflow-y-auto pr-4 custom-scrollbar flex-grow font-medium">
+        <!-- İçerik JS tarafından buraya basılacak -->
+    </div>
+</div>
+</div>
+
+<!-- TEKLİF MODALI -->
 <div id="teklif-popup" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-slate-900 border border-kaos rounded-2xl max-w-lg w-full p-6 md:p-8 shadow-kaos transform scale-95 transition-transform duration-300" id="teklif-content">
 <h3 class="text-xl font-black text-white mb-4 border-b border-slate-800 pb-3 flex items-center"><span class="text-kaos mr-2">⚡</span>Ağa Yeni Karar Teklif Et</h3>
@@ -530,18 +549,6 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <button type="button" onclick="teklifModalKapat()" class="w-1/3 bg-slate-800 text-white font-bold tracking-widest py-3.5 rounded-lg hover:bg-slate-700 transition">İPTAL</button>
 <button type="button" onclick="teklifGonder()" class="w-2/3 bg-kaos text-white font-black tracking-widest uppercase py-3.5 rounded-lg hover:opacity-90 transition shadow-kaos">AĞA GÖNDER</button>
 </div>
-</div>
-</div>
-
-<div id="onay-popup" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-<div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 md:p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="popup-content">
-<h3 class="text-xl font-black text-white mb-4 border-b border-slate-800 pb-3 flex items-center"><span class="text-kaos mr-2">ME26</span>Aydınlatma ve Onay Metni</h3>
-<div class="space-y-4 text-sm text-gray-300 leading-relaxed mb-6 h-64 overflow-y-auto pr-2 custom-scrollbar">
-<p><strong class="text-white">1. Kimlik ve e-Devlet Şartı:</strong> Bu ağ ME26 otonom kurallarına tabidir. Sistemi manipüle etmeye çalışan sahte hesapları engellemek için, e-Devlet belge doğrulaması uygulanır.</p>
-<p><strong class="text-white">2. Mutlak Gizlilik (KVKK):</strong> Verdiğiniz bilgiler banka standartlarında şifrelenmiş sunucularda saklanır. Diğer üyeler adınızı göremez; sadece <strong class="text-kaos">GLOBAL ID</strong> numaranızla işlem yaparsınız.</p>
-<p><strong class="text-white">3. Emeğin Korunması:</strong> Ağ içinde paylaşılan fikir ve projeleri izinsiz kopyalayanlar sistemden ihraç edilir.</p>
-</div>
-<button type="button" onclick="popUpiKapatVeOnayla()" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-3.5 rounded-lg hover:opacity-90 transition shadow-kaos">Okudum ve Kabul Ediyorum</button>
 </div>
 </div>
 
@@ -582,6 +589,73 @@ const topBanner = document.getElementById('top-banner-sayac');
 let pendingKullanici = { email: '', isim: '', telefon: '' };
 
 // ---------------------------------------------------------
+// BİLGİ SAYFALARI (SPA) VERİ TABANI - YENİ EKLENDİ
+// ---------------------------------------------------------
+const sistemBilgileri = {
+    'nedir': {
+        baslik: "Birlikte Ne Yapacağız?",
+        metin: `
+            <p class="mb-4">TMMOB İçmimarlar Odası ve piyasadaki dağınık yapıyı tek bir otonom ağda (DAO) birleştiriyoruz. Burası, mesleki vizyonu olan ama merkezi sistemlerin bürokrasisinden bunalan İçmimarların özgür şantiyesidir.</p>
+            <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
+                <strong class="text-white block mb-2 text-kaos">1. Kararları Kim Alıyor?</strong>
+                <p>Başkan veya yönetim kurulu yoktur. Kod ve otonom kontratlar vardır. Ağa sunulan her teklif (öğrenci hakları, taban fiyatlar, şantiye standartları) üyeler tarafından oylanır. %51'i geçen karar sistem tarafından otonom olarak uygulamaya alınır.</p>
+            </div>
+            <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
+                <strong class="text-white block mb-2 text-kaos">2. Liderler Masası Nedir?</strong>
+                <p>11 farklı Lider (Hukuk, Etik, Tasarım vb.) sadece ağın düzgün işlemesi için "moderatör" görevi görür. Üstünlükleri veya fazladan oy hakları yoktur. Görevleri, meslektaşların hakkını savunmaktır.</p>
+            </div>
+            <p>ME26, bir dijital isyan ve sistem kuran bir felsefedir. Orijinal İçmimari Altın Sarısı'nı sistemin kalbine işlemek için oylamaya katılın.</p>
+        `
+    },
+    'kurallar': {
+        baslik: "ME26 Otonom Kuralları",
+        metin: `
+            <ul class="space-y-4">
+                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">1.</span> <div><strong class="text-white">Para Yoktur:</strong> ME26 ağı aidat, giriş ücreti, bağış veya herhangi bir gizli masraf talep etmez. Satılamaz, devredilemez.</div></li>
+                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">2.</span> <div><strong class="text-white">Kimlik Gizliliği:</strong> Kimse diğerinin ismini, cismini bilemez. Sistemde sadece "GLOBAL ID" (Örn: TR-IA-100) numaranızla işlem yapar, fikir üretir ve oy kullanırsınız. Liyakat isme değil, fikre verilir.</div></li>
+                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">3.</span> <div><strong class="text-white">Kavga ve Siyaset Yoktur:</strong> Ağa siyasi parti argümanları taşımak, meslektaşlara hakaret etmek veya manipülasyon yapmak sistemden "otonom ihraç" sebebidir.</div></li>
+                <li class="flex items-start"><span class="mr-3 text-kaos text-xl font-bold">4.</span> <div><strong class="text-white">Emeğin Korunması:</strong> Ağ içinde paylaşılan fikirleri dışarıda kendi menfaatine kullananlar Liderler Masası kararıyla uzaklaştırılır. Ustaya ve meslektaşa saygı esastır.</div></li>
+            </ul>
+        `
+    },
+    'gizlilik': {
+        baslik: "Gizlilik ve KVKK Zırhı",
+        metin: `
+            <p class="mb-4">Bu sistem "Merkeziyetsizlik" ilkesi üzerine kurulmuştur. Verilerinizi toplamak, satmak veya depolamak sistemin felsefesine aykırıdır.</p>
+            <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
+                <strong class="text-white block mb-2 text-kaos">e-Devlet Neden Gerekli?</strong>
+                <p>İçmimarlık mesleğini korumak ve oylamalarda %100 adalet sağlamak için ağa botların veya meslek dışı kişilerin sızmasını engellemek zorundayız. Cihazınızda PDF dosyanız okunur, <span class="text-white font-bold">okuma bittikten sonra dosya sunuculara YÜKLENMEDEN imha edilir.</span> Sadece liyakat sonucunuz kasaya yazılır.</p>
+            </div>
+            <p class="mb-2">Ağdaki telefon numaranız veya bilgileriniz 256-bit şifreleme ile kasada tutulur ve 3. şahıslarla asla paylaşılmaz.</p>
+        `
+    }
+};
+
+window.sistemBilgiAc = function(tip) {
+    const popup = document.getElementById('bilgi-popup');
+    const icerik = document.getElementById('bilgi-content');
+    const data = sistemBilgileri[tip];
+    
+    document.getElementById('bilgi-baslik').innerHTML = `<span class="text-kaos mr-3 w-2 h-8 bg-kaos block"></span>` + data.baslik;
+    document.getElementById('bilgi-metin').innerHTML = data.metin;
+    
+    popup.classList.remove('hidden');
+    setTimeout(() => { 
+        popup.classList.remove('opacity-0'); 
+        icerik.classList.remove('scale-95'); 
+    }, 10);
+};
+
+window.sistemBilgiKapat = function() {
+    const popup = document.getElementById('bilgi-popup');
+    const icerik = document.getElementById('bilgi-content');
+    
+    popup.classList.add('opacity-0'); 
+    icerik.classList.add('scale-95'); 
+    setTimeout(() => { popup.classList.add('hidden'); }, 300);
+};
+
+// ---------------------------------------------------------
 // TIK TIK TIK KATLANIR SARI CETVEL GEÇİŞ MOTORU
 // ---------------------------------------------------------
 window.cetvelGecis = function(mesaj, islemCallback) {
@@ -595,35 +669,28 @@ window.cetvelGecis = function(mesaj, islemCallback) {
         overlay.classList.remove('hidden');
         overlay.classList.add('flex');
         
-        // Katlanan cetveli "tık tık tık" aç
-        setTimeout(() => {
-            cetvel.classList.add('active');
-        }, 50);
+        setTimeout(() => { cetvel.classList.add('active'); }, 50);
         
-        // İşlemi yap ve yazıyı göster
         setTimeout(() => {
             txtContainer.classList.remove('opacity-0');
             if(islemCallback) islemCallback(); 
             
-            // Ekranı geri topla
             setTimeout(() => {
                 txtContainer.classList.add('opacity-0');
-                cetvel.classList.remove('active'); // Geri katlanma
-                
-                // Tamamen kaybolmasını bekle
+                cetvel.classList.remove('active');
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     overlay.classList.remove('flex');
                 }, 600); 
             }, 1200); 
-        }, 900); // 6. parça açılana kadar bekle
+        }, 900); 
     } else {
         if(islemCallback) islemCallback();
     }
 }
 
 // ---------------------------------------------------------
-// PAYLAŞIM VE LİNK DİŞLİLERİ (YENİ EKLENDİ)
+// PAYLAŞIM VE LİNK DİŞLİLERİ 
 // ---------------------------------------------------------
 window.kopyalaLink = function(event) {
     const linkText = document.getElementById('davet-linki').innerText;
@@ -650,21 +717,18 @@ window.whatsappPaylas = function() {
 };
 
 // ---------------------------------------------------------
-// ÇIKIŞ BUTONU (KIR VE ÇIK MOTORU - YENİ EKLENDİ)
+// ÇIKIŞ BUTONU (KIR VE ÇIK MOTORU)
 // ---------------------------------------------------------
 window.cikisYap = async function() {
-    // 1. Sunuculara çıkış emri ver (Asılı kalmaması için try-catch)
-    try { if(supabaseClient) await supabaseClient.auth.signOut(); } catch(e) { console.warn("Supabase çıkış gecikmesi atlandı."); }
-    try { await auth.signOut(); } catch(e) { console.warn("Firebase çıkış gecikmesi atlandı."); } 
+    try { if(supabaseClient) await supabaseClient.auth.signOut(); } catch(e) { }
+    try { await auth.signOut(); } catch(e) { } 
     
-    // 2. Cihazdaki tüm çerezleri acımasızca parçala
     localStorage.removeItem('me26_user_id');
     localStorage.removeItem('me26_user_name');
     localStorage.removeItem('me26_ref_link');
     localStorage.removeItem('me26_kaos_rengi');
     localStorage.removeItem('me26_uye_no');
     
-    // 3. Kapı dışarı et
     document.documentElement.classList.remove('is-logged-in');
     location.reload();
 };
@@ -741,7 +805,6 @@ dashboardView.classList.add('flex');
 
 document.getElementById('dash-isim').innerText = localStorage.getItem('me26_user_name').toLocaleUpperCase('tr-TR');
 
-// SIRALI ID GÖSTERİMİ
 let siraNo = localStorage.getItem('me26_uye_no');
 document.getElementById('dash-id-main').innerText = "TR-IA-" + siraNo;
 
@@ -767,7 +830,6 @@ const googleIsim = user.user_metadata.full_name || "";
 const { data, error } = await supabaseClient.from('uyeler').select('id, tam_isim, uye_no').eq('email', googleEmail).single();
 
 if (data) {
-// ESKİ ÜYE GİRİŞİ (CETVEL İLE GEÇİŞ)
 localStorage.setItem('me26_user_id', data.id);
 localStorage.setItem('me26_user_name', data.tam_isim);
 localStorage.setItem('me26_uye_no', data.uye_no);
@@ -791,7 +853,6 @@ cetvelGecis("AĞA BAĞLANILIYOR...", () => {
 });
 
 } else {
-// YENİ ÜYE - LOBİ AÇILIYOR (CETVEL İLE GEÇİŞ)
 pendingKullanici.email = googleEmail;
 pendingKullanici.isim = googleIsim;
 
@@ -931,7 +992,6 @@ try {
 
     btnPdf.innerText = "AĞA YAZILIYOR...";
     
-    // Asılı kalma (RLS) kalkanına karşı sağlam motor
     const { data, error } = await supabaseClient.from('uyeler').insert([kesinKullaniciVerisi]).select();
     
     if (error) throw error;
@@ -946,7 +1006,6 @@ try {
     localStorage.setItem('me26_user_name', kesinKullaniciVerisi.tam_isim);
     localStorage.setItem('me26_uye_no', uyeNo);
 
-    // CETVEL ANİMASYONU İLE KONTROL PANELİNE GEÇİŞ
     cetvelGecis("SİSTEME KAYIT BAŞARILI", () => {
         document.getElementById('pdf-modal').classList.add('hidden');
         document.getElementById('pdf-modal').classList.remove('flex');
@@ -968,16 +1027,12 @@ try {
     });
 
 } catch (err) {
-    console.error("HATA YAKALANDI:", err);
     let errorMsg = err.message || JSON.stringify(err);
-    
     if (err.code === '23505' || errorMsg.toLowerCase().includes('duplicate')) {
         alert("REDDEDİLDİ: Bu e-Devlet Belgesi veya TC kimlik numarası zaten sisteme kayıtlı.");
     } else {
         alert("SİSTEM HATASI:\n" + errorMsg);
     }
-    
-    // Asılı kalmayı engeller, butonu tekrar kullanılabilir yapar
     btnPdf.innerText = "BELGEYİ ONAYLA VE AĞA KATIL";
     btnPdf.disabled = false;
 }
@@ -1079,8 +1134,6 @@ window.mobilMenuAc = function() { document.getElementById('mobile-menu').classLi
 window.mobilMenuKapat = function() { document.getElementById('mobile-menu').classList.add('menu-closed'); };
 window.teklifModalAc = function() { const popup = document.getElementById('teklif-popup'); const icerik = document.getElementById('teklif-content'); popup.classList.remove('hidden'); setTimeout(() => { popup.classList.remove('opacity-0'); icerik.classList.remove('scale-95'); }, 10); };
 window.teklifModalKapat = function() { const popup = document.getElementById('teklif-popup'); const icerik = document.getElementById('teklif-content'); popup.classList.add('opacity-0'); icerik.classList.add('scale-95'); setTimeout(() => { popup.classList.add('hidden'); }, 300); };
-window.popUpiAc = function() { const popup = document.getElementById('onay-popup'); const icerik = document.getElementById('popup-content'); popup.classList.remove('hidden'); setTimeout(() => { popup.classList.remove('opacity-0'); icerik.classList.remove('scale-95'); }, 10); };
-window.popUpiKapatVeOnayla = function() { const popup = document.getElementById('onay-popup'); const icerik = document.getElementById('popup-content'); document.getElementById('kvkk-genel-onay').checked = true; popup.classList.add('opacity-0'); icerik.classList.add('scale-95'); setTimeout(() => { popup.classList.add('hidden'); }, 300); };
 </script>
 </body>
 </html>
