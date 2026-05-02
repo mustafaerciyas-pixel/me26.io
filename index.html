@@ -150,6 +150,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition">
 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
 </button>
+<a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('dao'); mobilMenuKapat();">DAO Nedir?</a>
 <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('nedir'); mobilMenuKapat();">Ne Yapacağız?</a>
 <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('kurallar'); mobilMenuKapat();">Kurallarımız</a>
 <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('gizlilik'); mobilMenuKapat();">Gizlilik Zırhı</a>
@@ -164,7 +165,8 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 <span><span class="text-kaos">ME26</span> AĞI</span>
 </a>
 
-<div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide items-center">
+<div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('dao')">DAO Nedir?</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
 <a id="nav-btn-desktop" href="#kayit" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos cursor-pointer">Numaranı Al</a>
@@ -503,12 +505,12 @@ Ağa getirdiğin ve e-Devlet onayı alan her arkadaşın için liyakat (oy) güc
 <div>
 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
                     <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 8.2 (Otonom Menü Motoru)</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.0 (Manifesto Metinleri)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.0 (Otonom Manifestolar)</div>
 </div>
 </div>
 <div class="flex space-x-6 text-xs font-bold uppercase tracking-widest mb-6 md:mb-0">
+<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('dao')">DAO Nedir?</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
-<a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
 <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('gizlilik')">Gizlilik ve Hukuk</a>
 </div>
 <div class="text-right text-[10px] text-gray-600 font-mono">
@@ -611,11 +613,22 @@ let pendingKullanici = { email: '', isim: '', telefon: '' };
 // BİLGİ SAYFALARI (SPA) VERİ TABANI - ŞANTİYE MANİFESTOSU
 // ---------------------------------------------------------
 const sistemBilgileri = {
+    'dao': {
+        baslik: "DAO (OTONOM AĞ) NEDİR?",
+        metin: `
+            <p class="mb-4 font-bold text-white text-lg">Geleceğin meslek örgütlenmesi: Merkeziyetsiz, Şeffaf ve Adil.</p>
+            <p class="mb-4">DAO (Decentralized Autonomous Organization), patronu, başkanı veya karar verici bir yönetim kurulu olmayan dijital bir yapıdır. Kurallar kişilerin inisiyatifine göre değil, bilgisayar kodlarına (akıllı kontratlara) göre işler.</p>
+            <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
+                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">⚖️</span> Otorite Değil, Ortak Akıl</strong>
+                <p>ME26 bir DAO olarak tasarlandı. Bu ağda kararları tek bir başkan veya heyet almaz. Her kurucu üyenin eşit söz hakkı vardır ve sistem kararları şeffaf oylama ile belirlenir. Sistem, gücü merkezden alıp liyakat sahibi meslektaşlara dağıtır.</p>
+            </div>
+        `
+    },
     'nedir': {
         baslik: "SİSTEM KURAN İÇMİMARLIK",
         metin: `
             <p class="mb-4 font-bold text-white text-lg">Bizler dekoratif illüzyonlara sığınanlar değil, yapısal gerçeği inşa edenleriz.</p>
-            <p class="mb-4">Yıllarca TMMOB İçmimarlar Odası gibi merkezi yapıların hantallığını, meslektaşın sorunlarına ne kadar uzak kaldıklarını gördük. "Sarı Cetvel" manifestomuzla başlattığımız yürüyüşü, şimdi ME26 Otonom Ağı (DAO) ile bir <strong class="text-kaos">İçmimarlar Konseyi'ne</strong> dönüştürüyoruz.</p>
+            <p class="mb-4">Yıllarca piyasadaki dağınık yapıyı ve mevcut merkezi kurumların hantallığını, meslektaşın sorunlarına ne kadar uzak kaldıklarını gördük. "Sarı Cetvel" manifestomuzla başlattığımız yürüyüşü, şimdi ME26 Otonom Ağı (DAO) ile bağımsız ve güçlü bir <strong class="text-kaos">İçmimarlar Konseyi'ne</strong> dönüştürüyoruz.</p>
             <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
                 <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">📐</span> 80 Bin Güç, Tek Akıl</strong>
                 <p>Türkiye'deki 80.000 İçmimar ve 15.000 öğrenciyi aidatsız, masrafsız, başkansız tek bir dijital şantiyede birleştiriyoruz. 2017'de kapanan 20.000 üyeli icmimar.com'un ruhunu, 2026 model merkeziyetsiz teknolojiyle diriltiyoruz.</p>
@@ -664,7 +677,7 @@ const sistemBilgileri = {
                 </div>
                 <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
                     <strong class="text-white block mb-1">Sonsuz Düşünce Özgürlüğü</strong>
-                    <p class="text-sm">Kimliğin maskelendiği için, odaların veya işverenlerin baskısından korkmadan mesleki sorunları dile getirebilir, oylamalara hür iradenle katılabilirsin. Ağ seni korur.</p>
+                    <p class="text-sm">Kimliğin maskelendiği için, mevcut yapıların veya işverenlerin baskısından korkmadan mesleki sorunları dile getirebilir, oylamalara hür iradenle katılabilirsin. Ağ seni korur.</p>
                 </div>
             </div>
         `
