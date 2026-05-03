@@ -112,6 +112,12 @@ tailwind.config = {
 .cetvel-kok.shape-tik .c5 { transform: rotate(-178deg); transition-delay: 0.5s; } 
 .cetvel-kok.shape-tik .c6 { transform: rotate(178deg); transition-delay: 0.6s; } 
 
+.cetvel-kok.shape-kapi { transform: scale(1.2); }
+.cetvel-kok.shape-kapi .c1 { transform: rotate(0deg); }
+.cetvel-kok.shape-kapi .c2 { transform: rotate(90deg); }
+.cetvel-kok.shape-kapi .c3 { transform: rotate(90deg); }
+.cetvel-kok.shape-kapi .c4 { transform: rotate(90deg); }
+
 .custom-scrollbar::-webkit-scrollbar { width: 5px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 8px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--neon-rgb), 0.5); border-radius: 10px; }
@@ -121,7 +127,7 @@ tailwind.config = {
 .dropdown-acik { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
 </style>
 
-<!-- Supabase & Firebase Gerçek Kodları -->
+<!-- Supabase & Firebase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
@@ -167,17 +173,29 @@ tailwind.config = {
     </div>
 </div>
 
-<!-- MOBİL MENÜ -->
+<!-- GİZLİ BİLGİ MODALLARI (GERİ GETİRİLDİ!) -->
+<div id="bilgi-popup" style="display: none;" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[99999] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300" onclick="if(event.target === this) UI.sistemBilgiKapat()">
+    <div class="bg-slate-900 border border-kaos rounded-2xl max-w-3xl w-full p-6 md:p-10 shadow-kaos-lg transform scale-95 transition-transform duration-300 relative max-h-[85vh] flex flex-col" id="bilgi-content">
+        <button type="button" onclick="UI.sistemBilgiKapat()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center z-10">✕</button>
+        <h3 id="bilgi-baslik" class="text-2xl md:text-3xl font-black text-white mb-6 border-b border-slate-700 pb-4 flex items-center uppercase tracking-widest">YÜKLENİYOR...</h3>
+        <div id="bilgi-metin" class="space-y-4 text-sm md:text-base text-gray-200 leading-relaxed overflow-y-auto pr-4 custom-scrollbar font-medium"></div>
+    </div>
+</div>
+
+<!-- MOBİL MENÜ (GERİ GETİRİLDİ!) -->
 <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 menu-closed flex flex-col items-center justify-center space-y-8 pt-10 transition-all duration-300">
     <button type="button" onclick="UI.mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
-    <a href="javascript:void(0)" class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="UI.mobilMenuKapat(); alert('Sistem kuralları modülü açılıyor.')">Kurallarımız</a>
-    <a href="javascript:void(0)" class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="UI.mobilMenuKapat(); alert('S.S.S. modülü açılıyor.')">S.S.S.</a>
+    <a href="javascript:void(0)" class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="UI.sistemBilgiAc('otonom'); UI.mobilMenuKapat();">Sistem Nasıl Çalışır?</a>
+    <a href="javascript:void(0)" class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="UI.sistemBilgiAc('nedir'); UI.mobilMenuKapat();">Birlikte Ne Yapacağız?</a>
+    <a href="javascript:void(0)" class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="UI.sistemBilgiAc('kurallar'); UI.mobilMenuKapat();">Kurallarımız</a>
+    <a href="javascript:void(0)" class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="UI.sistemBilgiAc('gizlilik'); UI.mobilMenuKapat();">Gizlilik Sözümüz</a>
+    <a href="javascript:void(0)" class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="UI.sistemBilgiAc('sss'); UI.mobilMenuKapat();">S.S.S.</a>
     <button type="button" id="nav-btn-mobile" onclick="CORE.login(event)" class='bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer'>1 TIKLA KATIL</button>
 </div>
 
-<!-- ÜST MENÜ -->
+<!-- ÜST MENÜ (EKSİKSİZ GERİ GETİRİLDİ!) -->
 <nav id="ana-nav" class="bg-zemin text-white py-5 shadow-xl relative z-30 border-b border-slate-800 w-full transition-colors duration-1000">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center relative">
         <a href="javascript:void(0)" class='text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition' onclick="UI.showView('landing')">
@@ -185,8 +203,11 @@ tailwind.config = {
             <span><span class="text-kaos">ME26</span> AĞI</span>
         </a>
         <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
-            <a href="javascript:void(0)" class='hover:opacity-80 transition cursor-pointer' onclick="alert('Manifesto modülü açılıyor.')">Manifesto</a>
-            <a href="javascript:void(0)" class='hover:opacity-80 transition cursor-pointer' onclick="alert('Kurallar modülü açılıyor.')">Kurallar</a>
+            <a href="javascript:void(0)" class='hover:opacity-80 transition cursor-pointer' onclick="UI.sistemBilgiAc('otonom')">Sistem Nasıl Çalışır?</a>
+            <a href="javascript:void(0)" class='hover:opacity-80 transition cursor-pointer' onclick="UI.sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
+            <a href="javascript:void(0)" class='hover:opacity-80 transition cursor-pointer' onclick="UI.sistemBilgiAc('kurallar')">Kurallarımız</a>
+            <a href="javascript:void(0)" class='hover:opacity-80 transition cursor-pointer' onclick="UI.sistemBilgiAc('gizlilik')">Gizlilik</a>
+            <a href="javascript:void(0)" class='hover:opacity-80 transition cursor-pointer' onclick="UI.sistemBilgiAc('sss')">S.S.S.</a>
             
             <div class="relative">
                 <button type="button" id="nav-btn-desktop" onclick="CORE.login(event)" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest border-none outline-none relative z-50">1 TIKLA KATIL</button>
@@ -207,7 +228,6 @@ tailwind.config = {
                                         </div>
                                         <div class="text-3xl font-mono font-black text-white tracking-widest drop-shadow-md" id="drop-id-main">TR-IA-???</div>
                                     </div>
-                                    <!-- Hologram / Çip simülasyonu -->
                                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-700 flex items-center justify-center shadow-lg border border-yellow-300/50">
                                         <div class="w-5 h-5 border-2 border-white/50 rounded-sm"></div>
                                     </div>
@@ -231,7 +251,7 @@ tailwind.config = {
                             </button>
                         </div>
 
-                        <!-- 2. VIP KURUCU NO BÖLÜMÜ (Davet ve Numara Seçimi) -->
+                        <!-- 2. VIP KURUCU NO BÖLÜMÜ -->
                         <div class="p-6 border-b border-slate-700 bg-slate-800/30 relative">
                             <div class="flex justify-between items-center mb-3">
                                 <div class="flex items-center gap-2">
@@ -250,7 +270,6 @@ tailwind.config = {
                                 <span id="vip-davet-sayac" class="text-kaos">0 / 3 Davet</span>
                             </div>
                             
-                            <!-- Davet Linki Alanı -->
                             <div class="bg-black border border-slate-600 p-3 rounded-lg text-kaos font-mono text-xs text-center select-all mb-3 cursor-pointer" onclick="UI.copyLink()">https://me26.com/davet/REF-XXXXXX</div>
                             <div class="grid grid-cols-2 gap-3 mb-4">
                                 <button type="button" onclick="UI.copyLink()" class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 rounded transition uppercase tracking-widest shadow-md">Kopyala</button>
@@ -358,7 +377,7 @@ tailwind.config = {
     </div>
 </div>
 
-<!-- ================= MİKRO-TAAHHÜT POPUP (Kayıt Sonrası Profil Çizimi) ================= -->
+<!-- ================= MİKRO-TAAHHÜT POPUP (Kayıt Sonrası Şehir/Statü) ================= -->
 <div id="taahhut-modal" style="display: none;" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4">
     <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative overflow-hidden shadow-kaos-lg">
         <div class="absolute -top-10 -left-10 w-32 h-32 bg-kaos opacity-10 rounded-full blur-3xl"></div>
@@ -424,7 +443,7 @@ tailwind.config = {
         
         <div class="p-6 md:p-10 space-y-10 bg-slate-800/20 relative z-10">
             
-            <!-- 5. İCRAAT MASASI (Geçmiş ve Kesinleşmiş Kararlar Havuzu) -->
+            <!-- 5. İCRAAT MASASI (Geçmiş Kararlar Havuzu) -->
             <div class="bg-gradient-to-r from-green-900/20 to-black border border-green-500/30 rounded-2xl p-6 shadow-inner relative overflow-hidden group">
                 <div class="absolute top-0 right-0 bg-green-500/20 text-green-400 text-[9px] font-black px-3 py-1 rounded-bl-lg uppercase tracking-widest">Resmi Sonuç</div>
                 <h3 class="text-green-400 font-black uppercase tracking-widest text-sm mb-4 flex items-center gap-2"><span class="text-lg">⚖️</span> Yürürlükteki Kararlar (İcraat Masası)</h3>
@@ -507,9 +526,9 @@ tailwind.config = {
             </div>
 
             <!-- Önerge 2 -->
-            <div class="bg-black/50 border border-slate-600 p-5 md:p-6 rounded-2xl flex gap-5 items-center">
+            <div class="bg-black/50 border border-slate-600 p-5 md:p-6 rounded-2xl flex gap-5 items-center cursor-pointer" onclick="alert('Desteğin kaydedildi!')">
                 <div class="flex flex-col items-center bg-slate-800 p-3 rounded-xl border border-slate-700 min-w-[70px]">
-                    <span class="text-gray-400 text-2xl">▲</span>
+                    <span class="text-gray-400 hover:text-kaos text-2xl transition">▲</span>
                     <span class="text-white font-black font-mono text-base my-1">32</span>
                     <span class="text-[9px] text-gray-500 uppercase font-bold tracking-widest">Destek</span>
                 </div>
@@ -642,7 +661,7 @@ tailwind.config = {
             <div class="w-2 h-8 bg-kaos mr-3"></div>
             <div>
                 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Nihai Masterplan (Tam Sürüm)</div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Nihai Masterplan (V35 Tam Sürüm)</div>
             </div>
         </div>
         <div class="text-right text-[10px] text-gray-600 font-mono">
@@ -652,15 +671,15 @@ tailwind.config = {
     </div>
 </footer>
 
-<!-- ================= SİSTEM MOTORU (TRY-CATCH ZIRHLI LOKAL FALLBACK) ================= -->
+<!-- ================= SİSTEM MOTORU VE VERİTABANI ================= -->
 <script>
-// 1. GÜVENLİ BAŞLATMA (Vercel çökmesini önler)
+// 1. SUPABASE VE FIREBASE BAŞLATMA (Çökmeye karşı Try-Catch zırhlı)
 const firebaseConfig = { apiKey: "AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA", authDomain: "me26-io.firebaseapp.com", projectId: "me26-io" };
 let auth = null;
 try {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth(); auth.languageCode = 'tr'; 
-} catch(e) { console.warn("Firebase engellendi. Lokal Demo modunda çalışılacak."); }
+} catch(e) { console.warn("Firebase engellendi. Lokal mod aktif."); }
 
 const supabaseUrl = 'https://ukmkojfntsmueikjcrvz.supabase.co'; 
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw';
@@ -678,14 +697,13 @@ const SYSTEM = {
     seciliVIP: null
 };
 
-// 3. UI KONTROLCÜSÜ (Ekranlar ve Modallar)
+// 3. UI KONTROLCÜSÜ (Menüler ve Ekranlar)
 const UI = {
     showView: function(viewId) {
         if(viewId === 'landing' && SYSTEM.auth_stage) { viewId = 'voting'; }
         document.getElementById('landing-view').style.display = (viewId === 'landing') ? 'flex' : 'none';
         document.getElementById('voting-view').style.display = (viewId === 'voting') ? 'flex' : 'none';
         
-        // Sticky CTA Control
         const sticky = document.getElementById('sticky-cta');
         if(sticky) sticky.style.display = (viewId === 'landing') ? 'block' : 'none';
         
@@ -696,7 +714,6 @@ const UI = {
     
     copyLink: function() {
         alert("Davet linkin kopyalandı! (Lokal Test Modu - Link geçici olarak paylaşıldı sayıldı)");
-        // Demo amaçlı davet sayısını artır
         if(SYSTEM.davet < 3) {
             SYSTEM.davet++;
             localStorage.setItem('me26_davet', SYSTEM.davet);
@@ -706,12 +723,8 @@ const UI = {
             }
         }
     },
-    whatsappShare: function() {
-        alert("WhatsApp açılıyor..."); UI.copyLink();
-    },
-    shareIDCard: function() {
-        alert("Dijital Kimlik Kartın cihaza PNG olarak kaydedildi ve paylaşıma hazır! (Demo)");
-    },
+    whatsappShare: function() { alert("WhatsApp açılıyor..."); UI.copyLink(); },
+    shareIDCard: function() { alert("Dijital Kimlik Kartın cihaza PNG olarak kaydedildi ve paylaşıma hazır! (Demo)"); },
     
     openPhoneModal: () => document.getElementById('liyakat-modal-telefon').style.display = 'flex',
     openPdfModal: () => document.getElementById('liyakat-modal-pdf').style.display = 'flex',
@@ -733,23 +746,17 @@ const UI = {
     renderVIPGrid: function() {
         const grid = document.getElementById('number-grid');
         grid.innerHTML = '';
-        // Havalı matrix numaraları
         const ornekNolar = [101, 102, 145, 199, 333, 500, 777, 999, 1071, 1453, 1881, 1907, 1923, 1938, 1985, 2000, 2026, 3333, 4000, 5000];
         
         ornekNolar.forEach(no => {
             const btn = document.createElement('button');
             btn.innerText = no;
             
-            // Kırmızı (Dolu)
             if(no === 101 || no === 1923 || no === 145) {
                 btn.className = "bg-gray-800 border border-gray-600 text-gray-500 py-3 rounded opacity-50 cursor-not-allowed text-xs font-mono font-bold shadow-inner";
-            } 
-            // Kendi Numarası (Sarı)
-            else if (no == SYSTEM.uye_no) {
+            } else if (no == SYSTEM.uye_no) {
                 btn.className = "bg-yellow-900/30 border border-kaos text-kaos py-3 rounded text-xs font-mono font-bold shadow-[0_0_10px_rgba(var(--neon-rgb),0.5)] scale-105 z-10 relative";
-            } 
-            // Boş Numaralar (Yeşil)
-            else {
+            } else {
                 btn.className = "bg-green-900/20 border border-green-500/50 text-green-400 py-3 rounded hover:bg-green-600 hover:text-white hover:border-green-400 transition cursor-pointer text-xs font-mono font-bold vip-btn";
                 btn.onclick = () => { 
                     document.querySelectorAll('.vip-btn').forEach(b => {
@@ -775,7 +782,6 @@ const UI = {
         msg.innerHTML = mesaj;
         txtContainer.classList.add('opacity-0');
         cetvelKoku.className = `cetvel-kok scale-[1] md:scale-[1.3] mb-12 ${sekilClass}`;
-        
         overlay.style.display = 'flex';
         
         setTimeout(() => {
@@ -790,20 +796,59 @@ const UI = {
     }
 };
 
-// 4. ÇEKİRDEK İŞLEMLER (Lokal/Demo Korumalı)
+// ================= GİZLİ BİLGİ MODALLARI (GERİ GETİRİLDİ!) =================
+const sistemBilgileri = {
+    'otonom': { baslik: "SİSTEM NASIL ÇALIŞIR?", metin: `<p class="mb-4 font-bold text-white text-lg">Patron Yok, Ortak Akıl Var!</p><p class="mb-4">ME26 Ağı'nda klasik derneklerdeki gibi bir patron, başkan veya yöneticiler yoktur. Her şey bilgisayar kurallarıyla işler.</p><p class="mb-4">Önemli kararları birlikte oylarız. En çok oyu alan fikir kural olur ve sistem bunu otomatik olarak uygular.</p>` },
+    'nedir': { baslik: "BİRLİKTE NE YAPACAĞIZ?", metin: `<p class="mb-4 font-bold text-white text-lg">Mesleğimizi hak ettiği yere taşıyacağız.</p><p class="mb-4">Şantiyede toz yutan, ofiste sabahlayan, atölyede yorulan bizleriz. Ama kararları başkaları alıyor. Artık buna dur diyeceğiz!</p>` },
+    'kurallar': { baslik: "ME26 ŞANTİYE KURALLARI", metin: `<ul class="space-y-4"><li class="bg-slate-800/50 p-4 rounded-xl border border-slate-700"><strong class="text-kaos block mb-1">1. Para İsteyemez:</strong> Sistem senden aidat veya giriş ücreti almaz.</li><li class="bg-slate-800/50 p-4 rounded-xl border border-slate-700"><strong class="text-kaos block mb-1">2. Herkes Eşittir:</strong> Oylarda herkes eşittir. Ünvanlar kapıda kalır, fikirler öne çıkar.</li></ul>` },
+    'gizlilik': { baslik: "GİZLİLİK SÖZÜMÜZ", metin: `<p class="mb-4 font-bold text-white text-lg">Kimsenin seni görmesinden korkma!</p><p class="mb-4">Yüklediğin belge (eğer yüklersen) sadece senin cihazında okunur ve anında silinir. Sisteme girdiğinde sana "TR-IA-123" gibi gizli bir numara verilir. Neye oy verdiğini kimse bilemez!</p>` },
+    'sss': { baslik: "SIKÇA SORULAN SORULAR", metin: `<div class="grid md:grid-cols-2 gap-4"><div class="bg-black/40 p-4 rounded border border-slate-700"><h4 class="text-kaos font-bold mb-1">1. Gerçekten ücretsiz mi?</h4><p class="text-gray-300 text-xs">Evet, hiçbir şekilde para talep edilmez.</p></div><div class="bg-black/40 p-4 rounded border border-slate-700"><h4 class="text-kaos font-bold mb-1">2. Belge şart mı?</h4><p class="text-gray-300 text-xs">Hayır. Sadece 1.0x tam karar gücü almak istersen taratabilirsin.</p></div></div>` }
+};
+
+UI.sistemBilgiAc = function(tip) {
+    const popup = document.getElementById('bilgi-popup');
+    const icerik = document.getElementById('bilgi-content');
+    const data = sistemBilgileri[tip];
+    document.getElementById('bilgi-baslik').innerHTML = `<span class="text-kaos mr-3 w-2 h-8 bg-kaos block"></span>` + data.baslik;
+    document.getElementById('bilgi-metin').innerHTML = data.metin;
+    popup.style.display = 'flex';
+    setTimeout(() => { popup.classList.remove('opacity-0'); icerik.classList.remove('scale-95'); }, 10);
+};
+UI.sistemBilgiKapat = function() {
+    const popup = document.getElementById('bilgi-popup');
+    const icerik = document.getElementById('bilgi-content');
+    popup.classList.add('opacity-0'); icerik.classList.add('scale-95'); 
+    setTimeout(() => { popup.style.display = 'none'; }, 300);
+};
+
+// Açılır Menüyü Dışarıya Tıklayınca Kapatma (GERİ GETİRİLDİ!)
+document.addEventListener('click', function(event) {
+    const panel = document.getElementById('dropdown-panel');
+    const btnDesktop = document.getElementById('nav-btn-desktop');
+    const btnMobile = document.getElementById('nav-btn-mobile');
+    
+    if (panel && !panel.classList.contains('dropdown-gizli')) {
+        if (!panel.contains(event.target) && 
+            (!btnDesktop || !btnDesktop.contains(event.target)) &&
+            (!btnMobile || !btnMobile.contains(event.target))) {
+            panel.classList.remove('dropdown-acik');
+            panel.classList.add('dropdown-gizli');
+        }
+    }
+});
+
+// 4. ÇEKİRDEK İŞLEMLER
 const CORE = {
     login: async function(e) {
         if(e) e.preventDefault();
         trackME26Event('google_click');
         
-        // Eğer Supabase canlıysa gerçek login yap, değilse Demo (Local) taahhüt ekranına geç
         if (supabaseClient) {
             try {
                 const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
                 if(!error) return; 
             } catch(e) {}
         }
-        // Vercel / Lokal Fallback
         document.getElementById('taahhut-modal').style.display = 'flex';
     },
     
@@ -836,7 +881,6 @@ const CORE = {
         if(!file) return alert("Lütfen belge seçin.");
         
         UI.cetvelGecis("BELGE CİHAZDA OKUNUYOR...", () => {
-            // Demo mantığı: Herkesi tam yetkili içmimar yapar. Gerçek kodda PDF.js çalışır.
             localStorage.setItem('me26_auth_stage', 'fully_verified');
             localStorage.setItem('me26_rutbe', 'İÇMİMAR');
             location.reload();
@@ -881,7 +925,6 @@ const CORE = {
     logout: function() { localStorage.clear(); location.reload(); },
     
     renderUI: function() {
-        // Renk bas
         let kaosRengi = localStorage.getItem('me26_kaos_rengi') || '#F6C104';
         const hexToRgb = hex => { let r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); return r ? `${parseInt(r[1], 16)}, ${parseInt(r[2], 16)}, ${parseInt(r[3], 16)}` : '246, 193, 4'; };
         document.documentElement.style.setProperty('--neon-hex', kaosRengi); document.documentElement.style.setProperty('--neon-rgb', hexToRgb(kaosRengi));
@@ -889,17 +932,20 @@ const CORE = {
         if(SYSTEM.auth_stage) {
             UI.showView('voting');
             
-            // Butonları güncelle
+            // ÜST MENÜ BUTONLARI GÜNCELLEMESİ
             document.getElementById('nav-btn-desktop').innerText = "PROFiL / MENÜ";
+            document.getElementById('nav-btn-desktop').className = "bg-slate-800 text-white border border-slate-600 px-6 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg cursor-pointer text-center tracking-widest outline-none relative z-50";
             document.getElementById('nav-btn-desktop').setAttribute('onclick', 'window.dropdownToggle(event)');
             
-            // Kimlik Kartı Bilgileri
+            document.getElementById('nav-btn-mobile').innerText = "PROFiL / MENÜ";
+            document.getElementById('nav-btn-mobile').className = "bg-slate-800 text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-lg cursor-pointer text-center border border-slate-600 outline-none";
+            document.getElementById('nav-btn-mobile').setAttribute('onclick', 'window.dropdownToggle(event); UI.mobilMenuKapat();');
+            
             const prefix = (SYSTEM.rutbe === 'SEKTÖR PAYDAŞI') ? "TR-SP-" : "TR-IA-";
             document.getElementById('drop-id-main').innerText = (SYSTEM.isVip ? "💎 " : "") + prefix + SYSTEM.uye_no;
             document.getElementById('drop-rutbe').innerText = SYSTEM.rutbe;
             document.getElementById('drop-sehir').innerText = SYSTEM.sehir;
             
-            // Onay Rozeti
             const rozetDiv = document.getElementById('drop-onay-rozet');
             if(SYSTEM.auth_stage === 'fully_verified') {
                 rozetDiv.innerText = SYSTEM.rutbe === 'SEKTÖR PAYDAŞI' ? "Gözlemci" : "Tam Onaylı";
@@ -912,13 +958,11 @@ const CORE = {
                 rozetDiv.className = "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px]";
             }
             
-            // Güç 
             let guc = "0.1x";
             if(SYSTEM.auth_stage === 'phone_verified') guc = "0.5x";
             if(SYSTEM.auth_stage === 'fully_verified') guc = SYSTEM.rutbe === 'SEKTÖR PAYDAŞI' ? "0.0x" : "1.0x";
             document.getElementById('drop-guc').innerText = guc;
             
-            // VIP Davet Barı
             const davetYuzde = Math.min((SYSTEM.davet / 3) * 100, 100);
             document.getElementById('vip-progress-bar').style.width = davetYuzde + "%";
             document.getElementById('vip-davet-sayac').innerText = `${SYSTEM.davet} / 3 Davet`;
@@ -928,22 +972,18 @@ const CORE = {
                 document.getElementById('vip-status-text').className = "text-[9px] text-green-400 font-bold bg-green-500/10 px-2 py-1 rounded border border-green-500/30";
             }
             
-            // Kilitleri Aç
             if(SYSTEM.auth_stage === 'phone_verified' || SYSTEM.auth_stage === 'fully_verified') {
                 document.querySelectorAll('.lock-overlay').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.locked-content').forEach(el => el.classList.remove('locked-content'));
                 document.getElementById('btn-premium-profil').style.display = (SYSTEM.auth_stage === 'phone_verified') ? 'block' : 'none';
             }
             
-            // Oylama 1 Kontrol
             if(localStorage.getItem('me26_ilk_oy')) {
                 document.getElementById('oy-aktif-1').style.display = 'none';
                 document.getElementById('oy-sonuc-1').style.display = 'block';
             }
         } else {
             UI.showView('landing');
-            
-            // FOMO Sayaç Başlat (Landing'de)
             let fomoCounter = 107;
             setInterval(() => {
                 if(Math.random() > 0.6 && fomoCounter < 2000) {
@@ -967,11 +1007,39 @@ window.dropdownToggle = function(e) {
     }
 };
 
-// Başlangıç
+// ================= BAŞLATICI VE SUPABASE AUTH DİNLEYİCİSİ (GERİ GETİRİLDİ!) =================
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // Google'dan dönüşü yakalayan gerçek kod
+    if (supabaseClient) {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                // Eğer zaten işlenmişse ve localStorage'da varsa tekrar tekrar taahhüt ekranı açmasını engeller
+                if (localStorage.getItem('me26_auth_stage')) return; 
+
+                trackME26Event('google_success');
+                const user = session.user;
+                const googleEmail = user.email;
+                
+                try {
+                    const { data, error } = await supabaseClient.from('uyeler').select('id, statu, uye_no, onay_durumu').eq('email', googleEmail).single();
+                    if (data) {
+                        localStorage.setItem('me26_auth_stage', data.onay_durumu === 'TAM' ? 'fully_verified' : 'phone_verified');
+                        localStorage.setItem('me26_user_id', data.id); 
+                        localStorage.setItem('me26_uye_no', data.uye_no); 
+                        localStorage.setItem('me26_rutbe', data.statu.toUpperCase('tr-TR'));
+                        UI.cetvelGecis("SİSTEME GİRİŞ YAPILDI", () => { location.reload(); }, 'shape-zigzag');
+                    } else { throw new Error("Kayıt yok"); }
+                } catch(e) {
+                    // Kayıt yoksa yeni kullanıcıdır, taahhüt ekranını açar
+                    document.getElementById('taahhut-modal').style.display = 'flex';
+                }
+            }
+        });
+    }
+
     CORE.renderUI();
     
-    // WOW Kontrol
     if(SYSTEM.auth_stage === 'google_only' && !localStorage.getItem('me26_wow_seen')) {
         localStorage.setItem('me26_wow_seen', 'true');
         document.getElementById('wow-uye-no').innerText = `Kurucu Adayı #${SYSTEM.uye_no}`;
