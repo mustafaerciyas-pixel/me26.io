@@ -68,7 +68,7 @@ tailwind.config = {
 /* 0. KAPALI DURUM */
 .fold-pos { transform: rotate(176deg); } .fold-neg { transform: rotate(-176deg); }
 
-/* 1. ŞEKİL: STANDART ZİGZAG (Ağa Bağlanırken) */
+/* 1. ŞEKİL: STANDART ZİGZAG */
 .cetvel-kok.shape-zigzag .c1 { transform: rotate(-75deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-zigzag .c2 { transform: rotate(150deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-zigzag .c3 { transform: rotate(-150deg); transition-delay: 0.3s; }
@@ -76,7 +76,7 @@ tailwind.config = {
 .cetvel-kok.shape-zigzag .c5 { transform: rotate(-150deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-zigzag .c6 { transform: rotate(150deg); transition-delay: 0.6s; }
 
-/* 2. ŞEKİL: KAPI / KARE FORMU (Güvenlik Lobisi - SMS Ekranı) */
+/* 2. ŞEKİL: KAPI / KARE FORMU */
 .cetvel-kok.shape-kapi .c1 { transform: rotate(-90deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-kapi .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-kapi .c3 { transform: rotate(90deg); transition-delay: 0.3s; }
@@ -84,7 +84,7 @@ tailwind.config = {
 .cetvel-kok.shape-kapi .c5 { transform: rotate(90deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-kapi .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 3. ŞEKİL: ÜÇGEN FORM (Liyakat Kanıtı - PDF İşlenirken) */
+/* 3. ŞEKİL: ÜÇGEN FORM */
 .cetvel-kok.shape-ucgen .c1 { transform: rotate(-60deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-ucgen .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-ucgen .c3 { transform: rotate(120deg); transition-delay: 0.3s; }
@@ -92,7 +92,7 @@ tailwind.config = {
 .cetvel-kok.shape-ucgen .c5 { transform: rotate(120deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-ucgen .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 4. ŞEKİL: TİK İŞARETİ (Kusursuz ✓ Formu) */
+/* 4. ŞEKİL: TİK İŞARETİ */
 .cetvel-kok.shape-tik { transform: translateX(-80px) translateY(-10px); }
 .cetvel-kok.shape-tik .c1 { transform: rotate(55deg); transition-delay: 0.1s; } 
 .cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } 
@@ -315,7 +315,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 <!-- ================= OTONOM KONTROL PANELİ (DASHBOARD) - ANA KASA ================= -->
 <div id="dashboard-view" style="display: none;" class="flex-grow w-full max-w-6xl mx-auto flex-col p-4 md:p-8 z-10 gap-6 mt-4 mb-20">
     
-    <!-- DEV KASA MİMARİSİ (Her Şey Bu Kasanın İçinde) -->
+    <!-- DEV KASA MİMARİSİ -->
     <div class="w-full bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden">
 
         <!-- 1. TEPEDE: DİJİTAL ZIRH VE KİMLİK -->
@@ -344,7 +344,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 
         <!-- 2. MERKEZDE: LİYAKAT VE TAARRUZ MOTORU -->
         <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-700 border-b border-slate-700">
-            <!-- Sol: Oylama (Canlı Sandık) -->
+            <!-- Sol: Oylama -->
             <div class="p-6 md:p-8 bg-slate-800/20 flex flex-col justify-center">
                 <h3 class="text-lg font-black text-white mb-4 flex items-center border-b border-slate-700 pb-2">
                     <span class="w-2 h-6 bg-kaos mr-3 rounded-sm"></span> AÇILIŞ OYLAMASI
@@ -363,7 +363,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
                 </div>
             </div>
 
-            <!-- Sağ: Taarruz ve Davet Linki -->
+            <!-- Sağ: Taarruz -->
             <div class="p-6 md:p-8 bg-black/40 flex flex-col">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">Anlık Liyakat (Oy) Katsayın</div>
@@ -396,7 +396,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 
         <!-- 3 & 4. KARİYER EVRİMİ VE ŞANTİYE GÖREVLERİ -->
         <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-700 border-b border-slate-700">
-            <!-- Kariyer Alanı -->
+            <!-- Kariyer -->
             <div class="p-6 md:p-8 bg-slate-800/20 flex flex-col">
                 <h3 class="text-lg font-black text-white mb-6 flex items-center border-b border-slate-700 pb-2">
                     <span class="w-2 h-6 bg-blue-500 mr-3 rounded-sm"></span> GELİŞİM ALANI: KARİYER EVRİMİ
@@ -420,7 +420,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
                 </div>
             </div>
 
-            <!-- Şantiye Görevleri Alanı -->
+            <!-- Görevler -->
             <div class="p-6 md:p-8 bg-slate-800/20 flex flex-col">
                 <h3 class="text-lg font-black text-white mb-6 flex items-center border-b border-slate-700 pb-2">
                     <span class="w-2 h-6 bg-green-500 mr-3 rounded-sm"></span> ŞANTİYE GÖREVLERİ
@@ -471,7 +471,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
             <div class="w-2 h-8 bg-kaos mr-3"></div>
             <div>
                 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.8 (Tam Zırhlı Kasa & SPA Navigasyon)</div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.9 (Kusursuz SPA & Tam Kasa)</div>
             </div>
         </div>
         <div class="text-right text-[10px] text-gray-600 font-mono">
@@ -529,14 +529,14 @@ window.butonlariGuncelle = function() {
     
     if(btnDesktop) { 
         btnDesktop.innerText = "KONTROL PANELİ"; 
-        btnDesktop.removeAttribute('href'); // YÖNLENDİRME BUG'INI ENGELLER
-        btnDesktop.setAttribute('onclick', 'kontrolPaneliniAc(event)');
+        btnDesktop.removeAttribute('href'); 
+        btnDesktop.onclick = window.kontrolPaneliniAc; 
         btnDesktop.className = "bg-slate-800 text-white border border-slate-600 px-6 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg cursor-pointer text-center tracking-widest";
     }
     if(btnMobile) { 
         btnMobile.innerText = "KONTROL PANELİ"; 
-        btnMobile.removeAttribute('href'); // YÖNLENDİRME BUG'INI ENGELLER
-        btnMobile.setAttribute('onclick', 'kontrolPaneliniAc(event)');
+        btnMobile.removeAttribute('href'); 
+        btnMobile.onclick = window.kontrolPaneliniAc; 
         btnMobile.className = "bg-slate-800 text-white border border-slate-600 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-lg cursor-pointer text-center";
     }
 };
@@ -729,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!savedRef) { savedRef = Math.random().toString(36).substring(2, 8).toUpperCase(); localStorage.setItem('me26_ref_link', savedRef); }
         document.getElementById('davet-linki').innerText = "me26.com/davet/REF-" + savedRef;
         
-        kontrolPaneliniAc();
+        window.kontrolPaneliniAc();
         return; 
     }
 
