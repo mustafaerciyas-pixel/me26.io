@@ -1,22 +1,22 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (js/auth.js)
-   (GERÇEK FİREBASE SMS ENTEGRASYONU)
+   (GERÇEK FİREBASE SMS & OTP ENTEGRASYONU)
    ========================================================================== */
 
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { ME26_CONFIG } from './config.js';
 
-// Firebase Kütüphanelerini Web üzerinden çağırıyoruz
+// Firebase Kütüphaneleri
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-// Firebase'i Başlat
+// Firebase Başlatma
 const app = initializeApp(ME26_CONFIG.firebaseConfig);
 const auth = getAuth(app);
-auth.languageCode = 'tr'; // SMS dilini Türkçe yap
+auth.languageCode = 'tr'; 
 
-let confirmationResult = null; // Gelen SMS onay objesini burada tutacağız
+let confirmationResult = null; 
 
 export const AUTH = {
     
@@ -67,17 +67,16 @@ export const AUTH = {
         }
     },
 
-    // 3. GERÇEK TELEFON ONAYI - ADIM 1: SMS GÖNDER
+    // 3. SMS GÖNDERME (Adım 1)
     verifyPhone: async () => {
         const phoneInput = document.getElementById('input-phone-number');
         if (!phoneInput) return;
 
-        // Numarayı temizle ve +90 formatına sok (Baştaki 0'ı atar)
         let phoneVal = phoneInput.value.replace(/\s+/g, '');
         if (phoneVal.startsWith('0')) phoneVal = phoneVal.substring(1); 
         const phone = "+90" + phoneVal;
         
-        if (phone.length !== 13) { // +905554443322
+        if (phone.length !== 13) { 
             UI.showToast("Geçerli bir 10 haneli numara girin (Örn: 5XX XXX XX XX).", "error");
             return;
         }
@@ -88,7 +87,6 @@ export const AUTH = {
         btnSubmit.disabled = true;
 
         try {
-            // Görünmez reCAPTCHA oluştur (index.html'in en altındaki div'i kullanır)
             if (!window.recaptchaVerifier) {
                 window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                     'size': 'invisible'
@@ -96,24 +94,18 @@ export const AUTH = {
             }
 
             UI.showToast("SMS gönderiliyor...", "success");
-            
-            // Firebase SMS Gönderme İsteği
             confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
-            
             UI.showToast("Doğrulama kodu telefonunuza gönderildi!", "success");
             
-            // UI Geçişi: 1. Adımı gizle, 2. Adımı (Kod Girme Ekranını) aç
+            // UI Geçişi: SMS alanını kapat, OTP alanını aç
             document.getElementById('phone-step-1').classList.add('hidden');
             document.getElementById('phone-step-2').classList.remove('hidden');
 
         } catch (error) {
             console.error("SMS Hatası:", error);
             UI.showToast("SMS gönderilemedi. Lütfen numarayı kontrol edip tekrar deneyin.", "error");
-            // Hata olursa recaptcha'yı sıfırla ki tekrar deneyebilsin
             if (window.recaptchaVerifier) {
-                window.recaptchaVerifier.render().then(function(widgetId) {
-                    grecaptcha.reset(widgetId);
-                });
+                window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
             }
         } finally {
             btnSubmit.textContent = originalText;
@@ -121,8 +113,8 @@ export const AUTH = {
         }
     },
 
-    // 4. GERÇEK TELEFON ONAYI - ADIM 2: KODU DOĞRULA
-    confirmSmsCode: async () => {
+    // 4. OTP ONAYLAMA (Adım 2)
+    verifyOtp: async () => {
         const otpInput = document.getElementById('input-otp-code');
         if (!otpInput || !confirmationResult) return;
 
@@ -138,21 +130,17 @@ export const AUTH = {
         btnVerify.disabled = true;
 
         try {
-            // Gelen kodu Firebase ile kontrol et
             const result = await confirmationResult.confirm(code);
             
-            // Başarılı olursa!
             UI.showToast("Telefon başarıyla doğrulandı!", "success");
             
-            // Yetkiyi artır ve state'i güncelle
             STATE.updateUser("authStage", "phone_verified");
             STATE.updateUser("votePower", "0.5x");
             
-            // Modalı kapat ve profili yeniden çiz
             UI.closeModal('phone-modal');
             UI.renderProfile();
 
-            // Modal arka planda kapandıktan sonra UI'ı eski haline getir (sonraki girişler için)
+            // Ekranı sonraki kullanımlar için sıfırla
             setTimeout(() => {
                 document.getElementById('phone-step-1').classList.remove('hidden');
                 document.getElementById('phone-step-2').classList.add('hidden');
@@ -161,7 +149,7 @@ export const AUTH = {
             }, 500);
             
         } catch (error) {
-            console.error("Kod doğrulama hatası:", error);
+            console.error("OTP Hatası:", error);
             UI.showToast("Geçersiz veya hatalı kod girdiniz.", "error");
         } finally {
             btnVerify.textContent = originalText;
@@ -179,8 +167,7 @@ export const AUTH = {
             return;
         }
 
-        const file = fileInput.files[0];
-        if (file.type !== "application/pdf") {
+        if (fileInput.files[0].type !== "application/pdf") {
             UI.showToast("Sadece PDF formatında belge yükleyebilirsin.", "error");
             return;
         }
