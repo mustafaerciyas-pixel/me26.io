@@ -1,26 +1,70 @@
 /* ==========================================================================
-   ME26 AĞI - SİSTEM AYARLARI VE ŞALTERLER (js/config.js)
+   ME26 AĞI - HAFIZA VE DURUM YÖNETİMİ (js/state.js)
    ========================================================================== */
 
-export const ME26_CONFIG = {
-    // 1. SİSTEM ÇALIŞMA MODU
-    // "local" = Dış servis olmadan tarayıcı içinde çalışır.
-    // "production" = Gerçek veritabanı ve doğrulama servisleri devreye girer.
-    mode: "local",
+const STORAGE_KEYS = {
+    authStage: "me26_auth_stage",
+    userNo: "me26_uye_no",
+    role: "me26_rutbe",
+    city: "me26_sehir",
+    inviteCount: "me26_davet_sayisi",
+    isVip: "me26_is_vip",
+    vipNumber: "me26_vip_number",
+    votePower: "me26_vote_power"
+};
 
-    // 2. DIŞ SERVİS BAĞLANTILARI
-    // Direkt yayında gerçek servisler hazır oldukça true yapılacak.
-    useFirebase: false,
-    useSupabase: false,
-    useRealSms: false,
-    useRealPdf: false,
+export const STATE = {
+    getUser: () => ({
+        authStage: localStorage.getItem(STORAGE_KEYS.authStage) || null,
+        userNo: localStorage.getItem(STORAGE_KEYS.userNo) || "???",
+        role: localStorage.getItem(STORAGE_KEYS.role) || "Sistem Üyesi",
+        city: localStorage.getItem(STORAGE_KEYS.city) || "Bilinmiyor",
+        inviteCount: parseInt(localStorage.getItem(STORAGE_KEYS.inviteCount) || "0", 10),
+        isVip: localStorage.getItem(STORAGE_KEYS.isVip) === "true",
+        vipNumber: localStorage.getItem(STORAGE_KEYS.vipNumber) || null,
+        votePower: localStorage.getItem(STORAGE_KEYS.votePower) || "0.0x"
+    }),
 
-    // 3. GENEL LİMİTLER VE SABİTLER
-    founderLimit: 2000,
-    initialCount: 0,
+    setUser: (data = {}) => {
+        Object.entries(data).forEach(([key, value]) => {
+            if (STORAGE_KEYS[key] && value !== undefined && value !== null) {
+                localStorage.setItem(STORAGE_KEYS[key], String(value));
+            }
+        });
+    },
 
-    // 4. VIP KURUCU NUMARASI KURALLARI
-    vipMin: 101,
-    vipMax: 5000,
-    requiredInvitesForVip: 3
+    updateUser: (key, value) => {
+        if (!STORAGE_KEYS[key]) return;
+        localStorage.setItem(STORAGE_KEYS[key], String(value));
+    },
+
+    incrementInviteCount: () => {
+        const current = parseInt(localStorage.getItem(STORAGE_KEYS.inviteCount) || "0", 10);
+        const next = current + 1;
+        localStorage.setItem(STORAGE_KEYS.inviteCount, String(next));
+        return next;
+    },
+
+    setVipNumber: (number) => {
+        localStorage.setItem(STORAGE_KEYS.vipNumber, String(number));
+        localStorage.setItem(STORAGE_KEYS.userNo, String(number));
+        localStorage.setItem(STORAGE_KEYS.isVip, "true");
+    },
+
+    isLoggedIn: () => {
+        return !!localStorage.getItem(STORAGE_KEYS.authStage);
+    },
+
+    isPhoneVerified: () => {
+        const stage = localStorage.getItem(STORAGE_KEYS.authStage);
+        return stage === "phone_verified" || stage === "fully_verified";
+    },
+
+    isFullyVerified: () => {
+        return localStorage.getItem(STORAGE_KEYS.authStage) === "fully_verified";
+    },
+
+    clearUser: () => {
+        Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+    }
 };
