@@ -68,7 +68,7 @@ tailwind.config = {
 /* 0. KAPALI DURUM */
 .fold-pos { transform: rotate(176deg); } .fold-neg { transform: rotate(-176deg); }
 
-/* 1. ŞEKİL: STANDART ZİGZAG (Ağa Bağlanırken) */
+/* 1. ŞEKİL: STANDART ZİGZAG */
 .cetvel-kok.shape-zigzag .c1 { transform: rotate(-75deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-zigzag .c2 { transform: rotate(150deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-zigzag .c3 { transform: rotate(-150deg); transition-delay: 0.3s; }
@@ -76,7 +76,7 @@ tailwind.config = {
 .cetvel-kok.shape-zigzag .c5 { transform: rotate(-150deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-zigzag .c6 { transform: rotate(150deg); transition-delay: 0.6s; }
 
-/* 2. ŞEKİL: KAPI / KARE FORMU (Güvenlik Lobisi - SMS Ekranı) */
+/* 2. ŞEKİL: KAPI / KARE FORMU */
 .cetvel-kok.shape-kapi .c1 { transform: rotate(-90deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-kapi .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-kapi .c3 { transform: rotate(90deg); transition-delay: 0.3s; }
@@ -84,7 +84,7 @@ tailwind.config = {
 .cetvel-kok.shape-kapi .c5 { transform: rotate(90deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-kapi .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 3. ŞEKİL: ÜÇGEN FORM (Liyakat Kanıtı - PDF İşlenirken) */
+/* 3. ŞEKİL: ÜÇGEN FORM */
 .cetvel-kok.shape-ucgen .c1 { transform: rotate(-60deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-ucgen .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-ucgen .c3 { transform: rotate(120deg); transition-delay: 0.3s; }
@@ -92,7 +92,7 @@ tailwind.config = {
 .cetvel-kok.shape-ucgen .c5 { transform: rotate(120deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-ucgen .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 4. ŞEKİL: TİK İŞARETİ (Kusursuz ✓ Formu) */
+/* 4. ŞEKİL: TİK İŞARETİ */
 .cetvel-kok.shape-tik { transform: translateX(-80px) translateY(-10px); }
 .cetvel-kok.shape-tik .c1 { transform: rotate(55deg); transition-delay: 0.1s; } 
 .cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } 
@@ -160,13 +160,15 @@ if (localStorage.getItem('me26_user_id')) {
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('nedir'); mobilMenuKapat();">Ne Yapacağız?</a>
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('kurallar'); mobilMenuKapat();">Kurallarımız</a>
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('gizlilik'); mobilMenuKapat();">Gizlilik Zırhı</a>
-    <a id="nav-btn-mobile" href="javascript:void(0);" onclick="navButonTiklandi(event); mobilMenuKapat();" class='bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer text-center'>Numaranı Al</a>
+    
+    <!-- YENİ: A etiketinden BUTTON etiketine çevrildi -->
+    <button id="nav-btn-mobile" onclick="navButonTiklandi(event); mobilMenuKapat();" class='bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer text-center border-none outline-none'>Numaranı Al</button>
 </div>
 
 <!-- ÜST MENÜ -->
 <nav id="ana-nav" class="bg-zemin text-white py-5 shadow-xl relative z-20 border-b border-slate-800 w-full transition-colors duration-1000">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-        <!-- LOGO (SPA Yönlendirmesi) -->
+        <!-- Logo Link Kalabilir, Ana Sayfaya Dönüş Yapıyor -->
         <a id="ana-logo" class='text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition' href='javascript:void(0);' onclick='anaSayfayaDon(event)'>
             <div class="w-1.5 h-6 bg-kaos mr-2"></div>
             <span><span class="text-kaos">ME26</span> AĞI</span>
@@ -175,9 +177,11 @@ if (localStorage.getItem('me26_user_id')) {
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('otonom')">Otonom Ağ Nedir?</a>
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
-            <a id="nav-btn-desktop" href="javascript:void(0);" onclick="navButonTiklandi(event)" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest">Numaranı Al</a>
+            
+            <!-- YENİ: A etiketinden BUTTON etiketine çevrildi (Zıplamayı kökünden engeller) -->
+            <button id="nav-btn-desktop" onclick="navButonTiklandi(event)" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest border-none outline-none">Numaranı Al</button>
         </div>
-        <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2 cursor-pointer">
+        <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2 cursor-pointer border-none outline-none">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
     </div>
@@ -467,7 +471,7 @@ if (localStorage.getItem('me26_user_id')) {
             <div class="w-2 h-8 bg-kaos mr-3"></div>
             <div>
                 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.9 (Kusursuz SPA & Tam Kasa)</div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.9.1 (Safkan Buton Zırhı)</div>
             </div>
         </div>
         <div class="text-right text-[10px] text-gray-600 font-mono">
@@ -504,19 +508,23 @@ window.anaSayfayaDon = function(e) {
 };
 
 window.kontrolPaneliniAc = function(e) {
-    if(e) e.preventDefault();
-    if(!localStorage.getItem('me26_user_id')) {
-        const kayitAlani = document.getElementById('kayit');
-        if(kayitAlani) kayitAlani.scrollIntoView({behavior: 'smooth'});
-        return;
+    try {
+        if(e) e.preventDefault();
+        if(!localStorage.getItem('me26_user_id')) {
+            const kayitAlani = document.getElementById('kayit');
+            if(kayitAlani) kayitAlani.scrollIntoView({behavior: 'smooth'});
+            return;
+        }
+        sistemBilgiKapat();
+        mobilMenuKapat();
+        
+        document.getElementById('landing-view').style.display = 'none';
+        document.getElementById('lobby-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'flex';
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    } catch(err) {
+        console.error("Panel acilirken kod hatasi yakalandi:", err);
     }
-    sistemBilgiKapat();
-    mobilMenuKapat();
-    
-    document.getElementById('landing-view').style.display = 'none';
-    document.getElementById('lobby-view').style.display = 'none';
-    document.getElementById('dashboard-view').style.display = 'flex';
-    window.scrollTo({top: 0, behavior: 'smooth'});
 };
 
 window.navButonTiklandi = function(e) {
@@ -535,11 +543,11 @@ window.butonlariGuncelle = function() {
     
     if(btnDesktop) { 
         btnDesktop.innerText = "KONTROL PANELİ"; 
-        btnDesktop.className = "bg-slate-800 text-white border border-slate-600 px-6 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg cursor-pointer text-center tracking-widest";
+        btnDesktop.className = "bg-slate-800 text-white border border-slate-600 px-6 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg cursor-pointer text-center tracking-widest outline-none";
     }
     if(btnMobile) { 
         btnMobile.innerText = "KONTROL PANELİ"; 
-        btnMobile.className = "bg-slate-800 text-white border border-slate-600 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-lg cursor-pointer text-center";
+        btnMobile.className = "bg-slate-800 text-white border border-slate-600 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-lg cursor-pointer text-center outline-none";
     }
 };
 
