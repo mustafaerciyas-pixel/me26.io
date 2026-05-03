@@ -92,13 +92,14 @@ tailwind.config = {
 .cetvel-kok.shape-ucgen .c5 { transform: rotate(120deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-ucgen .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 4. ŞEKİL: TİK İŞARETİ (Oylama Yapıldıktan Sonra / Onay) */
-.cetvel-kok.shape-tik .c1 { transform: rotate(45deg); transition-delay: 0.1s; width: 60px; left: 184px; top: 40px; } /* Kısa aşağı vuruş */
-.cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } /* Keskin yukarı dönüş */
-.cetvel-kok.shape-tik .c3 { transform: rotate(0deg); transition-delay: 0.3s; } /* Düz uzama */
-.cetvel-kok.shape-tik .c4 { transform: rotate(0deg); transition-delay: 0.4s; } /* Uzamaya devam */
-.cetvel-kok.shape-tik .c5 { transform: rotate(178deg); transition-delay: 0.5s; } /* Kalanı arkaya gizle */
-.cetvel-kok.shape-tik .c6 { transform: rotate(-178deg); transition-delay: 0.6s; } /* Kalanı arkaya gizle */
+/* 4. ŞEKİL: TİK İŞARETİ (Kopukluk Giderildi - Kusursuz ✓ Formu) */
+.cetvel-kok.shape-tik { transform: translateX(-80px) translateY(-10px); }
+.cetvel-kok.shape-tik .c1 { transform: rotate(55deg); transition-delay: 0.1s; } /* Sol kısa bacak (aşağı) */
+.cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } /* Sağ uzun bacak (yukarı dönüş) */
+.cetvel-kok.shape-tik .c3 { transform: rotate(0deg); transition-delay: 0.3s; } /* Sağ bacak uzamaya devam */
+.cetvel-kok.shape-tik .c4 { transform: rotate(178deg); transition-delay: 0.4s; } /* Kalanı arkaya gizle */
+.cetvel-kok.shape-tik .c5 { transform: rotate(-178deg); transition-delay: 0.5s; } /* Kalanı arkaya gizle */
+.cetvel-kok.shape-tik .c6 { transform: rotate(178deg); transition-delay: 0.6s; } /* Kalanı arkaya gizle */
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 8px; }
@@ -534,6 +535,28 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 window.smsOnaylandi = false;
 
 // -----------------------------------------------------
+// KONTROL PANELİ BUTON DEĞİŞİM YAMASI (Numaranı Al -> Kontrol Paneli)
+// -----------------------------------------------------
+window.butonlariGuncelle = function() {
+    const btnDesktop = document.getElementById('nav-btn-desktop');
+    const btnMobile = document.getElementById('nav-btn-mobile');
+    if(btnDesktop) { 
+        btnDesktop.innerText = "KONTROL PANELİ"; 
+        btnDesktop.href = "#"; 
+        btnDesktop.onclick = (e) => { e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'}); }; 
+        btnDesktop.classList.add('bg-green-600');
+        btnDesktop.classList.remove('bg-kaos');
+    }
+    if(btnMobile) { 
+        btnMobile.innerText = "KONTROL PANELİ"; 
+        btnMobile.href = "#"; 
+        btnMobile.onclick = (e) => { e.preventDefault(); mobilMenuKapat(); window.scrollTo({top: 0, behavior: 'smooth'}); }; 
+        btnMobile.classList.add('bg-green-600');
+        btnMobile.classList.remove('bg-kaos');
+    }
+};
+
+// -----------------------------------------------------
 // ORİJİNAL, ZEHİR GİBİ SİSTEM MANİFESTOLARI
 // -----------------------------------------------------
 const sistemBilgileri = {
@@ -722,6 +745,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dashboard-view').classList.remove('hidden'); document.getElementById('dashboard-view').classList.add('flex');
         
         // Kontrol Panelini Doldur
+        window.butonlariGuncelle(); // <--- KONTROL PANELİ BUTON YAMASI TETİKLENİYOR
+        
         document.getElementById('dash-id-main').innerText = "TR-IA-" + localStorage.getItem('me26_uye_no');
         let rutbe = localStorage.getItem('me26_rutbe') || 'İÇMİMAR';
         document.getElementById('dash-rutbe').innerText = rutbe;
