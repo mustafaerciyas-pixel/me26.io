@@ -1,26 +1,18 @@
 /* ==========================================================================
-   ME26 AĞI - SİSTEM AYARLARI VE ŞALTERLER (js/config.js)
+   ME26 AĞI - SİSTEM AYARLARI VE YAPILANDIRMA (js/config.js)
    ========================================================================== */
 
 export const ME26_CONFIG = {
-    // 1. SİSTEM ÇALIŞMA MODU
-    // "local" = Dış servis olmadan tarayıcı içinde çalışır.
-    // "production" = Gerçek veritabanı ve doğrulama servisleri devreye girer.
-    mode: "local",
+    // VIP kilidini açmak için gereken paylaşım sayısı
+    requiredInvitesForVip: 3,
 
-    // 2. DIŞ SERVİS BAĞLANTILARI
-    // Direkt yayında gerçek servisler hazır oldukça true yapılacak.
-    useFirebase: false,
-    useSupabase: false,
-    useRealSms: false,
-    useRealPdf: false,
-
-    // 3. GENEL LİMİTLER VE SABİTLER
-    founderLimit: 2000,
-    initialCount: 0,
-
-    // 4. VIP KURUCU NUMARASI KURALLARI
-    vipMin: 101,
-    vipMax: 5000,
-    requiredInvitesForVip: 3
+    // Firebase (SMS & Auth) Bağlantı Ayarları
+    firebaseConfig: {
+        apiKey: "AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA",
+        authDomain: "me26-io.firebaseapp.com",
+        projectId: "me26-io",
+        storageBucket: "me26-io.firebasestorage.app",
+        messagingSenderId: "87570616950",
+        appId: "1:87570616950:web:50c97a3de14a69efb4c557"
+    }
 };
