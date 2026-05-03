@@ -40,7 +40,6 @@ tailwind.config = {
 
 .menu-closed { transform: translateY(-100%); opacity: 0; pointer-events: none; transition: all 0.4s ease-in-out; }
 .bg-radial-kaos-lg { background: radial-gradient(circle, rgba(var(--neon-rgb), 0.15) 0%, transparent 70%); }
-.bg-radial-kaos-sm { background: radial-gradient(circle, rgba(var(--neon-rgb), 0.1) 0%, transparent 60%); }
 
 /* Katlanır Sarı Cetvel Temel Yapısı */
 .cetvel-kok { display: flex; justify-content: center; align-items: center; transition: transform 0.3s ease; }
@@ -184,28 +183,24 @@ tailwind.config = {
                 <div id="dropdown-panel" class="absolute right-0 top-full mt-4 w-[350px] md:w-[450px] bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-2xl shadow-2xl dropdown-gizli flex flex-col overflow-hidden z-[100] text-left">
                     
                     <div class="overflow-y-auto max-h-[75vh] custom-scrollbar">
-                        <!-- 🛡️ TEPEDE: DİJİTAL ZIRH VE KİMLİK -->
+                        <!-- 🛡️ DİJİTAL ZIRH VE KİMLİK -->
                         <div class="p-6 border-b border-slate-700 bg-black/40 relative">
                             <h3 class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-4 flex items-center">
-                                <span class="text-lg mr-2">🛡️</span> TEPEDE: DİJİTAL ZIRH VE KİMLİK
+                                <span class="text-lg mr-2">🛡️</span> DİJİTAL ZIRH VE KİMLİK
                             </h3>
                             <div class="mb-2"><span class="bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/40 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">KURUCU ÜYE</span></div>
                             <div class="text-3xl md:text-4xl font-mono font-black text-white tracking-widest mb-1" id="drop-id-main">TR-IA-145</div>
                             <div class="text-sm font-black text-gray-200 uppercase tracking-widest mb-4" id="drop-rutbe">İÇMİMAR</div>
-                            <div class="flex gap-2 mb-5">
+                            <div class="flex gap-2 mb-2">
                                 <span class="bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-1 rounded text-[9px] font-black uppercase">e-Devlet Onaylı</span>
                                 <span class="bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[9px] font-black uppercase">Sistem Onaylı</span>
                             </div>
-                            <button onclick="window.cikisYap()" class="bg-slate-800 text-gray-300 border border-slate-600 px-4 py-2 rounded hover:bg-slate-700 hover:text-white text-[10px] font-bold uppercase tracking-widest transition flex items-center cursor-pointer w-full justify-center">
-                                <svg class="w-4 h-4 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                Ağdan Çıkış Yap
-                            </button>
                         </div>
 
-                        <!-- ⚙️ MERKEZDE: LİYAKAT VE TAARRUZ MOTORU -->
+                        <!-- ⚙️ LİYAKAT VE TAARRUZ MOTORU -->
                         <div class="p-6 border-b border-slate-700 bg-slate-800/20">
                             <h3 class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-5 flex items-center">
-                                <span class="text-lg mr-2">⚙️</span> MERKEZDE: LİYAKAT VE TAARRUZ MOTORU
+                                <span class="text-lg mr-2">⚙️</span> LİYAKAT VE TAARRUZ MOTORU
                             </h3>
 
                             <div class="bg-black/40 p-4 rounded-lg border border-slate-700 mb-5">
@@ -244,7 +239,7 @@ tailwind.config = {
                             </div>
                         </div>
 
-                        <!-- 📈 GELİŞİM ALANI -->
+                        <!-- 📈 GELİŞİM ALANI: KARİYER EVRİMİ -->
                         <div class="p-6 border-b border-slate-700">
                             <h3 class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-5 flex items-center">
                                 <span class="text-lg mr-2">📈</span> GELİŞİM ALANI: KARİYER EVRİMİ
@@ -263,7 +258,7 @@ tailwind.config = {
                             </div>
                         </div>
 
-                        <!-- 🏗️ ŞANTİYE GÖREVLERİ -->
+                        <!-- 🏗️ ŞANTİYE GÖREVLERİ (Liyakat İstasyonu) -->
                         <div class="p-6 border-b border-slate-700 bg-slate-800/20">
                             <h3 class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-5 flex items-center">
                                 <span class="text-lg mr-2">🏗️</span> ŞANTİYE GÖREVLERİ (Liyakat İstasyonu)
@@ -279,6 +274,14 @@ tailwind.config = {
                                         <button onclick="window.goreveBasvur(this)" class="bg-slate-700 border border-slate-600 hover:bg-slate-600 text-white px-4 py-2 rounded text-[10px] font-bold transition uppercase cursor-pointer">BAŞVUR</button>
                                     </div>
                                 </div>
+                                
+                                <div class="bg-black/40 p-4 rounded-lg border border-slate-700">
+                                    <div class="text-xs text-gray-200 font-medium mb-3">KVKK metinlerinin incelenmesi</div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-green-400 font-bold text-[11px]">Ödül: +0.5 Liyakat Puanı</span>
+                                        <button onclick="window.goreveBasvur(this)" class="bg-slate-700 border border-slate-600 hover:bg-slate-600 text-white px-4 py-2 rounded text-[10px] font-bold transition uppercase cursor-pointer">BAŞVUR</button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="bg-black/40 p-5 rounded-lg border border-slate-700">
@@ -289,16 +292,13 @@ tailwind.config = {
                             </div>
                         </div>
 
-                        <!-- 🛑 ZEMİNDE: OTONOM İNFAZ -->
-                        <div class="p-6 bg-red-950/30 text-center">
-                            <h3 class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-5 flex items-center justify-center">
-                                <span class="text-lg mr-2">🛑</span> ZEMİNDE: OTONOM İNFAZ (Özgürlük Kapısı)
-                            </h3>
-                            <button onclick="window.hesabiSil()" class="w-full bg-red-950 border border-red-800 hover:bg-red-900 text-red-200 hover:text-white text-xs font-black py-4 rounded-lg transition uppercase tracking-widest cursor-pointer shadow-[0_0_15px_rgba(153,27,27,0.3)] mb-4">
-                                AĞDAN AYRIL VE SİCİLİMİ KALICI OLARAK SİL
+                        <!-- 🛑 OTONOM İNFAZ (Küçültülmüş Buton) -->
+                        <div class="p-6 bg-red-950/20 text-center">
+                            <button onclick="window.hesabiSil()" class="bg-transparent border border-red-900/50 hover:bg-red-900/80 text-red-400 hover:text-white text-[10px] font-bold py-2 px-4 rounded transition uppercase tracking-widest cursor-pointer mx-auto block mb-3">
+                                AĞDAN AYRIL VE SİCİLİMİ SİL
                             </button>
-                            <p class="text-[10px] text-gray-500 leading-relaxed uppercase">
-                                Tıkladığınız an e-Devlet iziniz, isminiz, liyakat puanlarınız ve Kurucu Üye rozetiniz dijital olarak yakılır. Sistem sizi rehin tutmaz, arkanızda sıfır iz kalır.
+                            <p class="text-[9px] text-gray-600 leading-relaxed uppercase">
+                                Tıkladığınız an e-Devlet iziniz, isminiz ve liyakat puanlarınız dijital olarak yakılır. Arkanızda sıfır iz kalır.
                             </p>
                         </div>
 
@@ -313,7 +313,7 @@ tailwind.config = {
     </div>
 </nav>
 
-<!-- ================= GİRİŞ YAPILMAMIŞ: ANA SAYFA GÖRÜNÜMÜ ================= -->
+<!-- ================= ANA SAYFA GÖRÜNÜMÜ ================= -->
 <div id="landing-view" style="display: flex;" class="transition-opacity duration-500 flex-grow w-full flex-col">
     <header class="text-center px-4 pt-16 pb-16 relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 bg-radial-kaos-lg"></div>
@@ -349,6 +349,7 @@ tailwind.config = {
             </div>
         </div>
 
+        <!-- KAYIT ALANI (GİRİŞ YAPILINCA GİZLENECEK) -->
         <div id="kayit" class="relative h-fit sticky top-24 flex items-center">
             <div class="bg-slate-900/95 border border-slate-700 p-8 rounded-2xl shadow-2xl w-full backdrop-blur-md">
                 <div id="form-area" class="text-center">
@@ -369,7 +370,7 @@ tailwind.config = {
     </main>
 </div>
 
-<!-- ================= GİRİŞ YAPILMIŞ: DEV CANLI OYLAMA SAYFASI ================= -->
+<!-- ================= GİRİŞ YAPILMIŞ: DEV CANLI OYLAMA SAYFASI (5 SAMİMİ SANDIK) ================= -->
 <div id="voting-view" style="display: none;" class="flex-grow w-full max-w-5xl mx-auto flex-col p-4 md:p-8 z-10 mt-6 mb-20">
     <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
         
@@ -377,7 +378,7 @@ tailwind.config = {
             <div class="absolute inset-0 opacity-10 bg-radial-kaos-sm pointer-events-none"></div>
             <h2 class="text-3xl md:text-5xl font-black text-white mb-4 uppercase tracking-widest drop-shadow-md relative z-10"><span class="text-kaos">OTONOM</span> MECLİS</h2>
             <div class="inline-block bg-kaos/20 text-kaos border border-kaos/50 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest animate-pulse relative z-10">Canlı Sandıklar Aktif</div>
-            <p class="text-gray-400 text-sm mt-4 relative z-10 font-medium tracking-wide">Tüm oylamalar <strong class="text-white">25 Mayıs 2026 (Dünya İçmimarlar Günü)</strong> saat 23:59'da sonlanacak ve otonom sistem kararları anında icra edecektir.</p>
+            <p class="text-gray-400 text-sm mt-4 relative z-10 font-medium tracking-wide">Tüm oylamalar <strong class="text-white">25 Mayıs 2026 (Dünya İçmimarlar Günü)</strong> saat 23:59'da sonlanacak ve otonom sistem kararları icra edecektir.</p>
         </div>
         
         <div class="p-6 md:p-10 space-y-10 bg-slate-800/20">
@@ -413,28 +414,28 @@ tailwind.config = {
                 </div>
             </div>
 
-            <!-- OYLAMA 2: HUKUK -->
+            <!-- OYLAMA 2: SAHTE İÇMİMARLAR -->
             <div class="bg-black/50 border border-slate-600 rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden" id="card-oylama-2">
                 <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-3 py-1 rounded-bl-lg uppercase tracking-widest">Kapanış: 25 Mayıs 2026</div>
-                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">⚖️</span> 2. Hukuki Taarruz: Aidat İadeleri</h3>
-                <p class="text-gray-300 text-sm leading-relaxed mb-6">ME26'nın temel prensibi "Aidat ve Sömürü Yok"tur. Geçmişe dönük ödenen aidatların haksız tahsil edildiğine dair Danıştay kararları mevcuttur. Ağımızdaki gönüllü avukatların (Tayfur Erciyas önderliğinde) toplu bir "İade Davası" taslağı hazırlamasını onaylıyor musunuz?</p>
+                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">🕵️‍♂️</span> 2. Meslek Gaspı: Sahte İçmimarlar</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6">Piyasada hiçbir eğitimi ve yetkisi olmadan "İçmimar" unvanını kullanan, emeğimizi ve itibarımızı sömüren sahte isimlerle omuz omuza mücadele edelim mi? Ağa özel bir "İhbar ve Hukuki Takip" modülü kurarak birlikte güçlü bir savunma hattı oluşturalım mı?</p>
                 
                 <div id="oy-aktif-2" class="grid md:grid-cols-2 gap-4">
-                    <button onclick="window.oyKullan(2, 'EVET')" class="bg-slate-800 border border-slate-600 hover:border-green-500 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
-                        <div class="text-white font-black text-lg group-hover:text-green-400 transition mb-1">✅ EVET</div>
-                        <div class="text-gray-400 text-xs">Hukuki süreç başlatılsın, dilekçe taslağı hazırlansın.</div>
+                    <button onclick="window.oyKullan(2, 'EVET')" class="bg-slate-800 border border-slate-600 hover:border-red-500 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
+                        <div class="text-white font-black text-lg group-hover:text-red-400 transition mb-1">✅ EVET</div>
+                        <div class="text-gray-400 text-xs">Hep birlikte yasal savunma hattı kuralım.</div>
                     </button>
                     <button onclick="window.oyKullan(2, 'HAYIR')" class="bg-slate-800 border border-slate-600 hover:border-gray-400 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
                         <div class="text-white font-black text-lg transition mb-1">❌ HAYIR</div>
-                        <div class="text-gray-400 text-xs">Mevcut düzen devam etsin, hukuki yola gidilmesin.</div>
+                        <div class="text-gray-400 text-xs">Herkes kendi bireysel mücadelesini versin.</div>
                     </button>
                 </div>
                 
                 <div id="oy-sonuc-2" style="display: none;" class="mt-4 bg-slate-900/80 p-5 rounded-xl border border-slate-700">
                     <h4 class="text-kaos text-xs font-bold tracking-widest mb-4 uppercase">Canlı Sandık Sonucu:</h4>
                     <div class="mb-4">
-                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-green-500">92%</span></div>
-                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-green-500 h-full rounded-full" style="width: 92%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-red-500">92%</span></div>
+                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-red-500 h-full rounded-full" style="width: 92%"></div></div>
                     </div>
                     <div class="mb-5">
                         <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>❌ HAYIR</span><span class="text-gray-500">8%</span></div>
@@ -444,63 +445,63 @@ tailwind.config = {
                 </div>
             </div>
 
-            <!-- OYLAMA 3: USTA ÇIRAK -->
+            <!-- OYLAMA 3: İMZA YETKİSİ -->
             <div class="bg-black/50 border border-slate-600 rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden" id="card-oylama-3">
                 <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-3 py-1 rounded-bl-lg uppercase tracking-widest">Kapanış: 25 Mayıs 2026</div>
-                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">📚</span> 3. Usta-Çırak: Şantiye Eğitimleri</h3>
-                <p class="text-gray-300 text-sm leading-relaxed mb-6">Piyasada stajyerlerin bedava iş gücü olarak kullanılmasının önüne geçmek için, liyakatini e-Devlet ile kanıtlamış ustalar (İçmimarlar) ile öğrencilerin eşleşebileceği otonom bir staj modülü yazılmasını istiyor musunuz?</p>
+                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">✍️</span> 3. Hak Ediş: İmza Yetkisi Mücadelesi</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6">Yıllardır verilmeyen ve bizi şantiyelerde taşeron durumuna düşüren "İmza Yetkimiz" için artık bireysel sızlanmaları bırakıp, 80.000 kişilik tek bir yumruk olarak ortak hareket edelim mi? İlgili bakanlıklara ve kapılara birlikte dayanalım mı?</p>
                 
                 <div id="oy-aktif-3" class="grid md:grid-cols-2 gap-4">
                     <button onclick="window.oyKullan(3, 'EVET')" class="bg-slate-800 border border-slate-600 hover:border-blue-500 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
                         <div class="text-white font-black text-lg group-hover:text-blue-400 transition mb-1">✅ EVET</div>
-                        <div class="text-gray-400 text-xs">Otonom staj eşleşme modülü sisteme eklensin.</div>
+                        <div class="text-gray-400 text-xs">Tek yumruk olalım, imza hakkımızı alalım.</div>
                     </button>
                     <button onclick="window.oyKullan(3, 'HAYIR')" class="bg-slate-800 border border-slate-600 hover:border-gray-400 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
                         <div class="text-white font-black text-lg transition mb-1">❌ HAYIR</div>
-                        <div class="text-gray-400 text-xs">Gerek yok, öğrenciler kendi başının çaresine baksın.</div>
+                        <div class="text-gray-400 text-xs">Mevcut kanunlar ve yapı böyle devam etsin.</div>
                     </button>
                 </div>
                 
                 <div id="oy-sonuc-3" style="display: none;" class="mt-4 bg-slate-900/80 p-5 rounded-xl border border-slate-700">
                     <h4 class="text-kaos text-xs font-bold tracking-widest mb-4 uppercase">Canlı Sandık Sonucu:</h4>
                     <div class="mb-4">
-                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-blue-500">88%</span></div>
-                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-blue-500 h-full rounded-full" style="width: 88%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-blue-500">98%</span></div>
+                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-blue-500 h-full rounded-full" style="width: 98%"></div></div>
                     </div>
                     <div class="mb-5">
-                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>❌ HAYIR</span><span class="text-gray-500">12%</span></div>
-                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-gray-600 h-full rounded-full" style="width: 12%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>❌ HAYIR</span><span class="text-gray-500">2%</span></div>
+                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-gray-600 h-full rounded-full" style="width: 2%"></div></div>
                     </div>
                     <button onclick="window.oyDegistir(3)" class="text-xs text-gray-400 hover:text-white underline decoration-gray-600 transition cursor-pointer font-bold tracking-widest">FİKRİMİ DEĞİŞTİR (Oyu Geri Çek)</button>
                 </div>
             </div>
 
-            <!-- OYLAMA 4: YAPAY ZEKA -->
+            <!-- OYLAMA 4: İÇMİMARLAR KONSEYİ -->
             <div class="bg-black/50 border border-slate-600 rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden" id="card-oylama-4">
                 <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-3 py-1 rounded-bl-lg uppercase tracking-widest">Kapanış: 25 Mayıs 2026</div>
-                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">🤖</span> 4. Teknoloji: Yapay Zeka Komitesi</h3>
-                <p class="text-gray-300 text-sm leading-relaxed mb-6">İçmimarlık pratiğinde (modelleme, render, metraj) kullanılmak üzere, ME26 üyelerine özel ve ücretsiz Yapay Zeka araçlarının entegrasyonu (Google Gemini/Veo tabanlı) için özel bir geliştirici komitesi kurulsun mu?</p>
+                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">🤝</span> 4. Usta-Çırak: İçmimarlar Konseyi</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6">Mevcut hiyerarşik yapılar veya odalar yerine, tamamen liyakata dayalı, şeffaf bir "İçmimarlar Konseyi" etrafında kenetlenelim mi? Şantiye dertlerimizi ve piyasadaki tahsilat sorunlarımızı çözmek için birbirimize omuz verip, yeni mezun kardeşlerimizi koruyan bir usta-çırak ağı kuralım mı?</p>
                 
                 <div id="oy-aktif-4" class="grid md:grid-cols-2 gap-4">
                     <button onclick="window.oyKullan(4, 'EVET')" class="bg-slate-800 border border-slate-600 hover:border-purple-500 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
                         <div class="text-white font-black text-lg group-hover:text-purple-400 transition mb-1">✅ EVET</div>
-                        <div class="text-gray-400 text-xs">Yapay Zeka komitesi kurulsun, entegrasyon başlasın.</div>
+                        <div class="text-gray-400 text-xs">Liyakata dayalı İçmimarlar Konseyi'ni kuralım.</div>
                     </button>
                     <button onclick="window.oyKullan(4, 'HAYIR')" class="bg-slate-800 border border-slate-600 hover:border-gray-400 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
                         <div class="text-white font-black text-lg transition mb-1">❌ HAYIR</div>
-                        <div class="text-gray-400 text-xs">Teknolojiye şimdilik girmeyelim.</div>
+                        <div class="text-gray-400 text-xs">Eski usül, başkanlı sistemlerle devam edelim.</div>
                     </button>
                 </div>
                 
                 <div id="oy-sonuc-4" style="display: none;" class="mt-4 bg-slate-900/80 p-5 rounded-xl border border-slate-700">
                     <h4 class="text-kaos text-xs font-bold tracking-widest mb-4 uppercase">Canlı Sandık Sonucu:</h4>
                     <div class="mb-4">
-                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-purple-500">95%</span></div>
-                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-purple-500 h-full rounded-full" style="width: 95%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-purple-500">89%</span></div>
+                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-purple-500 h-full rounded-full" style="width: 89%"></div></div>
                     </div>
                     <div class="mb-5">
-                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>❌ HAYIR</span><span class="text-gray-500">5%</span></div>
-                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-gray-600 h-full rounded-full" style="width: 5%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>❌ HAYIR</span><span class="text-gray-500">11%</span></div>
+                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-gray-600 h-full rounded-full" style="width: 11%"></div></div>
                     </div>
                     <button onclick="window.oyDegistir(4)" class="text-xs text-gray-400 hover:text-white underline decoration-gray-600 transition cursor-pointer font-bold tracking-widest">FİKRİMİ DEĞİŞTİR (Oyu Geri Çek)</button>
                 </div>
@@ -509,29 +510,29 @@ tailwind.config = {
             <!-- OYLAMA 5: DAO -->
             <div class="bg-black/50 border border-slate-600 rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden" id="card-oylama-5">
                 <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-3 py-1 rounded-bl-lg uppercase tracking-widest">Kapanış: 25 Mayıs 2026</div>
-                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">🌐</span> 5. Yapı: Ademi Merkeziyetçilik (DAO)</h3>
-                <p class="text-gray-300 text-sm leading-relaxed mb-6">Sistemin tamamen "İnsan Yöneticisiz" ve manipüle edilemez olması için, gelecek versiyonlarda tüm oylama ve liyakat mekanizmalarının DAO (Merkeziyetsiz Otonom Organizasyon) mantığıyla Blokzincir üzerine taşınmasına onay veriyor musunuz?</p>
+                <h3 class="text-xl md:text-2xl font-black text-white mb-3 flex items-center"><span class="text-2xl mr-3">🌐</span> 5. Otonom Gelecek: Ademi Merkeziyetçilik</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-6">Merkeziyetsiz Otonom Organizasyon (DAO), hiçbir insanın veya başkanın tek başına karar alamadığı, gücün tüm üyelere liyakatlerine göre dağıtıldığı bir yazılım felsefesidir. Kuracağımız bu yapının patronu, yöneticisi veya aidat toplayıcısı olmadan, sadece oylarla ve akıllı kurallarla kendi kendini yönetmesini ister misin?</p>
                 
                 <div id="oy-aktif-5" class="grid md:grid-cols-2 gap-4">
                     <button onclick="window.oyKullan(5, 'EVET')" class="bg-slate-800 border border-slate-600 hover:border-orange-500 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
                         <div class="text-white font-black text-lg group-hover:text-orange-400 transition mb-1">✅ EVET</div>
-                        <div class="text-gray-400 text-xs">Ağın mimarisi Blokzincir / DAO olarak evrilsin.</div>
+                        <div class="text-gray-400 text-xs">Patronsuz, kurallı ve otonom bir gelecek kuralım.</div>
                     </button>
                     <button onclick="window.oyKullan(5, 'HAYIR')" class="bg-slate-800 border border-slate-600 hover:border-gray-400 hover:bg-slate-700 transition p-4 rounded-xl text-left cursor-pointer group">
                         <div class="text-white font-black text-lg transition mb-1">❌ HAYIR</div>
-                        <div class="text-gray-400 text-xs">Mevcut web tabanlı veritabanı yapısı yeterli.</div>
+                        <div class="text-gray-400 text-xs">Bizi bir başkan yönetsin, biz sadece aidat ödeyelim.</div>
                     </button>
                 </div>
                 
                 <div id="oy-sonuc-5" style="display: none;" class="mt-4 bg-slate-900/80 p-5 rounded-xl border border-slate-700">
                     <h4 class="text-kaos text-xs font-bold tracking-widest mb-4 uppercase">Canlı Sandık Sonucu:</h4>
                     <div class="mb-4">
-                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-orange-500">78%</span></div>
-                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-orange-500 h-full rounded-full" style="width: 78%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>✅ EVET</span><span class="text-orange-500">96%</span></div>
+                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-orange-500 h-full rounded-full" style="width: 96%"></div></div>
                     </div>
                     <div class="mb-5">
-                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>❌ HAYIR</span><span class="text-gray-500">22%</span></div>
-                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-gray-600 h-full rounded-full" style="width: 22%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-gray-200 mb-1"><span>❌ HAYIR</span><span class="text-gray-500">4%</span></div>
+                        <div class="w-full bg-black rounded-full h-3 overflow-hidden border border-slate-700"><div class="bg-gray-600 h-full rounded-full" style="width: 4%"></div></div>
                     </div>
                     <button onclick="window.oyDegistir(5)" class="text-xs text-gray-400 hover:text-white underline decoration-gray-600 transition cursor-pointer font-bold tracking-widest">FİKRİMİ DEĞİŞTİR (Oyu Geri Çek)</button>
                 </div>
@@ -550,7 +551,7 @@ tailwind.config = {
                     Ağın gidişatına yön ver. Sunacağın teklif "Sistem İçmimarları" tarafından incelendikten sonra, yeterli liyakat standardını taşıyorsa tüm ağın oylamasına (Canlı Sandığa) açılacaktır.
                 </p>
                 <div class="flex flex-col gap-4">
-                    <input type="text" id="yeni-konu-baslik" placeholder="Oylama Başlığı (Örn: Oda Aidat Sisteminin Kaldırılması)" class="w-full bg-slate-900 border border-slate-600 text-white text-sm p-4 rounded-xl outline-none focus:border-kaos transition shadow-inner font-bold">
+                    <input type="text" id="yeni-konu-baslik" placeholder="Oylama Başlığı (Örn: Taşeronlaşma Sorunu)" class="w-full bg-slate-900 border border-slate-600 text-white text-sm p-4 rounded-xl outline-none focus:border-kaos transition shadow-inner font-bold">
                     <textarea id="yeni-konu-detay" placeholder="Teklifinizin detaylarını, neden evet veya neden hayır denmesi gerektiğini açıklayın..." class="w-full bg-slate-900 border border-slate-600 text-gray-300 text-sm p-4 rounded-xl outline-none focus:border-kaos transition h-32 resize-none custom-scrollbar shadow-inner"></textarea>
                     <button onclick="window.konuTeklifEt()" class="w-full bg-kaos hover:opacity-90 text-slate-900 text-base font-black py-4 rounded-xl transition uppercase tracking-widest shadow-kaos cursor-pointer mt-2">TEKLİFİ AĞA SUN</button>
                 </div>
@@ -635,7 +636,7 @@ tailwind.config = {
             <div class="w-2 h-8 bg-kaos mr-3"></div>
             <div>
                 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 15 (Eksiksiz Manifesto, Supabase Zırhı ve 5'li Sandık)</div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 16 (DB Zırhlı, Manifestolu Kusursuz Sürüm)</div>
             </div>
         </div>
         <div class="text-right text-[10px] text-gray-600 font-mono">
@@ -762,7 +763,7 @@ window.cetvelGecis = function(mesaj, islemCallback, sekilClass = 'shape-zigzag')
     } else { if(islemCallback) islemCallback(); }
 }
 
-// ==== ORİJİNAL, KESİLMEMİŞ MANİFESTOLAR GELDİ ====
+// ==== ORİJİNAL, KESİLMEMİŞ MANİFESTOLAR ====
 const sistemBilgileri = {
     'otonom': { 
         baslik: "OTONOM AĞ SİMÜLASYONU", 
@@ -836,7 +837,7 @@ let pendingKullanici = { email: '', isim: '', telefon: '' };
 
 window.kopyalaLink = function(event) {
     if(event) event.stopPropagation();
-    const tamLink = 'https://' + document.getElementById('drop-davet').innerText;
+    const tamLink = document.getElementById('drop-davet').innerText;
     navigator.clipboard.writeText(tamLink).then(() => {
         const btn = event.currentTarget; const eskiMetin = btn.innerText;
         if(btn.tagName === 'BUTTON') {
@@ -850,7 +851,7 @@ window.kopyalaLink = function(event) {
 };
 
 window.whatsappPaylas = function() {
-    const tamLink = 'https://' + document.getElementById('drop-davet').innerText;
+    const tamLink = document.getElementById('drop-davet').innerText;
     window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent("Kurucu Üye olarak ME26 otonom ağına katıl: " + tamLink), '_blank');
 };
 
@@ -900,11 +901,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('me26_user_id')) {
         window.butonlariGuncelle();
         
-        // Zaten Giriş Yapmış: Landing'i Kapat, Sandığı Aç
-        const landing = document.getElementById('landing-view');
-        const voting = document.getElementById('voting-view');
-        if(landing) landing.style.display = 'none';
-        if(voting) voting.style.display = 'flex';
+        // Giriş yapılmışsa Kayıt Kutusunu Gizle ve Ağa Bağlısın uyarısı çıkar
+        const formArea = document.getElementById('kayit');
+        if(formArea) {
+            formArea.innerHTML = `<div class="bg-black/60 border border-kaos p-8 rounded-2xl text-center shadow-[0_0_30px_rgba(var(--neon-rgb),0.3)]"><span class="text-5xl block mb-4">🛡️</span><h3 class="text-2xl font-black text-kaos mb-3 uppercase tracking-widest">AĞA BAĞLISIN</h3><p class="text-gray-300 text-sm mb-6 leading-relaxed">Kimliğin doğrulandı ve sisteme entegre edildin. Otonom kararlara yön vermek ve gücünü kullanmak için Karargâhı aç.</p><button onclick="window.dropdownToggle(event)" class="bg-kaos text-slate-900 px-6 py-4 w-full rounded-lg font-black uppercase tracking-widest shadow-kaos cursor-pointer transition hover:scale-[1.02]">KONTROL PANELİNİ AÇ</button></div>`;
+        }
         
         document.getElementById('drop-id-main').innerText = "TR-IA-" + (localStorage.getItem('me26_uye_no') || "145");
         let rutbe = localStorage.getItem('me26_rutbe') || 'İÇMİMAR';
@@ -917,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let savedRef = localStorage.getItem('me26_ref_link');
         if(!savedRef) { savedRef = Math.random().toString(36).substring(2, 8).toUpperCase(); localStorage.setItem('me26_ref_link', savedRef); }
-        document.getElementById('drop-davet').innerText = "me26.com/davet/REF-" + savedRef;
+        document.getElementById('drop-davet').innerText = "https://me26.com/davet/REF-" + savedRef;
         return; 
     }
 
@@ -980,7 +981,7 @@ window.smsKoduOnayla = async function() {
     }
 }
 
-// ==== SUPABASE INSERT ZIRHI ====
+// ==== SUPABASE INSERT ZIRHI (HATA YAKALAMA) ====
 window.belgeyiAnalizEtVeAgaKatil = async function() {
     if (!window.smsOnaylandi) { alert("SİSTEM REDDİ: SMS Doğrulaması şart!"); return; }
     const btnPdf = document.getElementById('btn-pdf-onayla');
@@ -990,7 +991,6 @@ window.belgeyiAnalizEtVeAgaKatil = async function() {
     btnPdf.innerText = "AĞA YAZILIYOR..."; btnPdf.disabled = true;
 
     try {
-        // PDF Okuma İşlemi Geri Geldi
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
         let tamMetin = "";
@@ -1013,7 +1013,6 @@ window.belgeyiAnalizEtVeAgaKatil = async function() {
 
         const durum = mezuniyet_yili ? 'İÇMİMAR' : 'İÇMİMARLIK ÖĞRENCİSİ';
         
-        // Supabase Auth'taki benzersiz ID'yi çekip ekliyoruz (Insert hatalarını çözmek için)
         const { data: authData } = await supabaseClient.auth.getUser();
         
         const veri = { 
@@ -1029,14 +1028,17 @@ window.belgeyiAnalizEtVeAgaKatil = async function() {
             liyakat_puani: 10 
         };
 
-        if(authData && authData.user) { veri.id = authData.user.id; } // Auth ile bağla
+        if(authData && authData.user) { veri.id = authData.user.id; } 
 
         const { data, error } = await supabaseClient.from('uyeler').insert([veri]).select();
         
         if (error) {
-            console.error("Supabase Yazma Hatası:", error);
-            if(error.code === '23505') throw new Error("Bu e-Devlet belgesi veya Email zaten ağa kayıtlı.");
-            throw new Error("Veritabanı reddetti. RLS (Güvenlik Kuralları) ayarlarınızı kontrol edin.");
+            console.error("Supabase Hatası:", error);
+            if(error.code === '23505') {
+                throw new Error("Bu e-Devlet belgesi veya Email zaten ağa kayıtlı.");
+            } else {
+                throw new Error("Veritabanına yazılamadı! Lütfen Supabase'deki 'uyeler' tablosunda sütun isimlerinin eksiksiz (tam_isim, tc_kimlik, dogum_tarihi vb.) olduğundan emin olun. Hata Kodu: " + error.message);
+            }
         }
 
         localStorage.setItem('me26_user_id', data[0].id); 
@@ -1051,9 +1053,15 @@ window.belgeyiAnalizEtVeAgaKatil = async function() {
     }
 }
 
-// ==== CANLI OYLAMA MOTORU (5 SANDIK İÇİN) ====
+// ==== CANLI OYLAMA MOTORU ====
 window.oylamayaGit = function() {
-    window.anaSayfayaDon(); // Sayfanın başına atar
+    const landing = document.getElementById('landing-view');
+    const voting = document.getElementById('voting-view');
+    if(landing) landing.style.display = 'none';
+    if(voting) voting.style.display = 'flex';
+    
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    
     const panel = document.getElementById('dropdown-panel');
     if(panel) { panel.classList.remove('dropdown-acik'); panel.classList.add('dropdown-gizli'); }
 };
@@ -1068,7 +1076,7 @@ window.oyKullan = function(id, tercih) {
 window.oyDegistir = function(id) {
     window.cetvelGecis("OYUNUZ GERİ ÇEKİLİYOR...", () => {
         document.getElementById(`oy-sonuc-${id}`).style.display = 'none';
-        document.getElementById(`oy-aktif-${id}`).style.display = 'grid'; // Grid class'ına dön
+        document.getElementById(`oy-aktif-${id}`).style.display = 'grid'; 
     }, 'shape-zigzag');
 };
 
