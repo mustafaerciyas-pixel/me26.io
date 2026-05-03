@@ -1,64 +1,173 @@
-/* ==========================================
-   ME26 AĞI - MERKEZİ STİL DOSYASI (style.css)
-   ========================================== */
+/* ==========================================================================
+   ME26 AĞI - KÜRESEL STİL DOSYASI (assets/style.css)
+   ========================================================================== */
 
-html { scroll-behavior: smooth; }
-body { background-color: #050810; font-family: 'Inter', sans-serif; }
+/* 1. RENK DEĞİŞKENLERİ VE KÖK AYARLAR */
+:root { 
+    /* Sistemin Kalbi: Altın Sarısı / Kaos Rengi */
+    --neon-hex: #F6C104; 
+    --neon-rgb: 246, 193, 4; 
+}
 
-/* Arka plan kaos desenleri */
-.bg-radial-kaos-lg { background-image: radial-gradient(var(--neon-hex) 1px, transparent 1px); background-size: 30px 30px; }
-.bg-radial-kaos-sm { background-image: radial-gradient(var(--neon-hex) 1px, transparent 1px); background-size: 20px 20px; }
+html {
+    scroll-behavior: smooth;
+}
 
-/* Yazı ve Seçim Efektleri */
-.text-outline-kaos { -webkit-text-stroke: 2px #0f172a; color: white; text-shadow: 3px 3px 0px var(--neon-hex); }
-::selection { background-color: var(--neon-hex); color: #000; }
+/* 2. ÖZEL GÖLGELER */
+.shadow-kaos {
+    box-shadow: 0 0 15px rgba(var(--neon-rgb), 0.4);
+}
+.shadow-kaos-lg {
+    box-shadow: 0 0 40px rgba(var(--neon-rgb), 0.5);
+}
 
-/* Özel Scrollbar */
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--neon-rgb), 0.3); border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(var(--neon-rgb), 0.6); }
+/* 3. DİJİTAL KİMLİK KARTI (Hologram / Cam Efekti) */
+.id-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+    position: relative; 
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-/* Giriş Durumuna Göre Ekran Değişimi (Göz Kırpma Engelleyici Destek) */
-html.is-logged-in #landing-view { display: none !important; }
-html:not(.is-logged-in) #dashboard-view { display: none !important; }
-html.is-logged-in .btn-numarani-al { display: none !important; }
+/* Kimlik Kartı Hover Parlama (Flaş Efekti) */
+.id-card::before {
+    content: ''; 
+    position: absolute; 
+    top: -50%; 
+    left: -50%; 
+    width: 200%; 
+    height: 200%;
+    background: radial-gradient(circle, rgba(var(--neon-rgb), 0.15) 0%, transparent 50%);
+    opacity: 0; 
+    transition: opacity 0.5s ease-in-out;
+    pointer-events: none;
+}
 
-/* Form Etkileşimleri */
-.telefon-satiri:focus-within { border-color: var(--neon-hex) !important; box-shadow: 0 0 15px rgba(var(--neon-rgb),0.3) !important; }
-.telefon-satiri input:focus { box-shadow: none !important; }
+.id-card:hover::before { 
+    opacity: 1; 
+}
 
-/* Şifreli Terminal Animasyonları */
-.terminal-text { overflow: hidden; white-space: nowrap; border-right: .15em solid var(--neon-hex); animation: typing 1s steps(40, end), blink-caret .75s step-end infinite; }
-@keyframes typing { from { width: 0 } to { width: 100% } }
-@keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--neon-hex); } }
+/* 4. ÖZEL KAYDIRMA ÇUBUĞU (Custom Scrollbar - Chrome & Firefox Destekli) */
+.custom-scrollbar {
+    /* Firefox Desteği */
+    scrollbar-width: thin; 
+    scrollbar-color: rgba(var(--neon-rgb), 0.5) rgba(0,0,0,0.1); 
+}
 
-/* Gerçekçi Katlanır Sarı Cetvel Animasyonu (Yenilendi) */
-.ruler-overlay { position: fixed; inset: 0; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(5px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s; pointer-events: none; }
-.ruler-overlay.active { opacity: 1; pointer-events: auto; }
-.cetvel-box { position: relative; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; transform: scale(1.3); margin-bottom: 25px; }
-.cetvel-text { font-weight: 900; font-size: 18px; color: #facc15; letter-spacing: 1px; text-align: center; text-shadow: 0 0 20px rgba(250,204,21,0.4); background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 10px; border: 1px solid rgba(250,204,21,0.2); }
+/* Chrome, Edge, Safari Desteği */
+.custom-scrollbar::-webkit-scrollbar { 
+    width: 5px; 
+}
+.custom-scrollbar::-webkit-scrollbar-track { 
+    background: rgba(0,0,0,0.1); 
+    border-radius: 8px; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+    background: rgba(var(--neon-rgb), 0.5); 
+    border-radius: 10px; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--neon-rgb), 0.8);
+}
 
-/* Cetvel Parçaları */
-.cetvel { width: 90px; height: 20px; background-color: #facc15; border: 1px solid #b45309; border-radius: 10px; position: absolute; transform-origin: 10px 10px; box-shadow: inset 0 2px 3px rgba(255,255,255,0.6), 2px 4px 6px rgba(0,0,0,0.4); background-image: linear-gradient(90deg, #1e1e1e 1.5px, transparent 1px), linear-gradient(90deg, #1e1e1e 1px, transparent 1px); background-size: 7px 30%, 35px 60%; background-position: 0 top, 0 top; background-repeat: repeat-x; }
-/* Ekleme Perçinleri (Metal Görünüm) */
-.cetvel::after { content: ''; position: absolute; left: 5px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, #f8fafc, #64748b); border: 1px solid #334155; box-shadow: 0 1px 2px rgba(0,0,0,0.6), inset 0 1px 1px white; }
+/* 5. ŞEHİR TRİBÜNLERİ (Kayan Bant - Marquee) */
+.marquee-container { 
+    overflow: hidden; 
+    white-space: nowrap; 
+    width: 100%; 
+    display: flex; 
+}
+.marquee-content { 
+    display: inline-flex; 
+    padding-left: 100%; 
+    animation: marquee 25s linear infinite; 
+}
+.marquee-content:hover { 
+    animation-play-state: paused; /* Üzerine gelince durur */
+}
 
-/* Matematiksel Kusursuz Ortalama (Tam 300px açılır, 150px sola kaydırılır) */
-.c1 { left: calc(50% - 150px); top: 20px; z-index: 4; }
-.c2 { left: 70px; top: -1px; z-index: 3; transform: rotate(170deg); }
-.c3 { left: 70px; top: -1px; z-index: 2; transform: rotate(-170deg); }
-.c4 { left: 70px; top: -1px; z-index: 1; transform: rotate(170deg); }
+@keyframes marquee { 
+    0% { transform: translateX(0%); } 
+    100% { transform: translateX(-100%); } 
+}
 
-/* Gerçekçi Esneme Efekti ile Açılış */
-.ruler-overlay.active .c2 { animation: snapOpen 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.ruler-overlay.active .c3 { animation: snapOpenNeg 0.5s 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.ruler-overlay.active .c4 { animation: snapOpen 0.5s 1.0s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+/* 6. ARKA PLAN EFEKTLERİ (Radyal Işıklar) */
+.bg-radial-kaos-lg { 
+    background: radial-gradient(circle, rgba(var(--neon-rgb), 0.12) 0%, transparent 70%); 
+}
+.bg-radial-kaos-sm { 
+    background: radial-gradient(circle, rgba(var(--neon-rgb), 0.08) 0%, transparent 60%); 
+}
 
-@keyframes snapOpen { 0% { transform: rotate(170deg); } 100% { transform: rotate(0deg); } }
-@keyframes snapOpenNeg { 0% { transform: rotate(-170deg); } 100% { transform: rotate(0deg); } }
+/* 7. GÜVENLİK VE LİYAKAT KİLİTLERİ (Bulanıklaştırma) */
+.locked-content { 
+    filter: blur(5px); 
+    opacity: 0.6; 
+    pointer-events: none; 
+    user-select: none; 
+    transition: all 0.5s ease; 
+}
 
-/* Mobil Menü */
-#mobile-menu { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
-#mobile-menu.menu-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
-#mobile-menu.menu-closed { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+.lock-overlay { 
+    transition: opacity 0.5s ease; 
+    z-index: 20; 
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+/* 8. ÖZEL ANİMASYONLAR */
+@keyframes pulse-slow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .85; transform: scale(1.02); }
+}
+.animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-fast {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+}
+.animate-pulse-fast {
+    animation: pulse-fast 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Toast Bildirim Animasyonları */
+@keyframes toastIn {
+    0% { transform: translateX(-100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes toastOut {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-100%); opacity: 0; }
+}
+.toast-in { animation: toastIn 0.5s ease-out forwards; }
+.toast-out { animation: toastOut 0.5s ease-in forwards; }
+
+
+/* ==========================================================================
+   İLERİ SEVİYE: KATLANIR SARI CETVEL EFEKTİ
+   Katlanır Sarı Cetvel marka efekti temel sürüm olarak korunmuştur.
+   ========================================================================== */
+.cetvel-kok { display: flex; justify-content: center; align-items: center; transition: transform 0.3s ease; }
+.cetvel-p {
+    width: 130px; height: 16px;
+    background-color: #F6C104; border-radius: 8px; position: absolute;
+    left: 114px; top: 0; transform-origin: 8px 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
+    border: 1px solid #B8860B;
+    background-image: linear-gradient(90deg, #111 1px, transparent 1px), linear-gradient(90deg, #111 2px, transparent 2px);
+    background-size: 8px 5px, 40px 10px; background-repeat: repeat-x; background-position: 16px 0px, 16px 0px;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.c1 { position: relative; left: 0; top: 0; transform: rotate(-85deg); transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.percin {
+    width: 8px; height: 8px; background: radial-gradient(circle, #222 2px, #ccc 3px, #888 8px);
+    border-radius: 50%; position: absolute; top: 3px; box-shadow: 0 1px 1px rgba(0,0,0,0.6);
+}
+.p-left { left: 4px; } .p-right { right: 4px; }
+.fold-pos { transform: rotate(176deg); } .fold-neg { transform: rotate(-176deg); }
