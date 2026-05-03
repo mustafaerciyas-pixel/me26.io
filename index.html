@@ -68,7 +68,7 @@ tailwind.config = {
 /* 0. KAPALI DURUM */
 .fold-pos { transform: rotate(176deg); } .fold-neg { transform: rotate(-176deg); }
 
-/* 1. ŞEKİL: STANDART ZİGZAG */
+/* 1. ŞEKİL: STANDART ZİGZAG (Ağa Bağlanırken) */
 .cetvel-kok.shape-zigzag .c1 { transform: rotate(-75deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-zigzag .c2 { transform: rotate(150deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-zigzag .c3 { transform: rotate(-150deg); transition-delay: 0.3s; }
@@ -76,7 +76,7 @@ tailwind.config = {
 .cetvel-kok.shape-zigzag .c5 { transform: rotate(-150deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-zigzag .c6 { transform: rotate(150deg); transition-delay: 0.6s; }
 
-/* 2. ŞEKİL: KAPI / KARE FORMU */
+/* 2. ŞEKİL: KAPI / KARE FORMU (Güvenlik Lobisi - SMS Ekranı) */
 .cetvel-kok.shape-kapi .c1 { transform: rotate(-90deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-kapi .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-kapi .c3 { transform: rotate(90deg); transition-delay: 0.3s; }
@@ -84,7 +84,7 @@ tailwind.config = {
 .cetvel-kok.shape-kapi .c5 { transform: rotate(90deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-kapi .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 3. ŞEKİL: ÜÇGEN FORM */
+/* 3. ŞEKİL: ÜÇGEN FORM (Liyakat Kanıtı - PDF İşlenirken) */
 .cetvel-kok.shape-ucgen .c1 { transform: rotate(-60deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-ucgen .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-ucgen .c3 { transform: rotate(120deg); transition-delay: 0.3s; }
@@ -92,7 +92,7 @@ tailwind.config = {
 .cetvel-kok.shape-ucgen .c5 { transform: rotate(120deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-ucgen .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 4. ŞEKİL: TİK İŞARETİ */
+/* 4. ŞEKİL: TİK İŞARETİ (Kusursuz ✓ Formu) */
 .cetvel-kok.shape-tik { transform: translateX(-80px) translateY(-10px); }
 .cetvel-kok.shape-tik .c1 { transform: rotate(55deg); transition-delay: 0.1s; } 
 .cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } 
@@ -151,10 +151,6 @@ if (localStorage.getItem('me26_user_id')) {
     </div>
 </div>
 
-<div id="top-banner-sayac" class="fixed top-0 left-0 w-full bg-kaos text-white font-black text-center py-2 text-xs md:text-sm tracking-widest uppercase z-50 shadow-lg border-b border-kaos">
-DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
-</div>
-
 <!-- MOBİL MENÜ -->
 <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 menu-closed flex flex-col items-center justify-center space-y-8 pt-10 transition-all duration-300">
     <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
@@ -164,7 +160,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('nedir'); mobilMenuKapat();">Ne Yapacağız?</a>
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('kurallar'); mobilMenuKapat();">Kurallarımız</a>
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('gizlilik'); mobilMenuKapat();">Gizlilik Zırhı</a>
-    <a id="nav-btn-mobile" class='bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer text-center' href='#kayit' onclick='mobilMenuKapat()'>Numaranı Al</a>
+    <a id="nav-btn-mobile" href="javascript:void(0);" onclick="navButonTiklandi(event); mobilMenuKapat();" class='bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer text-center'>Numaranı Al</a>
 </div>
 
 <!-- ÜST MENÜ -->
@@ -179,7 +175,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('otonom')">Otonom Ağ Nedir?</a>
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
-            <a id="nav-btn-desktop" href="#kayit" onclick="if(!localStorage.getItem('me26_user_id')) { document.getElementById('kayit').scrollIntoView({behavior:'smooth'}); return false; }" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest">Numaranı Al</a>
+            <a id="nav-btn-desktop" href="javascript:void(0);" onclick="navButonTiklandi(event)" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest">Numaranı Al</a>
         </div>
         <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2 cursor-pointer">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -523,20 +519,26 @@ window.kontrolPaneliniAc = function(e) {
     window.scrollTo({top: 0, behavior: 'smooth'});
 };
 
+window.navButonTiklandi = function(e) {
+    if(e) e.preventDefault();
+    if (localStorage.getItem('me26_user_id')) {
+        window.kontrolPaneliniAc();
+    } else {
+        const kayitAlani = document.getElementById('kayit');
+        if(kayitAlani) kayitAlani.scrollIntoView({behavior: 'smooth'});
+    }
+};
+
 window.butonlariGuncelle = function() {
     const btnDesktop = document.getElementById('nav-btn-desktop');
     const btnMobile = document.getElementById('nav-btn-mobile');
     
     if(btnDesktop) { 
         btnDesktop.innerText = "KONTROL PANELİ"; 
-        btnDesktop.removeAttribute('href'); 
-        btnDesktop.onclick = window.kontrolPaneliniAc; 
         btnDesktop.className = "bg-slate-800 text-white border border-slate-600 px-6 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg cursor-pointer text-center tracking-widest";
     }
     if(btnMobile) { 
         btnMobile.innerText = "KONTROL PANELİ"; 
-        btnMobile.removeAttribute('href'); 
-        btnMobile.onclick = window.kontrolPaneliniAc; 
         btnMobile.className = "bg-slate-800 text-white border border-slate-600 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-lg cursor-pointer text-center";
     }
 };
