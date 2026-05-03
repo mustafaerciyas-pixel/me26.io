@@ -1,15 +1,14 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE ORKESTRA ŞEFİ (js/app.js)
+   (TAM MODÜLER VE DİREKT YAYINA HAZIR SÜRÜM)
    ========================================================================== */
 
-import { ME26_CONFIG } from './config.js';
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { AUTH } from './auth.js';
+import { VIP } from './vip.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-
-    let selectedVipNumber = null;
 
     // --- 1. ÖNERGELERİ ÇİZME SİSTEMİ (Güvenli DOM) ---
     const renderProposals = () => {
@@ -18,6 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         container.innerHTML = ''; 
         const proposals = STATE.getProposals();
+
+        // 🌟 SENİN EKLEDİĞİN BOŞ DURUM (EMPTY STATE) KONTROLÜ 🌟
+        if (proposals.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = "bg-black/40 border border-slate-700 rounded-2xl p-6 text-center text-gray-400 text-sm font-bold";
+            empty.textContent = "Henüz önerge yok. İlk sorunu sen bildir.";
+            container.appendChild(empty);
+            return;
+        }
 
         proposals.forEach(prop => {
             const card = document.createElement('div');
@@ -44,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
+            // XSS Koruması: Metinleri sadece textContent ile bas
             card.querySelector('.prop-category').textContent = prop.category;
             card.querySelector('.prop-title').textContent = prop.title;
             card.querySelector('.prop-desc').textContent = prop.desc;
@@ -60,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             UI.showView('landing');
         }
         UI.renderProfile();
-        renderProposals();
+        renderProposals(); // Kayıtlı önergeleri veya boş durumu ekrana bas
     };
 
     // --- 3. GÜVENLİ TIKLAMA YARDIMCISI ---
@@ -69,119 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.addEventListener('click', callback);
     };
 
-    // --- 4. VIP MODAL VE GRID YÖNETİMİ ---
-    const updateVipModalState = () => {
-        const user = STATE.getUser();
-        const lockedState = document.getElementById('vip-locked-state');
-        const unlockedState = document.getElementById('vip-unlocked-state');
-        
-        if (!lockedState || !unlockedState) return;
-
-        if (user.inviteCount >= ME26_CONFIG.requiredInvitesForVip) {
-            lockedState.classList.add('hidden');
-            unlockedState.classList.remove('hidden');
-            renderVipGrid();
-        } else {
-            unlockedState.classList.add('hidden');
-            lockedState.classList.remove('hidden');
-        }
-    };
-
-    const renderVipGrid = () => {
-        const grid = document.getElementById('ui-vip-grid');
-        const claimBtn = document.getElementById('btn-claim-vip-number');
-        
-        if (!grid || grid.children.length > 0) return; 
-        
-        grid.innerHTML = '';
-        selectedVipNumber = null;
-        if (claimBtn) claimBtn.disabled = true; 
-        
-        const sampleNumbers = [101, 102, 111, 200, 222, 500, 777, 999, 1000, 1071, 1453, 1923, 2026, 3000, 4444, 5000];
-        
-        sampleNumbers.forEach(num => {
-            const btn = document.createElement('button');
-            btn.className = "vip-num-btn bg-slate-800 border border-slate-700 text-white py-3 rounded-lg font-mono text-sm font-black hover:border-kaos hover:text-kaos transition-all";
-            btn.textContent = `#${num}`;
-            
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.vip-num-btn').forEach(b => {
-                    b.classList.remove('bg-kaos', 'text-slate-900', 'border-kaos');
-                    b.classList.add('bg-slate-800', 'text-white', 'border-slate-700');
-                });
-                
-                btn.classList.remove('bg-slate-800', 'text-white', 'border-slate-700');
-                btn.classList.add('bg-kaos', 'text-slate-900', 'border-kaos');
-                
-                selectedVipNumber = num;
-                if (claimBtn) claimBtn.disabled = false; 
-            });
-            
-            grid.appendChild(btn);
-        });
-    };
-
-    // --- 5. PANİĞE KARŞI YEDEK KOPYALAMA SİSTEMİ (FALLBACK) ---
-    const fallbackCopyTextToClipboard = (text) => {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        
-        try {
-            document.execCommand('copy');
-        } catch (err) {
-            console.error('Fallback kopyalama başarısız', err);
-        }
-        
-        document.body.removeChild(textArea);
-    };
-
-    // --- 6. PAYLAŞIM YÖNETİCİSİ (Paylaşım İlerlemesi) ---
-    const handleInviteShare = async (isWhatsApp = false) => {
-        const inviteLink = "https://me26.org/katil"; 
-        
-        try {
-            if (isWhatsApp) {
-                window.open(`https://wa.me/?text=ME26 dijital stadyumu'na sen de katıl: ${inviteLink}`, '_blank');
-            } else {
-                if (!navigator.clipboard) {
-                    fallbackCopyTextToClipboard(inviteLink);
-                } else {
-                    await navigator.clipboard.writeText(inviteLink);
-                }
-            }
-            
-            const currentCount = STATE.incrementInviteCount();
-            UI.renderProfile();
-            updateVipModalState(); 
-            
-            if (isWhatsApp) {
-                UI.showToast("WhatsApp'a yönlendiriliyor...", "success");
-            } else {
-                UI.showToast("Paylaşım bağlantısı kopyalandı.", "success");
-            }
-
-            if (currentCount === ME26_CONFIG.requiredInvitesForVip) {
-                UI.showToast("Tebrikler! Gerekli paylaşıma ulaştınız, VIP Numara seçme kilidi açıldı 💎", "success");
-            } else if (currentCount < ME26_CONFIG.requiredInvitesForVip) {
-                UI.showToast("Paylaşım ilerlemesi kaydedildi.", "success");
-            }
-
-        } catch (err) {
-            fallbackCopyTextToClipboard(inviteLink);
-            UI.showToast("Bağlantı kopyalandı (Yedek Sistem).", "success");
-        }
-    };
-
-    // --- 7. BUTONLARI VE EKRANLARI BAĞLA ---
+    // --- 4. BUTONLARI VE EKRANLARI BAĞLA ---
     const bindEvents = () => {
+        
+        // A. GİRİŞ VE PROFİL AKSİYONLARI
         const handleMainAction = () => {
             if (STATE.isLoggedIn()) {
                 UI.toggleProfileDrawer(true); 
@@ -197,15 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
         addClick('btn-login-hero', handleMainAction);
         addClick('btn-login-sticky', handleMainAction);
 
+        // B. MOBİL MENÜ VE ÇEKMECE
         addClick('btn-open-mobile-menu', () => UI.toggleMobileMenu(true));
         addClick('btn-close-mobile-menu', () => UI.toggleMobileMenu(false));
         addClick('btn-close-profile-drawer', () => UI.toggleProfileDrawer(false));
 
+        // C. KİMLİK VE YETKİ
         addClick('btn-role-icmimar', () => AUTH.submitCommitment('icmimar'));
         addClick('btn-role-ogrenci', () => AUTH.submitCommitment('ogrenci'));
         addClick('btn-submit-phone', () => AUTH.verifyPhone());
         addClick('btn-submit-pdf', () => AUTH.verifyPdf());
         
+        // D. MODAL YÖNETİMİ
         addClick('btn-open-pdf-modal', () => {
             UI.toggleProfileDrawer(false);
             UI.openModal('pdf-modal');
@@ -216,28 +119,22 @@ document.addEventListener('DOMContentLoaded', () => {
         addClick('btn-close-vip-modal', () => UI.closeModal('vip-modal'));
         addClick('btn-close-proposal-modal', () => UI.closeModal('onerge-modal'));
 
-        addClick('btn-open-vip-modal', () => {
-            updateVipModalState();
-            UI.openModal('vip-modal');
-        });
-
+        // E. ÇIKIŞ VE SİLME
         addClick('btn-logout', () => AUTH.logout());
         addClick('btn-delete-account', () => AUTH.deleteAccount());
 
-        addClick('btn-copy-invite', () => handleInviteShare(false));
-        addClick('btn-wow-copy-link', () => handleInviteShare(false));
-        addClick('btn-vip-copy-invite-locked', () => handleInviteShare(false));
-        addClick('btn-whatsapp-share', () => handleInviteShare(true));
-
-        addClick('btn-claim-vip-number', () => {
-            if (!selectedVipNumber) return; 
-            
-            STATE.setVipNumber(selectedVipNumber);
-            UI.closeModal('vip-modal');
-            UI.renderProfile();
-            UI.showToast(`Tebrikler! Kurucu VIP Numaranız #${selectedVipNumber} olarak tescillendi.`, "success");
+        // F. VIP VE PAYLAŞIM SİSTEMİ (vip.js'e yönlendirildi)
+        addClick('btn-open-vip-modal', () => {
+            VIP.updateModalState();
+            UI.openModal('vip-modal');
         });
+        addClick('btn-copy-invite', () => VIP.handleShare(false));
+        addClick('btn-wow-copy-link', () => VIP.handleShare(false));
+        addClick('btn-vip-copy-invite-locked', () => VIP.handleShare(false));
+        addClick('btn-whatsapp-share', () => VIP.handleShare(true));
+        addClick('btn-claim-vip-number', () => VIP.claimNumber());
 
+        // G. YENİ ÖNERGE SİSTEMİ
         addClick('btn-open-proposal-modal', () => {
             if (!STATE.isLoggedIn()) {
                 UI.showToast("Sorun bildirmek için önce sisteme katıl.", "error");
@@ -257,25 +154,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Hafızaya (localStorage) kaydet
             STATE.addProposal({
                 title: titleEl.value,
                 desc: descEl.value,
                 category: catEl.value
             });
 
+            // Ekranı baştan çiz (Yeni eklenen en üstte görünür veya boş durum kalkar)
             renderProposals();
 
             UI.showToast("Fikriniz meclise sunuldu ve destek sırasına alındı.", "success");
             UI.closeModal('onerge-modal');
             
-            titleEl.value = '';
-            descEl.value = '';
-            catEl.value = '';
+            titleEl.value = ''; descEl.value = ''; catEl.value = '';
         });
     };
 
-    // --- 8. OYLAMA SİSTEMİ (Event Delegation) ---
+    // --- 5. OYLAMA SİSTEMİ (Event Delegation) ---
     document.addEventListener('click', (e) => {
+        // Evet / Hayır Oy Butonları
         const voteBtn = e.target.closest('.btn-vote');
         if (voteBtn) {
             if (!STATE.isLoggedIn()) {
@@ -296,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Oy Değiştirme Butonu
         const changeVoteBtn = e.target.closest('.btn-change-vote');
         if (changeVoteBtn) {
             if (!STATE.isLoggedIn()) return;
