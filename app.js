@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE ORKESTRA ŞEFİ (js/app.js)
-   (TAM MODÜLER VE DİREKT YAYINA HAZIR SÜRÜM)
+   (FİREBASE OTP ENTEGRASYONLU TAM SÜRÜM)
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -10,7 +10,7 @@ import { VIP } from './vip.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. ÖNERGELERİ ÇİZME SİSTEMİ (Güvenli DOM) ---
+    // --- 1. ÖNERGELERİ ÇİZME SİSTEMİ (Güvenli DOM & Boş Durum) ---
     const renderProposals = () => {
         const container = document.getElementById('proposals-container');
         if (!container) return;
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = ''; 
         const proposals = STATE.getProposals();
 
-        // 🌟 SENİN EKLEDİĞİN BOŞ DURUM (EMPTY STATE) KONTROLÜ 🌟
+        // Boş Durum (Empty State) Kontrolü
         if (proposals.length === 0) {
             const empty = document.createElement('div');
             empty.className = "bg-black/40 border border-slate-700 rounded-2xl p-6 text-center text-gray-400 text-sm font-bold";
@@ -102,10 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
         addClick('btn-close-mobile-menu', () => UI.toggleMobileMenu(false));
         addClick('btn-close-profile-drawer', () => UI.toggleProfileDrawer(false));
 
-        // C. KİMLİK VE YETKİ
+        // C. KİMLİK VE YETKİ (FİREBASE SMS GÜNCELLEMESİ)
         addClick('btn-role-icmimar', () => AUTH.submitCommitment('icmimar'));
         addClick('btn-role-ogrenci', () => AUTH.submitCommitment('ogrenci'));
-        addClick('btn-submit-phone', () => AUTH.verifyPhone());
+        
+        addClick('btn-submit-phone', () => AUTH.verifyPhone()); // Adım 1: SMS Gönder
+        addClick('btn-verify-otp', () => AUTH.confirmSmsCode()); // Adım 2: Kodu Doğrula
+        
         addClick('btn-submit-pdf', () => AUTH.verifyPdf());
         
         // D. MODAL YÖNETİMİ
@@ -123,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addClick('btn-logout', () => AUTH.logout());
         addClick('btn-delete-account', () => AUTH.deleteAccount());
 
-        // F. VIP VE PAYLAŞIM SİSTEMİ (vip.js'e yönlendirildi)
+        // F. VIP VE PAYLAŞIM SİSTEMİ (vip.js modülü)
         addClick('btn-open-vip-modal', () => {
             VIP.updateModalState();
             UI.openModal('vip-modal');
