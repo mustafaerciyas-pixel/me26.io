@@ -76,7 +76,7 @@ tailwind.config = {
 .cetvel-kok.shape-zigzag .c5 { transform: rotate(-150deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-zigzag .c6 { transform: rotate(150deg); transition-delay: 0.6s; }
 
-/* 2. ŞEKİL: KAPI / KARE FORMU (Güvenlik Lobisi) */
+/* 2. ŞEKİL: KAPI / KARE FORMU (Güvenlik Lobisi - SMS Ekranı) */
 .cetvel-kok.shape-kapi .c1 { transform: rotate(-90deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-kapi .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-kapi .c3 { transform: rotate(90deg); transition-delay: 0.3s; }
@@ -84,7 +84,7 @@ tailwind.config = {
 .cetvel-kok.shape-kapi .c5 { transform: rotate(90deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-kapi .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 3. ŞEKİL: ÜÇGEN FORM (Liyakat Kanıtı) */
+/* 3. ŞEKİL: ÜÇGEN FORM (Liyakat Kanıtı - PDF İşlenirken) */
 .cetvel-kok.shape-ucgen .c1 { transform: rotate(-60deg); transition-delay: 0.1s; }
 .cetvel-kok.shape-ucgen .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
 .cetvel-kok.shape-ucgen .c3 { transform: rotate(120deg); transition-delay: 0.3s; }
@@ -92,14 +92,14 @@ tailwind.config = {
 .cetvel-kok.shape-ucgen .c5 { transform: rotate(120deg); transition-delay: 0.5s; }
 .cetvel-kok.shape-ucgen .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
 
-/* 4. ŞEKİL: TİK İŞARETİ (Kusursuz ✓ Formu) */
+/* 4. ŞEKİL: TİK İŞARETİ (Kopukluk Giderildi - Kusursuz ✓ Formu) */
 .cetvel-kok.shape-tik { transform: translateX(-80px) translateY(-10px); }
-.cetvel-kok.shape-tik .c1 { transform: rotate(55deg); transition-delay: 0.1s; } 
-.cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } 
-.cetvel-kok.shape-tik .c3 { transform: rotate(0deg); transition-delay: 0.3s; } 
-.cetvel-kok.shape-tik .c4 { transform: rotate(178deg); transition-delay: 0.4s; } 
-.cetvel-kok.shape-tik .c5 { transform: rotate(-178deg); transition-delay: 0.5s; } 
-.cetvel-kok.shape-tik .c6 { transform: rotate(178deg); transition-delay: 0.6s; } 
+.cetvel-kok.shape-tik .c1 { transform: rotate(55deg); transition-delay: 0.1s; } /* Sol kısa bacak (aşağı) */
+.cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } /* Sağ uzun bacak (yukarı dönüş) */
+.cetvel-kok.shape-tik .c3 { transform: rotate(0deg); transition-delay: 0.3s; } /* Sağ bacak uzamaya devam */
+.cetvel-kok.shape-tik .c4 { transform: rotate(178deg); transition-delay: 0.4s; } /* Kalanı arkaya gizle */
+.cetvel-kok.shape-tik .c5 { transform: rotate(-178deg); transition-delay: 0.5s; } /* Kalanı arkaya gizle */
+.cetvel-kok.shape-tik .c6 { transform: rotate(178deg); transition-delay: 0.6s; } /* Kalanı arkaya gizle */
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 8px; }
@@ -143,6 +143,7 @@ if (localStorage.getItem('me26_user_id')) {
             </div>
         </div>
     </div>
+    
     <div id="cetvel-text-container" class="opacity-0 transition-opacity duration-300 delay-1000 mt-8">
         <div class="bg-black/80 border border-kaos px-6 py-3 rounded-lg shadow-2xl flex items-center">
             <h2 id="cetvel-mesaj" class="text-lg md:text-2xl font-black text-kaos uppercase tracking-widest font-mono text-center">İŞLENİYOR...</h2>
@@ -163,13 +164,14 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('nedir'); mobilMenuKapat();">Ne Yapacağız?</a>
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('kurallar'); mobilMenuKapat();">Kurallarımız</a>
     <a class='text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest cursor-pointer' onclick="sistemBilgiAc('gizlilik'); mobilMenuKapat();">Gizlilik Zırhı</a>
-    <a id="nav-btn-mobile" class='bg-kaos text-white px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer text-center' href='#kayit' onclick='mobilMenuKapat()'>Numaranı Al</a>
+    <a id="nav-btn-mobile" class='bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer text-center' href='#kayit' onclick='mobilMenuKapat()'>Numaranı Al</a>
 </div>
 
 <!-- ÜST MENÜ -->
 <nav id="ana-nav" class="bg-zemin text-white py-5 shadow-xl relative z-20 border-b border-slate-800 w-full transition-colors duration-1000">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-        <a class='text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition' href='index.html'>
+        <!-- LOGO (Ana Sayfaya Dönüş İçin SPA Yönlendirmesi Eklendi) -->
+        <a id="ana-logo" class='text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition' href='index.html' onclick='anaSayfayaDon(event)'>
             <div class="w-1.5 h-6 bg-kaos mr-2"></div>
             <span><span class="text-kaos">ME26</span> AĞI</span>
         </a>
@@ -177,7 +179,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('otonom')">Otonom Ağ Nedir?</a>
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('nedir')">Birlikte Ne Yapacağız?</a>
             <a class='hover:opacity-80 transition cursor-pointer' onclick="sistemBilgiAc('kurallar')">Kurallarımız</a>
-            <a id="nav-btn-desktop" href="#kayit" class="bg-kaos text-white px-5 py-2 rounded-lg font-bold hover:opacity-80 transition shadow-kaos cursor-pointer text-center">Numaranı Al</a>
+            <a id="nav-btn-desktop" href="#kayit" onclick="if(!localStorage.getItem('me26_user_id')) { document.getElementById('kayit').scrollIntoView({behavior:'smooth'}); return false; }" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest">Numaranı Al</a>
         </div>
         <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2 cursor-pointer">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -540,7 +542,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
             <div class="w-2 h-8 bg-kaos mr-3"></div>
             <div>
                 <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.8 (Tam Zırhlı Şantiye Motoru)</div>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Güvenli Sistem • Versiyon 9.8 (SPA Yönlendirme & Tam Zırhlı Kasa)</div>
             </div>
         </div>
         <div class="text-right text-[10px] text-gray-600 font-mono">
@@ -565,22 +567,51 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 <script>
 window.smsOnaylandi = false;
 
+// ==========================================
+// SPA NAVİGASYON MOTORU (BUTON YAMASI)
+// ==========================================
+window.anaSayfayaDon = function(e) {
+    if(e) e.preventDefault();
+    document.getElementById('dashboard-view').classList.add('hidden');
+    document.getElementById('dashboard-view').classList.remove('flex');
+    document.getElementById('lobby-view').classList.add('hidden');
+    document.getElementById('lobby-view').classList.remove('flex');
+    
+    document.getElementById('landing-view').classList.remove('hidden');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+};
+
+window.kontrolPaneliniAc = function(e) {
+    if(e) e.preventDefault();
+    if(!localStorage.getItem('me26_user_id')) {
+        const kayitAlani = document.getElementById('kayit');
+        if(kayitAlani) kayitAlani.scrollIntoView({behavior: 'smooth'});
+        return;
+    }
+    sistemBilgiKapat();
+    mobilMenuKapat();
+    
+    document.getElementById('landing-view').classList.add('hidden');
+    document.getElementById('dashboard-view').classList.remove('hidden');
+    document.getElementById('dashboard-view').classList.add('flex');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+};
+
 window.butonlariGuncelle = function() {
     const btnDesktop = document.getElementById('nav-btn-desktop');
     const btnMobile = document.getElementById('nav-btn-mobile');
+    
     if(btnDesktop) { 
         btnDesktop.innerText = "KONTROL PANELİ"; 
         btnDesktop.href = "#"; 
-        btnDesktop.onclick = (e) => { e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'}); }; 
-        btnDesktop.classList.add('bg-slate-800', 'border', 'border-slate-600', 'text-white');
-        btnDesktop.classList.remove('bg-kaos', 'text-slate-900');
+        btnDesktop.setAttribute('onclick', 'kontrolPaneliniAc(event)');
+        btnDesktop.className = "bg-slate-800 text-white border border-slate-600 px-5 py-2 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg cursor-pointer text-center tracking-widest";
     }
     if(btnMobile) { 
         btnMobile.innerText = "KONTROL PANELİ"; 
         btnMobile.href = "#"; 
-        btnMobile.onclick = (e) => { e.preventDefault(); mobilMenuKapat(); window.scrollTo({top: 0, behavior: 'smooth'}); }; 
-        btnMobile.classList.add('bg-slate-800', 'border', 'border-slate-600');
-        btnMobile.classList.remove('bg-kaos');
+        btnMobile.setAttribute('onclick', 'kontrolPaneliniAc(event)');
+        btnMobile.className = "bg-slate-800 text-white border border-slate-600 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-lg cursor-pointer text-center";
     }
 };
 
@@ -755,10 +786,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.kaosRenginiBas();
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible', 'callback': (response) => { } });
 
+    // Üye Giriş Yaptığında:
     if (localStorage.getItem('me26_user_id')) {
-        document.getElementById('landing-view').classList.add('hidden');
-        document.getElementById('dashboard-view').classList.remove('hidden'); document.getElementById('dashboard-view').classList.add('flex');
-        
         window.butonlariGuncelle();
         
         document.getElementById('dash-id-main').innerText = "TR-IA-" + localStorage.getItem('me26_uye_no');
@@ -769,6 +798,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let savedRef = localStorage.getItem('me26_ref_link');
         if(!savedRef) { savedRef = Math.random().toString(36).substring(2, 8).toUpperCase(); localStorage.setItem('me26_ref_link', savedRef); }
         document.getElementById('davet-linki').innerText = "me26.com/davet/REF-" + savedRef;
+        
+        // Giriş yaptıysa otomatik olarak Kontrol Panelini (Kasa'yı) aç:
+        kontrolPaneliniAc();
         return;
     }
 
