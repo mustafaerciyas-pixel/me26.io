@@ -108,7 +108,7 @@
                 </button>
             </div>
 
-            <!-- VIP Kurucu No & Davet Bölümü -->
+            <!-- VIP Kurucu No & Paylaşım Bölümü -->
             <div class="p-6 border-b border-slate-700 bg-slate-800/30 relative">
                 <div class="flex justify-between items-center mb-3">
                     <div class="flex items-center gap-2"><span class="text-xl">💎</span><span class="text-[12px] text-white font-black uppercase tracking-widest">VIP Kurucu No</span></div>
@@ -118,9 +118,9 @@
                     <div id="ui-vip-progress-bar" class="bg-kaos h-full rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between items-center mb-4 text-[10px] text-gray-300 font-bold uppercase tracking-widest">
-                    <span>Durum</span><span id="ui-vip-invite-count" class="text-kaos">0 / 3 Davet</span>
+                    <span>Durum</span><span id="ui-vip-invite-count" class="text-kaos">0 / 3 Paylaşım</span>
                 </div>
-                <p class="text-[10px] text-gray-400 mb-3 font-medium leading-relaxed">3 İçmimar veya İçmimarlık Öğrencisi davet et, VIP Kurucu Numaranı seç.</p>
+                <p class="text-[10px] text-gray-400 mb-3 font-medium leading-relaxed">3 paylaşım yap, VIP Kurucu Numaranı seç.</p>
                 <div class="bg-black border border-slate-600 p-3 rounded-lg text-kaos font-mono text-xs text-center select-all mb-3 cursor-pointer" id="ui-invite-link">https://me26.com/davet/REF-XXXX</div>
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <button type="button" id="btn-copy-invite" class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 rounded transition uppercase tracking-widest shadow-md">Kopyala</button>
@@ -200,7 +200,7 @@
                 </div>
                 
                 <button type="button" id="btn-login-hero" class="w-full bg-white text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-gray-200 transition hover:scale-[1.02] flex items-center justify-center text-lg">
-                    1 TIKLA KATIL <span class="text-[10px] ml-2 text-gray-600">(Google)</span>
+                    1 TIKLA KATIL
                 </button>
                 <p class="text-[11px] text-gray-400 font-medium tracking-widest mt-5 uppercase">
                     İçmimar veya İçmimarlık Öğrencisiysen, tek tıkla sisteme gir.
@@ -227,7 +227,7 @@
             </div>
             
             <div class="p-6 md:p-10 space-y-10 bg-slate-800/20" id="polls-container">
-                <!-- ÖRNEK OYLAMA (Açık ve Sıfırlanmış) -->
+                <!-- ÖRNEK OYLAMA -->
                 <div class="poll-card bg-black/50 border border-slate-600 rounded-2xl p-6 md:p-8 shadow-lg relative" data-poll-id="1">
                     <h3 class="text-xl font-black text-white mb-3">🎨 1. Soru: Sitemizin Rengi Ne Olsun?</h3>
                     <p class="text-gray-300 text-sm mb-6">Şu anki rahatsız edici renk değiştirilsin ve hepimizin seveceği ortak bir renge (Altın Sarısı) geçilsin mi?</p>
@@ -262,7 +262,7 @@
             </div>
             
             <div id="proposals-container" class="flex flex-col gap-4">
-                <!-- ÖRNEK ÖNERGE (Sıfırlanmış) -->
+                <!-- ÖRNEK ÖNERGE -->
                 <div class="proposal-card bg-black/50 border border-slate-600 hover:border-slate-400 transition p-5 md:p-6 rounded-2xl flex gap-5 items-center group">
                     <div class="flex flex-col items-center bg-slate-800 group-hover:bg-slate-700 transition p-3 rounded-xl border border-slate-700 min-w-[70px] shadow-inner">
                         <button type="button" class="btn-support-proposal text-gray-400 hover:text-kaos text-2xl transition" data-id="1">▲</button>
@@ -290,7 +290,6 @@
             
             <div class="mb-6 text-left">
                 <label class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>🏟️</span> Şehrini Seç (Tribün)</label>
-                <!-- 81 İL VE YURTDIŞI EKLENDİ -->
                 <select id="input-taahhut-sehir" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none font-bold text-sm focus:border-kaos transition h-14 custom-scrollbar">
                     <option value="" disabled selected>Şehrini Seç...</option>
                     <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option>
@@ -339,7 +338,7 @@
             <p class="text-gray-300 text-sm mb-6 font-medium leading-relaxed">İçmimarlar ve İçmimarlık Öğrencileri için kurulan bu dijital stadyumun ilk ekibindesin.</p>
             <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl mb-6">
                 <div class="text-xs text-kaos font-bold uppercase tracking-widest mb-3 flex items-center justify-center gap-2"><span>🚀</span> İLK GÖREVİN</div>
-                <p class="text-gray-200 text-sm leading-relaxed mb-4">Aşağıdaki linkten <strong class="text-white">3 İçmimar veya İçmimarlık Öğrencisi davet et</strong>, 101 ile 5000 arasında <strong class="text-white">VIP Kurucu Numaranı</strong> seç!</p>
+                <p class="text-gray-200 text-sm leading-relaxed mb-4">Aşağıdaki bağlantıyı <strong class="text-white">3 kez paylaş</strong>, 101 ile 5000 arasında <strong class="text-white">VIP Kurucu Numaranı</strong> seç!</p>
             </div>
             <button type="button" id="btn-wow-copy-link" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-[0_0_20px_rgba(var(--neon-rgb),0.5)] hover:scale-[1.02] transition cursor-pointer mb-4">🔗 LİNKİMİ KOPYALA VE BAŞLA</button>
             <button type="button" id="btn-close-wow" class="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700">Sisteme Geç</button>
@@ -355,7 +354,7 @@
             <div id="vip-locked-state" class="mt-8 mb-4 hidden">
                 <span class="text-7xl mb-6 block drop-shadow-md">🔒</span>
                 <p class="text-kaos font-black text-xl mb-3 tracking-widest uppercase">Ekrana Giriş Kapalı</p>
-                <p class="text-gray-300 text-sm mb-8 font-medium max-w-sm mx-auto leading-relaxed">Bu ekranı açmak ve özel numaranı seçmek için 3 İçmimar veya İçmimarlık Öğrencisi davet etmelisin.</p>
+                <p class="text-gray-300 text-sm mb-8 font-medium max-w-sm mx-auto leading-relaxed">Bu ekranı açmak ve özel numaranı seçmek için aşağıdaki bağlantıyı 3 kez paylaşmalısın.</p>
                 <button type="button" id="btn-vip-copy-invite-locked" class="w-full max-w-xs mx-auto bg-slate-800 text-white hover:text-kaos hover:border-kaos font-black py-4 rounded-xl uppercase tracking-widest border border-slate-600 transition shadow-md block">🔗 LİNKİMİ KOPYALA</button>
             </div>
 
@@ -409,7 +408,7 @@
             <p class="text-gray-400 text-xs mb-6 font-medium">Meslekte yaşadığın sorunu yaz. Eğer <strong class="text-white">100 kişi seni desteklerse</strong>, konu mecliste oylanır.</p>
             <div class="text-left space-y-4 mb-6">
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Konu Ne İle İlgili?</label>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Konu Ne İlgili?</label>
                     <select id="input-proposal-category" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
                         <option value="" disabled selected>Seçim Yap...</option>
                         <option value="İmza Yetkisi">İmza Yetkisi</option>
@@ -443,7 +442,7 @@
                 <div class="w-2 h-8 bg-kaos mr-3"></div>
                 <div>
                     <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Modüler Mimari • V42 (Tam Sürüm - Sade Dil)</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Modüler Mimari • V43 (Direkt Yayın - Şeffaf MVP)</div>
                 </div>
             </div>
             <div class="text-right text-[10px] text-gray-600 font-mono">
