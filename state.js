@@ -10,10 +10,12 @@ const STORAGE_KEYS = {
     inviteCount: "me26_davet_sayisi",
     isVip: "me26_is_vip",
     vipNumber: "me26_vip_number",
-    votePower: "me26_vote_power"
+    votePower: "me26_vote_power",
+    proposals: "me26_proposals" // YENİ: Önergeler için hafıza anahtarı
 };
 
 export const STATE = {
+    // ... (getUser, setUser, incrementInviteCount vb. önceki fonksiyonların hepsi AYNI KALACAK) ...
     getUser: () => ({
         authStage: localStorage.getItem(STORAGE_KEYS.authStage) || null,
         userNo: localStorage.getItem(STORAGE_KEYS.userNo) || "???",
@@ -66,5 +68,20 @@ export const STATE = {
 
     clearUser: () => {
         Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+    },
+
+    // --- YENİ EKLENEN ÖNERGE (PROPOSAL) HAFIZASI ---
+    getProposals: () => {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.proposals) || "[]");
+        } catch {
+            return [];
+        }
+    },
+
+    addProposal: (proposal) => {
+        const props = STATE.getProposals();
+        props.unshift(proposal); // En başa ekle
+        localStorage.setItem(STORAGE_KEYS.proposals, JSON.stringify(props));
     }
 };
