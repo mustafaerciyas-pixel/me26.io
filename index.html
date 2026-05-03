@@ -18,7 +18,7 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 </script>
 
-<!-- Tailwind Config (Renkler dinamik CSS değişkenlerinden beslenir) -->
+<!-- Tailwind Config -->
 <script>
 tailwind.config = {
     theme: {
@@ -31,19 +31,18 @@ tailwind.config = {
 }
 </script>
 
-<!-- SİSTEM STİL KODLARI (Güncellendi) -->
+<!-- DİNAMİK CSS VE ŞEKİL DEĞİŞTİREN CETVEL -->
 <style>
 :root {
-    --neon-hex: #F6C104; /* Varsayılan Açılış Rengi */
+    --neon-hex: #F6C104; 
     --neon-rgb: 246, 193, 4; 
 }
 
-/* Eksik CSS Class'ları Yamandı */
 .menu-closed { transform: translateY(-100%); opacity: 0; pointer-events: none; transition: all 0.4s ease-in-out; }
 .bg-radial-kaos-lg { background: radial-gradient(circle, rgba(var(--neon-rgb), 0.15) 0%, transparent 70%); }
 .bg-radial-kaos-sm { background: radial-gradient(circle, rgba(var(--neon-rgb), 0.1) 0%, transparent 60%); }
 
-/* Katlanır Sarı Cetvel Animasyonu */
+/* Katlanır Sarı Cetvel Temel Yapısı */
 .cetvel-kok { display: flex; justify-content: center; align-items: center; transition: transform 0.3s ease; }
 .cetvel-p {
     width: 130px; height: 16px;
@@ -56,8 +55,8 @@ tailwind.config = {
     background-image: linear-gradient(90deg, #111 1px, transparent 1px), linear-gradient(90deg, #111 2px, transparent 2px);
     background-size: 8px 5px, 40px 10px; background-repeat: repeat-x; background-position: 16px 0px, 16px 0px;
 }
-.c1 { position: relative; left: 0; top: 0; transform: rotate(-85deg); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.cetvel-p { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.c1 { position: relative; left: 0; top: 0; transform: rotate(-85deg); transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cetvel-p { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .percin {
     width: 8px; height: 8px;
     background: radial-gradient(circle, #222 2px, #ccc 3px, #888 8px);
@@ -65,13 +64,41 @@ tailwind.config = {
     box-shadow: 0 1px 1px rgba(0,0,0,0.6);
 }
 .p-left { left: 4px; } .p-right { right: 4px; }
+
+/* 0. KAPALI DURUM */
 .fold-pos { transform: rotate(176deg); } .fold-neg { transform: rotate(-176deg); }
-.cetvel-kok.active .c1 { transform: rotate(-75deg); transition-delay: 0.1s; }
-.cetvel-kok.active .c2 { transform: rotate(150deg); transition-delay: 0.25s; }
-.cetvel-kok.active .c3 { transform: rotate(-150deg); transition-delay: 0.4s; }
-.cetvel-kok.active .c4 { transform: rotate(150deg); transition-delay: 0.55s; }
-.cetvel-kok.active .c5 { transform: rotate(-150deg); transition-delay: 0.7s; }
-.cetvel-kok.active .c6 { transform: rotate(150deg); transition-delay: 0.85s; }
+
+/* 1. ŞEKİL: STANDART ZİGZAG (Ağa Bağlanırken) */
+.cetvel-kok.shape-zigzag .c1 { transform: rotate(-75deg); transition-delay: 0.1s; }
+.cetvel-kok.shape-zigzag .c2 { transform: rotate(150deg); transition-delay: 0.2s; }
+.cetvel-kok.shape-zigzag .c3 { transform: rotate(-150deg); transition-delay: 0.3s; }
+.cetvel-kok.shape-zigzag .c4 { transform: rotate(150deg); transition-delay: 0.4s; }
+.cetvel-kok.shape-zigzag .c5 { transform: rotate(-150deg); transition-delay: 0.5s; }
+.cetvel-kok.shape-zigzag .c6 { transform: rotate(150deg); transition-delay: 0.6s; }
+
+/* 2. ŞEKİL: KAPI / KARE FORMU (Güvenlik Lobisi - SMS Ekranı) */
+.cetvel-kok.shape-kapi .c1 { transform: rotate(-90deg); transition-delay: 0.1s; }
+.cetvel-kok.shape-kapi .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
+.cetvel-kok.shape-kapi .c3 { transform: rotate(90deg); transition-delay: 0.3s; }
+.cetvel-kok.shape-kapi .c4 { transform: rotate(0deg); transition-delay: 0.4s; }
+.cetvel-kok.shape-kapi .c5 { transform: rotate(90deg); transition-delay: 0.5s; }
+.cetvel-kok.shape-kapi .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
+
+/* 3. ŞEKİL: ÜÇGEN FORM (Liyakat Kanıtı - PDF İşlenirken) */
+.cetvel-kok.shape-ucgen .c1 { transform: rotate(-60deg); transition-delay: 0.1s; }
+.cetvel-kok.shape-ucgen .c2 { transform: rotate(0deg); transition-delay: 0.2s; }
+.cetvel-kok.shape-ucgen .c3 { transform: rotate(120deg); transition-delay: 0.3s; }
+.cetvel-kok.shape-ucgen .c4 { transform: rotate(0deg); transition-delay: 0.4s; }
+.cetvel-kok.shape-ucgen .c5 { transform: rotate(120deg); transition-delay: 0.5s; }
+.cetvel-kok.shape-ucgen .c6 { transform: rotate(0deg); transition-delay: 0.6s; }
+
+/* 4. ŞEKİL: TİK İŞARETİ (Oylama Yapıldıktan Sonra Onay) */
+.cetvel-kok.shape-tik .c1 { transform: rotate(45deg); transition-delay: 0.1s; } /* Kısa aşağı vuruş */
+.cetvel-kok.shape-tik .c2 { transform: rotate(-135deg); transition-delay: 0.2s; } /* Keskin yukarı dönüş */
+.cetvel-kok.shape-tik .c3 { transform: rotate(0deg); transition-delay: 0.3s; } /* Düz uzama */
+.cetvel-kok.shape-tik .c4 { transform: rotate(0deg); transition-delay: 0.4s; } /* Uzamaya devam */
+.cetvel-kok.shape-tik .c5 { transform: rotate(178deg); transition-delay: 0.5s; } /* Kalanı gizle (katla) */
+.cetvel-kok.shape-tik .c6 { transform: rotate(-178deg); transition-delay: 0.6s; } /* Kalanı gizle (katla) */
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 8px; }
@@ -93,9 +120,9 @@ if (localStorage.getItem('me26_user_id')) {
 </head>
 <body id="ana-body" class="antialiased flex flex-col min-h-screen relative pt-10 bg-zemin text-white transition-colors duration-1000">
 
-<!-- KATLANIR SARI CETVEL EKRANI -->
+<!-- DİNAMİK KATLANIR SARI CETVEL EKRANI -->
 <div id="cetvel-overlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] hidden flex-col items-center justify-center overflow-hidden">
-    <div class="cetvel-kok scale-[1] md:scale-[1.3] mb-12" style="transform: translateX(-50px);">
+    <div id="cetvel-ana-isletici" class="cetvel-kok scale-[1] md:scale-[1.3] mb-12" style="transform: translateX(-50px);">
         <div class="cetvel-p c1">
             <div class="percin p-left"></div><div class="percin p-right"></div>
             <div class="cetvel-p c2 fold-pos">
@@ -271,7 +298,7 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
                 </div>
                 <p id="telefon-uyari" class="text-[9px] text-gray-500 mt-2 flex justify-between"><span>*Hane sınırı aktiftir.</span> <span id="telefon-sayac" class="text-kaos">0/10</span></p>
             </div>
-            <button onclick="profiliVeTeliOnayla()" id="btn-lobby-kaydet" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos hover:opacity-90 transition">
+            <button onclick="profiliVeTeliOnayla()" id="btn-lobby-kaydet" class="w-full bg-kaos text-white font-black tracking-widest uppercase py-4 rounded-lg shadow-kaos hover:opacity-90 transition cursor-pointer">
                 SMS KODU GÖNDER
             </button>
         </div>
@@ -443,7 +470,6 @@ DÜNYA İÇMİMARLAR GÜNÜ BÜYÜK AÇILIŞINA: HESAPLANIYOR...
 
 <!-- SİSTEM MOTORU JS -->
 <script>
-// --- GLOBAL GÜVENLİK FLAG'İ (SMS BYPASS YAMASI) ---
 window.smsOnaylandi = false;
 
 window.butonlariGuncelle = function() {
@@ -478,11 +504,69 @@ const dashboardView = document.getElementById('dashboard-view');
 const topBanner = document.getElementById('top-banner-sayac');
 let pendingKullanici = { email: '', isim: '', telefon: '' };
 
+// ORİJİNAL, ZEHİR GİBİ SİSTEM MANİFESTOLARI GERİ YÜKLENDİ
 const sistemBilgileri = {
-    'otonom': { baslik: "OTONOM AĞ SİMÜLASYONU", metin: `<p class="mb-4">Hiyerarşisiz, Şeffaf ve Liyakatli ağ modelidir.</p>` },
-    'nedir': { baslik: "SİSTEM KURAN İÇMİMARLIK", metin: `<p class="mb-4">Bizler dekoratif illüzyonlara sığınanlar değil, yapısal gerçeği inşa edenleriz.</p>` },
-    'kurallar': { baslik: "ME26 ŞANTİYE KURALLARI", metin: `<p class="mb-4">Aidat Yok, Usta-Çırak liyakati ve Mutlak e-Devlet Onayı vardır.</p>` },
-    'gizlilik': { baslik: "KVKK VE GİZLİLİK ZIRHI", metin: `<p class="mb-4">Cihaz İçi PDF Okuma (Zero-Log) uygulanır, belge sunucuya yüklenmeden imha edilir.</p>` }
+    'otonom': { 
+        baslik: "OTONOM AĞ SİMÜLASYONU", 
+        metin: `<p class="mb-4 font-bold text-white text-lg">Geleceğin meslek örgütlenmesi: Hiyerarşisiz, Şeffaf ve Liyakatli.</p>
+                <p class="mb-4">Otonom Karar Simülasyonu, patronu, başkanı veya karar verici bir yönetim kurulu olmayan dijital bir yapıdır. Kurallar kişilerin inisiyatifine veya egolarına göre değil, sistem algoritmalarına (Otonom SQL Kurallarına) göre işler.</p>
+                <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
+                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">⚖️</span> Otorite Değil, Ortak Akıl</strong>
+                <p>ME26 hiyerarşik bir dernek değil, devasa bir Ortak Akıl Simülasyonu olarak tasarlandı. Oylamalarda söz hakkı, sisteme kattığınız değere ve liyakat katsayınıza göre belirlenir. Sistem, gücü merkezden alıp liyakat sahibi meslektaşlara dağıtır.</p>
+                </div>` 
+    },
+    'nedir': { 
+        baslik: "SİSTEM KURAN İÇMİMARLIK", 
+        metin: `<p class="mb-4 font-bold text-white text-lg">Bizler dekoratif illüzyonlara sığınanlar değil, yapısal gerçeği inşa edenleriz.</p>
+                <p class="mb-4">Yıllarca piyasadaki dağınık yapıyı ve mevcut sistemlerin meslektaşın sorunlarına ne kadar uzak kaldıklarını gördük. Sistemin sorunlarını en iyi, o şantiyenin tozunu yutanlar, o dertleri bizzat yaşayanlar bilir. "Sarı Cetvel" manifestomuzla başlattığımız yürüyüşü, şimdi ME26 ile bağımsız ve güçlü bir <strong class="text-kaos">Otonom Karar Ağı'na</strong> dönüştürüyoruz.</p>
+                <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
+                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">📐</span> 80 Bin Güç, Tek Akıl</strong>
+                <p>Türkiye'deki 80.000 İçmimar ve 15.000 öğrenciyi aidatsız, masrafsız, başkansız tek bir dijital şantiyede birleştiriyoruz. 2017'de kapanan 20.000 üyeli icmimar.com'un usta-çırak ruhunu, 2026 model teknolojiyle diriltiyoruz.</p>
+                </div>
+                <div class="bg-black/50 p-4 border border-slate-700 rounded-lg mb-4">
+                <strong class="text-white block mb-2 text-kaos flex items-center"><span class="text-xl mr-2">⚙️</span> Kararları Kim Alacak?</strong>
+                <p>Sistem İçmimarları ve Stajyerler, yeni oylamaya açılacak teklif başvurularını inceler. Sistemin gizli liderleri ise insan inisiyatifiyle değil, algoritma tarafından liyakata göre belirlenir. Oylamaya sunulan teklif %51 onay alırsa, otonom olarak uygulamaya veya eyleme dönüştürülür.</p>
+                </div>` 
+    },
+    'kurallar': { 
+        baslik: "ME26 ŞANTİYE KURALLARI", 
+        metin: `<ul class="space-y-5">
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                <span class="mr-3 text-kaos text-2xl font-black">1.</span> 
+                <div><strong class="text-white text-base block mb-1">Aidat ve Sömürü Yok:</strong> Sistem para toplamaz, makam satmaz. Meslektaşın emeği üzerinden rant üretilmesine geçit vermez.</div>
+                </li>
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                <span class="mr-3 text-kaos text-2xl font-black">2.</span> 
+                <div><strong class="text-white text-base block mb-1">Usta-Çırak Felsefesi:</strong> Kariyer atölyelerde ve şantiyelerde başlar. Öğrenciler mesleğin özüdür. "Şantiye Sofrası"nda herkese yer vardır; tecrübe aktarılır, hiyerarşik ezilmeye müsaade edilmez.</div>
+                </li>
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                <span class="mr-3 text-kaos text-2xl font-black">3.</span> 
+                <div><strong class="text-white text-base block mb-1">Maskelenmiş Kimlik (Global ID):</strong> Ağa sızmaları önlemek için mutlak e-Devlet onayı şarttır. Ancak içeride herkes eşittir. Ünvanlar silinir, herkes Küresel Ağ Numarası (Örn: TR-IA-100) ile konuşur. Oylar isme değil, fikre verilir. Her kurucu üye liyakatine (davet ve ağa katkısına) göre belirlenen katsayılarla söz hakkı kazanır.</div>
+                </li>
+                <li class="flex items-start bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                <span class="mr-3 text-kaos text-2xl font-black">4.</span> 
+                <div><strong class="text-white text-base block mb-1">Kavga Değil, Sistem:</strong> Siyasi tartışmalar, şahsi husumetler ve dekoratif kavgalar ağdan otonom ihraç sebebidir. Sadece yapısal sorunlar ve mesleki çözümler konuşulur.</div>
+                </li>
+                </ul>` 
+    },
+    'gizlilik': { 
+        baslik: "KVKK VE GİZLİLİK ZIRHI", 
+        metin: `<p class="mb-4 font-medium text-gray-300">ME26 ağı, verilerinizi satmayı veya kendi lehine kullanmayı reddeden harbi bir felsefe üzerine inşa edilmiştir.</p>
+                <div class="grid gap-4">
+                <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
+                <strong class="text-white block mb-1">Sistem İçmimarları Ne Yapar?</strong>
+                <p class="text-sm">Ağa botların sızmasını önlemek için e-Devlet belgeniz talep edilir. "Sistem İçmimarları", ağa katılacak yeni üyelerin e-Devlet teyitlerini yapar ve yeni oylamaya açılacak teklif başvurularını (anketleri) inceler, içeride bir başkanlık güçleri yoktur.</p>
+                </div>
+                <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
+                <strong class="text-white block mb-1">Cihaz İçi PDF Okuma (Zero-Log)</strong>
+                <p class="text-sm">Yüklediğin e-Devlet belgesi, doğrudan senin cihazının RAM'inde okunur. Barkod ve TC yakalandıktan sonra belge <span class="text-kaos font-bold">hiçbir sunucuya yüklenmeden anında imha edilir</span>.</p>
+                </div>
+                <div class="bg-black/40 p-4 border-l-4 border-kaos rounded">
+                <strong class="text-white block mb-1">Sonsuz Düşünce Özgürlüğü</strong>
+                <p class="text-sm">Kimliğin "TR-IA" şifresiyle maskelendiği için, mevcut yapıların veya işverenlerin baskısından korkmadan mesleki sorunları dile getirebilir, oylamalara hür iradenle katılabilirsin. Ağ seni korur.</p>
+                </div>
+                </div>` 
+    }
 };
 
 window.sistemBilgiAc = function(tip) {
@@ -502,20 +586,26 @@ window.sistemBilgiKapat = function() {
     setTimeout(() => { popup.classList.add('hidden'); }, 300);
 };
 
-window.cetvelGecis = function(mesaj, islemCallback) {
+// DİNAMİK ŞEKİL ALAN CETVEL MOTORU
+window.cetvelGecis = function(mesaj, islemCallback, sekilClass = 'shape-zigzag') {
     const overlay = document.getElementById('cetvel-overlay');
     const msg = document.getElementById('cetvel-mesaj');
     const txtContainer = document.getElementById('cetvel-text-container');
-    const cetvel = document.querySelector('.cetvel-kok');
-    if(overlay && msg && txtContainer && cetvel) {
+    const cetvelKoku = document.getElementById('cetvel-ana-isletici');
+    
+    if(overlay && msg && txtContainer && cetvelKoku) {
         msg.innerHTML = mesaj;
+        
+        // Önceki şekilleri temizle ve yeni şekli (animasyon sınıfını) ekle
+        cetvelKoku.className = `cetvel-kok scale-[1] md:scale-[1.3] mb-12 ${sekilClass}`;
+        
         overlay.classList.remove('hidden'); overlay.classList.add('flex');
-        setTimeout(() => { cetvel.classList.add('active'); }, 50);
+        setTimeout(() => { cetvelKoku.classList.add('active'); }, 50);
         setTimeout(() => {
             txtContainer.classList.remove('opacity-0');
             if(islemCallback) islemCallback(); 
             setTimeout(() => {
-                txtContainer.classList.add('opacity-0'); cetvel.classList.remove('active');
+                txtContainer.classList.add('opacity-0'); cetvelKoku.classList.remove('active');
                 setTimeout(() => { overlay.classList.add('hidden'); overlay.classList.remove('flex'); }, 600); 
             }, 1200); 
         }, 900); 
@@ -559,7 +649,6 @@ window.telefonFormatla = function(input) {
     sayac.classList.toggle('text-kaos', input.value.length !== sinir);
 };
 
-// --- CSS DEĞİŞKEN YAMASI (RENKLERİN PATLAMASINI ÖNLER) ---
 const kaosRenkleri = ['#FF007F', '#7FFF00', '#00FFFF', '#FF00FF', '#FFFF00', '#FF4500', '#8A2BE2', '#00FF00', '#FF1493', '#1E90FF'];
 window.kaosRenginiBas = function() {
     let aktifKaosRengi = localStorage.getItem('me26_kaos_rengi');
@@ -576,7 +665,6 @@ window.kaosRenginiBas = function() {
     document.documentElement.style.setProperty('--neon-hex', aktifKaosRengi);
     document.documentElement.style.setProperty('--neon-rgb', hexToRgb(aktifKaosRengi));
     
-    // Tailwind config'in anlık değişkeni tanıması için ufak dokunuş
     const bodyEmanet = document.getElementById('ana-body');
     if(bodyEmanet) { bodyEmanet.setAttribute('style', `background-color: ${aktifKaosRengi} !important;`); }
 }
@@ -601,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let savedRef = localStorage.getItem('me26_ref_link');
         if(!savedRef) { savedRef = Math.random().toString(36).substring(2, 8).toUpperCase(); localStorage.setItem('me26_ref_link', savedRef); }
         document.getElementById('davet-linki').innerText = "me26.com/davet/REF-" + savedRef;
-        canliSandigiBaslat(); kullaniciTeklifleriniGetir(); rozetDurumunuGuncelle();
         return;
     }
 
@@ -614,6 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data) {
                 localStorage.setItem('me26_user_id', data.id); localStorage.setItem('me26_user_name', data.tam_isim); localStorage.setItem('me26_uye_no', data.uye_no);
+                // GİRİŞ YAPARKEN STANDART ZİGZAG ANİMASYONU
                 cetvelGecis("AĞA BAĞLANILIYOR...", () => {
                     topBanner.classList.remove('hidden'); landingView.classList.add('hidden');
                     document.documentElement.classList.add('is-logged-in'); 
@@ -621,14 +709,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.scrollTo(0, 0); window.butonlariGuncelle();
                     document.getElementById('dash-isim').innerText = data.tam_isim.toLocaleUpperCase('tr-TR');
                     document.getElementById('dash-id-main').innerText = "TR-IA-" + data.uye_no;
-                    canliSandigiBaslat(); kullaniciTeklifleriniGetir(); rozetDurumunuGuncelle();
-                });
+                }, 'shape-zigzag');
             } else {
                 pendingKullanici.email = googleEmail; pendingKullanici.isim = googleIsim;
+                // GÜVENLİK KAPISINDA KAPI/ÇERÇEVE ANİMASYONU
                 cetvelGecis("GÜVENLİK KAPISI", () => {
                     document.getElementById('gosterilecek-isim').innerText = googleIsim.toUpperCase('tr-TR');
                     landingView.classList.add('hidden'); lobbyView.classList.remove('hidden'); lobbyView.classList.add('flex'); window.scrollTo(0,0);
-                });
+                }, 'shape-kapi');
             }
         }
     });
@@ -645,10 +733,11 @@ window.profiliVeTeliOnayla = async function() {
 
     try {
         confirmationResult = await auth.signInWithPhoneNumber(pendingKullanici.telefon, window.recaptchaVerifier);
+        // SMS ONAYINA GEÇERKEN ZİGZAG
         cetvelGecis("TELEFON ONAYI", () => {
             lobbyView.classList.add('hidden'); lobbyView.classList.remove('flex');
             document.getElementById('sms-modal').classList.remove('hidden'); document.getElementById('sms-modal').classList.add('flex');
-        });
+        }, 'shape-zigzag');
     } catch (err) {
         alert("SMS gönderilemedi. Lütfen tekrar deneyin.");
         btnSubmit.innerText = "SMS KODU GÖNDER"; btnSubmit.disabled = false;
@@ -664,11 +753,12 @@ window.smsKoduOnayla = async function() {
 
     try {
         await confirmationResult.confirm(code);
-        window.smsOnaylandi = true; // SMS BYPASS YAMASI AKTİF EDİLDİ
+        window.smsOnaylandi = true;
+        // PDF YÜKLEME EKRANINA GEÇERKEN ÜÇGEN ANİMASYONU
         cetvelGecis("LİYAKAT KANITI", () => {
             document.getElementById('sms-modal').classList.add('hidden'); document.getElementById('sms-modal').classList.remove('flex');
             document.getElementById('pdf-modal').classList.remove('hidden'); document.getElementById('pdf-modal').classList.add('flex');
-        });
+        }, 'shape-ucgen');
     } catch (error) {
         alert("Hatalı kod girdiniz.");
         smsBtn.innerText = "KODU ONAYLA VE İLERLE"; smsBtn.disabled = false;
@@ -676,11 +766,7 @@ window.smsKoduOnayla = async function() {
 }
 
 window.belgeyiAnalizEtVeAgaKatil = async function() {
-    // SMS Bypass Güvenlik Yaması Kontrolü
-    if (!window.smsOnaylandi) {
-        alert("SİSTEM REDDİ: SMS Doğrulaması yapılmadan belge yüklenemez!");
-        return;
-    }
+    if (!window.smsOnaylandi) { alert("SİSTEM REDDİ: SMS Doğrulaması yapılmadan belge yüklenemez!"); return; }
 
     const btnPdf = document.getElementById('btn-pdf-onayla');
     const genelOnay = document.getElementById('kvkk-genel-onay').checked;
@@ -710,17 +796,10 @@ window.belgeyiAnalizEtVeAgaKatil = async function() {
         const universite = (tamMetin.match(/(?:PROGRAM|ÜNİVERSİTE).*?:\s*([^\/]+)/) || [])[1]?.trim() || "Belirtilmemiş";
         const mezuniyet_yili = (tamMetin.match(/(?:MEZUNİYET|KAYIT).*?(\d{4})/) || [])[1];
 
-        // REGEX KIRILGANLIĞI YAMASI (Fallback Manuel Giriş)
-        if (!tcInput) {
-            tcInput = prompt("SİSTEM UYARISI: PDF üzerinden TC Kimlik okunamadı. Lütfen 11 haneli TC Kimlik numaranızı manuel giriniz:");
-        }
-        if (!edevletBarkod) {
-            edevletBarkod = prompt("SİSTEM UYARISI: PDF üzerinden Barkod okunamadı. Lütfen belgenin sağ üst köşesindeki barkod numarasını manuel giriniz:");
-        }
+        if (!tcInput) { tcInput = prompt("SİSTEM UYARISI: PDF üzerinden TC Kimlik okunamadı. Lütfen 11 haneli TC Kimlik numaranızı manuel giriniz:"); }
+        if (!edevletBarkod) { edevletBarkod = prompt("SİSTEM UYARISI: PDF üzerinden Barkod okunamadı. Lütfen belgenin sağ üst köşesindeki barkod numarasını manuel giriniz:"); }
 
-        if (!tcInput || !edevletBarkod) {
-            throw new Error("GÜVENLİK İHLALİ: TC Kimlik veya Barkod numarası olmadan kayıt işlemi yapılamaz.");
-        }
+        if (!tcInput || !edevletBarkod) { throw new Error("GÜVENLİK İHLALİ: TC Kimlik veya Barkod numarası olmadan kayıt işlemi yapılamaz."); }
 
         const durum = mezuniyet_yili ? 'İçmimar' : 'İçmimarlık Öğrencisi';
         const veri = { 
@@ -734,14 +813,13 @@ window.belgeyiAnalizEtVeAgaKatil = async function() {
         if (error) throw error;
 
         localStorage.setItem('me26_user_id', data[0].id); localStorage.setItem('me26_user_name', veri.tam_isim); localStorage.setItem('me26_uye_no', data[0].uye_no);
-        cetvelGecis("SİSTEME KAYIT BAŞARILI", () => location.reload());
+        
+        // KAYIT BAŞARILI, TİK İŞARETİ ANİMASYONU İLE KAPANIŞ
+        cetvelGecis("SİSTEME KAYIT BAŞARILI", () => location.reload(), 'shape-tik');
 
     } catch (err) {
-        if (err.code === '23505' || (err.message && err.message.toLowerCase().includes('duplicate'))) {
-            alert("REDDEDİLDİ: Bu e-Devlet Belgesi veya TC kimlik zaten kayıtlı.");
-        } else {
-            alert(err.message || "Sistem Hatası oluştu.");
-        }
+        if (err.code === '23505' || (err.message && err.message.toLowerCase().includes('duplicate'))) { alert("REDDEDİLDİ: Bu e-Devlet Belgesi veya TC kimlik zaten kayıtlı."); } 
+        else { alert(err.message || "Sistem Hatası oluştu."); }
         btnPdf.innerText = "BELGEYİ ONAYLA VE AĞA KATIL"; btnPdf.disabled = false;
     }
 }
@@ -749,11 +827,12 @@ window.belgeyiAnalizEtVeAgaKatil = async function() {
 window.mobilMenuAc = function() { document.getElementById('mobile-menu').classList.remove('menu-closed'); };
 window.mobilMenuKapat = function() { document.getElementById('mobile-menu').classList.add('menu-closed'); };
 
-// (Oylama ve Dashboard fonksiyonları için yer tutucu. Orijinal dosyadaki fonksiyonlar bu blok altına eklenebilir)
-window.canliSandigiBaslat = function() {}; 
-window.kullaniciTeklifleriniGetir = function() {}; 
-window.rozetDurumunuGuncelle = function() {}; 
-window.oyKullan = function(tercih) { alert('Oy işlendi: ' + tercih); };
+// OYLAMA İŞLEMİ VE TİK ANİMASYONU
+window.oyKullan = function(tercih) { 
+    // BURADA SİSTEME OY KAYDEDİLECEK
+    // Oylama tamamlanınca Katlanır Sarı Cetvel "TİK" (Onay) Şeklini Alacak
+    cetvelGecis(`OYUNUZ AĞA İŞLENDİ: ${tercih}`, null, 'shape-tik'); 
+};
 </script>
 </body>
 </html>
