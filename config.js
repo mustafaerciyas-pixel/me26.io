@@ -1,10 +1,9 @@
- /* ==========================================================================
+/* ==========================================================================
    ME26 AĞI - SİSTEM AYARLARI VE YAPILANDIRMA (config.js)
    ========================================================================== */
 
 export const ME26_CONFIG = {
     // 1. SİSTEM MODU
-    // "production" = Direkt yayın
     mode: "production",
 
     // 2. VIP PAYLAŞIM KURALLARI
