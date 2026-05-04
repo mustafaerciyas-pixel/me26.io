@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase Karanlık Oda (RPC) + E-Devlet Nokta Atışı Okuyucu
+   Firebase Auth + Supabase Karanlık Oda (RPC) + Nokta Atışı E-Devlet Okuyucu
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -326,7 +326,7 @@ export const AUTH = {
         }
     },
 
-    // TAM UYUMLU E-DEVLET OKUYUCU (Maskesiz TC, Manuel İnceleme)
+    // KESKİN NİŞANCI E-DEVLET OKUYUCU (Tam Metin ve Sütun Parçalayıcı)
     verifyPdf: async () => {
         if (!STATE.isLoggedIn()) {
             UI.showToast('Lütfen önce sisteme giriş yapın.', 'error');
@@ -373,57 +373,43 @@ export const AUTH = {
                 fullText += textContent.items.map(item => item.str).join(' ') + ' ';
             }
             
-            fullText = fullText.replace(/\s+/g, ' ');
+            // PDF.js'in eklediği gereksiz " | " işaretlerini ve fazla boşlukları temizleyelim
+            const cleanText = fullText.replace(/\|\s*/g, '').replace(/\s+/g, ' ');
 
-            // NOKTA ATIŞI BİLGİ KOPARICI
-            const parseField = (text, startLabel, endLabel) => {
-                const escapedStart = startLabel.replace(/\./g, '\\.');
-                const escapedEnd = endLabel ? endLabel.replace(/\./g, '\\.') : '$';
-                const regex = new RegExp(`${escapedStart}\\s*\\|?\\s*:?\\s*(.*?)\\s*(?=${escapedEnd})`, 'i');
-                const match = text.match(regex);
-                if (match) {
-                    return match[1].replace(/[:|]+$/, '').trim();
-                }
-                return 'Bulunamadı';
+            // KESKİN NİŞANCI AYRIŞTIRICI FONKSİYON
+            const extract = (regex) => {
+                const match = cleanText.match(regex);
+                return match ? match[1].trim() : 'Bulunamadı';
             };
 
-            // 1. TC Kimlik No (Tam halini alır, maskeleme yok)
-            const tcMatch = fullText.match(/Kimlik No\s*\|?\s*:?\s*([0-9]{11})/i);
-            const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
+            // 1. TC Kimlik No (Tam, Maskesiz)
+            const tc = extract(/Kimlik No\s*[:]\s*([0-9]{11})/i);
             
-            // 2. İsimler
-            const adSoyad = parseField(fullText, 'Adı Soyadı', 'Baba Adı');
-            const babaAdi = parseField(fullText, 'Baba Adı', 'Anne Adı');
-            const anneAdi = parseField(fullText, 'Anne Adı', 'Doğum Tarihi');
-            const dogumTarihi = parseField(fullText, 'Doğum Tarihi', 'Program');
+            // 2. Kişisel Bilgiler
+            const adSoyad = extract(/Adı Soyadı\s*[:]\s*(.*?)(?=\s*Baba Adı)/i);
+            const babaAdi = extract(/Baba Adı\s*[:]\s*(.*?)(?=\s*Anne Adı)/i);
+            const anneAdi = extract(/Anne Adı\s*[:]\s*(.*?)(?=\s*Doğum Tarihi)/i);
+            const dogumTarihi = extract(/Doğum Tarihi\s*[:]\s*([0-9\.]+)/i);
             
-            // 3. Okul ve Bölüm
-            const programRaw = parseField(fullText, 'Program', 'Diploma No');
+            // 3. Okul ve Bölüm Sütun Dağıtımı (Slash işaretinden böler)
+            const programStr = extract(/Program\s*[:]\s*(.*?)(?=\s*Diploma No)/i);
             let uni = 'Bulunamadı', fakulte = 'Bulunamadı', bolum = 'Bulunamadı';
             
-            if (programRaw !== 'Bulunamadı') {
-                const parts = programRaw.split('/');
-                if(parts.length >= 3) {
-                    uni = parts[0].trim();
-                    fakulte = parts[1].trim();
-                    bolum = parts[2].trim();
-                } else {
-                    bolum = programRaw;
-                }
+            if (programStr !== 'Bulunamadı') {
+                const parts = programStr.split('/');
+                uni = parts[0] ? parts[0].trim() : 'Bulunamadı';
+                fakulte = parts[1] ? parts[1].trim() : 'Bulunamadı';
+                bolum = parts[2] ? parts[2].trim() : programStr; 
             }
             
             // 4. Diğer Belgeler
-            const diplomaNo = parseField(fullText, 'Diploma No', 'Diploma Notu');
-            const mezunTarihi = parseField(fullText, 'Mezuniyet Tarihi', 'Durum');
+            const diplomaNo = extract(/Diploma No\s*[:]\s*(.*?)(?=\s*Diploma Notu)/i);
+            const mezunTarihi = extract(/Mezuniyet Tarihi\s*[:]\s*([0-9\.]+)/i);
 
-            const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
+            const barkodMatch = cleanText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // KESİN KURAL: Herkes Manuel Onay sırasına girer
-            const isIcmimar = fullText.toUpperCase().includes('İÇ MİMAR') || fullText.toUpperCase().includes('İÇMİMAR');
-            const gercekDurum = 'İncelemeye Alındı'; 
-
-            // ÇIKARTILAN GERÇEK VERİLER
+            // ÇIKARTILAN GERÇEK VERİLER (Herkes İncelemeye Alınır)
             const belgeData = {
                 tc: tc,
                 ad_soyad: adSoyad,
@@ -436,19 +422,15 @@ export const AUTH = {
                 diploma_no: diplomaNo,
                 mezun_tarihi: mezunTarihi,
                 barkod: barkod,
-                durum: gercekDurum
+                durum: 'İncelemeye Alındı'
             };
 
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
-            // Kullanıcıyı her zaman "bekleyen belge" aşamasına al
+            // Kullanıcıyı "belge bekleme" aşamasına alıyoruz, yetkiyi sen panelden vereceksin
             STATE.updateUser('authStage', 'document_pending');
 
-            if (isIcmimar) {
-                UI.showToast('Belgeniz başarıyla okundu ve Yönetici Onayına (Manuel İnceleme) gönderildi.', 'success');
-            } else {
-                UI.showToast('Belgeniz alındı ve incelenmek üzere kuyruğa eklendi.', 'info');
-            }
+            UI.showToast('Belgeniz başarıyla okundu ve Yönetici Onayına (Manuel İnceleme) gönderildi.', 'success');
             
             UI.closeModal('pdf-modal');
             UI.renderProfile();
