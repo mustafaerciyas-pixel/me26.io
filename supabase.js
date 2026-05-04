@@ -37,5 +37,21 @@ export const DB = {
         } else {
             console.log('✅ BELGE VERİTABANINA BAŞARIYLA YAZILDI!');
         }
+    },
+
+    // YENİ EKLENEN GÖREV 1: KULLANICI ŞEHRİNİ (TRİBÜNÜNÜ) GÜNCELLEME
+    sehirGuncelle: async (uid, secilenSehir) => {
+        const { data, error } = await supabase
+            .from('users') 
+            .update({ sehir_tribunu: secilenSehir })
+            .eq('id', uid)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('🔥 Şehir Güncelleme Hatası:', error.message);
+            throw error;
+        }
+        return data;
     }
 };
