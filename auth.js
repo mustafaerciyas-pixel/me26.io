@@ -65,8 +65,6 @@ export const AUTH = {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || null;
 
-            // Form olmadığı için başlangıç değerleri "Belirsiz" ve "Seçilmedi" olarak gider.
-            // Supabase'deki 'sistemeGiris' fonksiyonu eğer adam eski üyeyse bu "Belirsiz"leri yoksayacak ve eski verisini koruyacaktır.
             const gizliPaket = {
                 uid: user.uid,
                 g_isim: user.displayName,
@@ -82,8 +80,12 @@ export const AUTH = {
             if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
             let authStage = 'registered';
-            if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
-            else if (dbUser.telefon) authStage = 'phone_verified'; // Oy gücü 0 olsa bile telefonu varsa verified sayılır
+            
+            // GÜVENLİK SENSÖRÜ: Veritabanından gelen gücü kesin rakama çevir
+            const guc = parseFloat(dbUser.oy_gucu || 0);
+            
+            if (guc >= 1.0) authStage = 'pdf_verified';
+            else if (dbUser.telefon) authStage = 'phone_verified';
             
             if (dbUser.belge_durumu === 'Onay Bekliyor' || dbUser.belge_durumu?.includes('Bekliyor')) {
                 authStage = 'document_pending'; 
@@ -95,7 +97,7 @@ export const AUTH = {
                 userNo: dbUser.vip_kurucu_no || 'BEKLEYEN',
                 role: dbUser.mesleki_durum,
                 city: dbUser.sehir_tribunu,
-                votePower: dbUser.oy_gucu.toFixed(1) + 'x',
+                votePower: guc.toFixed(1) + 'x',
                 inviteCount: dbUser.basarili_davet_sayisi || 0,
                 isVip: !!dbUser.vip_kurucu_no,
                 davetKodu: dbUser.kendi_davet_kodu
@@ -104,8 +106,7 @@ export const AUTH = {
             UI.renderProfile(); 
             UI.showView('voting');
             
-            if (dbUser.basarili_davet_sayisi === 0 && dbUser.oy_gucu === 0 && (!dbUser.telefon)) {
-                // Sadece sisteme ilk kez sıfırdan girenleri tebrik et
+            if (dbUser.basarili_davet_sayisi === 0 && guc === 0 && (!dbUser.telefon)) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
                 UI.openModal('wow-modal');
@@ -148,9 +149,6 @@ export const AUTH = {
         });
     },
 
-    // ---------------------------------------------------------
-    // TURNİKE: FORMSUZ, 1 TIKLA GOOGLE GİRİŞİ (HEM KAYIT HEM GİRİŞ)
-    // ---------------------------------------------------------
     loginWithGoogle: async () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
@@ -187,7 +185,7 @@ export const AUTH = {
 
         const phoneVal = normalizeTurkishPhone(phoneInput.value);
         if (phoneVal.length !== 10 || !phoneVal.startsWith('5')) {
-            UI.showToast('Geçerli bir 10 haneli cep telefonu girin (Örn: 5551234567).', 'error');
+            UI.showToast('Geçerli bir 10 haneli cep telefonu girin.', 'error');
             return;
         }
 
@@ -271,7 +269,6 @@ export const AUTH = {
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
-            STATE.updateUser('votePower', '0.0x'); // DİKKAT: Artık telefon onayına oy gücü vermiyoruz! Sadece bot kontrolü.
 
             UI.closeModal('phone-modal');
             UI.renderProfile();
