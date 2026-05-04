@@ -79,21 +79,23 @@
         <button type="button" id="btn-close-mobile-menu" aria-label="Menüyü Kapat" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
-        <a href="javascript:void(0)" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest info-link" data-info="kurallar">Kurallarımız</a>
-        <a href="javascript:void(0)" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest info-link" data-info="sss">S.S.S.</a>
+        <!-- DÜZELTME: Mobil Linkler Aktif Edildi -->
+        <a href="kurallar.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Kurallarımız</a>
+        <a href="sss.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">S.S.S.</a>
         <button type="button" id="btn-mobile-nav-action" class="bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer">1 TIKLA KATIL</button>
     </div>
 
     <!-- ÜST MENÜ (NAVİGASYON) -->
     <nav id="ana-nav" class="bg-zemin text-white py-5 shadow-xl relative z-30 border-b border-slate-800 w-full">
         <div class="max-w-6xl mx-auto px-4 flex justify-between items-center relative">
-            <a href="javascript:void(0)" id="btn-logo" class="text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition">
+            <a href="index.html" id="btn-logo" class="text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition">
                 <div class="w-1.5 h-6 bg-kaos mr-2"></div><span><span class="text-kaos">ME26</span> AĞI</span>
             </a>
             
             <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
-                <a href="javascript:void(0)" class="hover:opacity-80 transition cursor-pointer info-link" data-info="manifesto">Manifesto</a>
-                <a href="javascript:void(0)" class="hover:opacity-80 transition cursor-pointer info-link" data-info="kurallar">Kurallar</a>
+                <!-- DÜZELTME: Masaüstü Linkler Aktif Edildi -->
+                <a href="#manifesto" class="hover:opacity-80 transition cursor-pointer">Manifesto</a>
+                <a href="kurallar.html" class="hover:opacity-80 transition cursor-pointer">Kurallar</a>
                 <button type="button" id="btn-desktop-nav-action" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest relative z-50">
                     1 TIKLA KATIL
                 </button>
@@ -207,7 +209,9 @@
                 </p>
             </div>
         </header>
-        <main class="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 w-full mb-20 items-center">
+        
+        <!-- DÜZELTME: Manifesto için 'id="manifesto"' eklendi -->
+        <main id="manifesto" class="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 w-full mb-20 items-center">
             
             <!-- Manifesto Sol Taraf -->
             <div class="flex flex-col justify-center">
