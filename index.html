@@ -49,18 +49,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
-    <!-- YZ PDF OKUYUCU GÖZLÜK BURAYA (HEAD İÇİNE) EKLENDİ -->
+    <!-- YZ PDF OKUYUCU GÖZLÜK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
 <body id="ana-body" class="antialiased flex flex-col min-h-screen relative bg-zemin text-white transition-colors duration-1000">
 
     <div id="toast-container" class="fixed bottom-6 left-6 z-[90000] flex flex-col gap-3 pointer-events-none"></div>
 
-    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 transform -translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 pt-10">
+    <!-- MOBİL MENÜ -->
+    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 transform -translate-x-full transition-transform duration-300 flex flex-col items-center justify-center pt-10">
         <button type="button" id="btn-close-mobile-menu" aria-label="Menüyü Kapat" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
-        <button type="button" id="btn-mobile-nav-action" class="bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer">1 TIKLA KATIL</button>
+        <div class="flex flex-col gap-5 w-full px-10 mt-8">
+            <button type="button" id="btn-register-mobile" class="w-full bg-kaos text-slate-900 px-8 py-4 rounded-xl text-xl font-black uppercase tracking-widest shadow-kaos cursor-pointer">KAYIT OL</button>
+            <button type="button" id="btn-login-mobile" class="w-full bg-slate-800 text-white border border-slate-600 px-8 py-4 rounded-xl text-xl font-black uppercase tracking-widest shadow-md cursor-pointer">GİRİŞ YAP</button>
+        </div>
     </div>
 
     <nav id="ana-nav" class="bg-zemin text-white py-5 shadow-xl relative z-30 border-b border-slate-800 w-full">
@@ -68,9 +72,13 @@
             <a href="index.html" id="btn-logo" class="text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition">
                 <div class="w-1.5 h-6 bg-kaos mr-2"></div><span><span class="text-kaos">ME26</span> AĞI</span>
             </a>
-            <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
-                <button type="button" id="btn-desktop-nav-action" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest relative z-50">
-                    KONTROL PANELİ (GİRİŞ)
+            <!-- DESKTOP MENÜ -->
+            <div class="hidden md:flex space-x-3 text-sm font-semibold tracking-wide items-center">
+                <button type="button" id="btn-register-nav" class="bg-kaos text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer tracking-widest relative z-50">
+                    KAYIT OL
+                </button>
+                <button type="button" id="btn-login-nav" class="bg-slate-800 text-white border border-slate-600 px-5 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition cursor-pointer tracking-widest relative z-50 shadow-md">
+                    GİRİŞ YAP
                 </button>
             </div>
             <button type="button" id="btn-open-mobile-menu" aria-label="Mobil Menüyü Aç" class="md:hidden text-white hover:text-kaos outline-none">
@@ -213,18 +221,29 @@
                     </div>
                 </div>
                 
-                <button type="button" id="btn-login-hero" class="w-full bg-white text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-gray-200 transition hover:scale-[1.02] flex items-center justify-center text-lg">
-                    1 TIKLA KATIL
-                </button>
-                <p class="text-[11px] text-gray-400 font-medium tracking-widest mt-5 uppercase">
-                    Sadece İçmimar veya İçmimarlık Öğrencisiysen, tek tıkla sisteme gir.
+                <!-- BURASI DEĞİŞTİ: ANA KUTU ÇİFT BUTON -->
+                <div class="w-full flex flex-col sm:flex-row gap-3 mb-3">
+                    <button type="button" id="btn-register-hero" class="flex-1 bg-white text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-gray-200 transition hover:scale-[1.02] flex items-center justify-center text-sm gap-2">
+                        <i class="fas fa-user-plus text-lg"></i> KAYIT OL
+                    </button>
+                    <button type="button" id="btn-login-hero" class="flex-1 bg-slate-800 text-white border border-slate-600 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-slate-700 transition hover:scale-[1.02] flex items-center justify-center text-sm gap-2">
+                        <i class="fas fa-sign-in-alt text-lg"></i> GİRİŞ YAP
+                    </button>
+                </div>
+
+                <p class="text-[11px] text-gray-400 font-medium tracking-widest mt-4 uppercase">
+                    Sadece İçmimar veya İçmimarlık Öğrencisiysen, stadyuma gir.
                 </p>
             </div>
         </main>
         
-        <div class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-kaos/30 p-4 z-40" id="sticky-cta">
-            <button type="button" id="btn-login-sticky" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-kaos text-sm">
-                1 TIKLA KATIL (SİSTEME GİR)
+        <!-- BURASI DEĞİŞTİ: MOBİL YAPIŞKAN BAR -->
+        <div class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-kaos/30 p-4 z-40 flex gap-3" id="sticky-cta">
+            <button type="button" id="btn-register-sticky" class="flex-1 bg-kaos text-slate-900 font-black tracking-widest uppercase py-3.5 rounded-xl shadow-kaos text-xs">
+                KAYIT OL
+            </button>
+            <button type="button" id="btn-login-sticky" class="flex-1 bg-slate-800 text-white border border-slate-600 font-black tracking-widest uppercase py-3.5 rounded-xl shadow-md text-xs">
+                GİRİŞ YAP
             </button>
         </div>
     </div>
