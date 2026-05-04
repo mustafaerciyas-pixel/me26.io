@@ -6,15 +6,20 @@ import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { AUTH } from './auth.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. Başlangıç Durumunu Kontrol Et
-    if (STATE.isLoggedIn()) {
-        UI.showView('voting');
-    } else {
-        UI.showView('landing');
+    // 1. ÖNCE BEKLE: Google'dan dönen bir kullanıcı var mı?
+    const isRedirectLogin = await AUTH.checkRedirect();
+    
+    // 2. Eğer Google'dan dönmediyse standart ekranları çiz
+    if (!isRedirectLogin) {
+        if (STATE.isLoggedIn()) {
+            UI.showView('voting');
+        } else {
+            UI.showView('landing');
+        }
+        UI.renderProfile();
     }
-    UI.renderProfile();
 
     const bind = (id, event, fn) => {
         const el = document.getElementById(id);
@@ -50,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Modal Adım Geçişleri
+    // Modal Adım Geçişleri (Form Doğrulama)
     bind('btn-taahhut-next', 'click', () => {
         const cityEl = document.getElementById('input-taahhut-sehir');
         const roleEl = document.getElementById('input-taahhut-rol');
