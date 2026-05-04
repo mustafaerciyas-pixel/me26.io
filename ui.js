@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   VIP Kurucu Grid + Tam Yetki Madalyaları Entegre Edilmiş Sürüm
+   Kademeli Profilleme (Progressive Onboarding) Uyumlu Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -103,10 +103,16 @@ export const UI = {
             if (el) el.textContent = text;
         };
 
-        // Temel Bilgiler
-        setEl('ui-user-city', user.city);
-        setEl('ui-user-role', user.role);
-        setEl('ui-vote-power', user.votePower);
+        // GÖREV 1 KONTROLÜ: Şehir seçilmiş mi?
+        const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
+        
+        setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
+        
+        // E-Devlet Yüklenmediyse Rolü "Kimlik Bekleniyor" Göster
+        const displayRole = (user.role === 'Belirsiz' || !user.role) ? 'Kimlik Bekleniyor' : user.role;
+        setEl('ui-user-role', displayRole);
+        
+        setEl('ui-vote-power', user.votePower || '0.0x');
 
         // Kimlik Numarası ve Rozet
         const idBadge = document.getElementById('ui-role-badge');
@@ -150,40 +156,46 @@ export const UI = {
         }
 
         // =========================================================
-        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI
+        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI (GÖREVLER)
         // =========================================================
         const btnPhone = document.getElementById('btn-open-phone-modal');
         const btnPdf = document.getElementById('btn-open-pdf-modal');
+        const citySelector = document.getElementById('ui-city-selector-container'); // Yeni eklenecek HTML
 
-        // Önce ekranda kalmış olabilecek dinamik uyarıları temizleyelim
+        // Şehir seçimi UI Kontrolü
+        if (citySelector) {
+            if (!isCitySelected) {
+                citySelector.classList.remove('hidden');
+            } else {
+                citySelector.classList.add('hidden');
+            }
+        }
+
         document.getElementById('ui-pending-alert')?.remove();
         document.getElementById('ui-phone-success-alert')?.remove();
         document.getElementById('ui-pdf-success-alert')?.remove();
 
-        // 1. Yeşil "Telefon Doğrulandı" uyarı kutusu
         const insertPhoneSuccessAlert = (referenceElement) => {
             const alertDiv = document.createElement('div');
             alertDiv.id = 'ui-phone-success-alert';
             alertDiv.className = 'w-full bg-green-900/20 border border-green-700/50 text-green-400 text-[10px] md:text-xs text-center py-2 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2';
-            alertDiv.innerHTML = '<span>✅</span> TELEFON DOĞRULANDI';
+            alertDiv.innerHTML = '<span>✅</span> TELEFON DOĞRULANDI (BOT KONTROLÜ)';
             referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
         };
 
-        // 2. Özel "Belge Onaylandı" uyarı kutusu (Mavi/Mor premium renk)
         const insertPdfSuccessAlert = (referenceElement) => {
             const alertDiv = document.createElement('div');
             alertDiv.id = 'ui-pdf-success-alert';
             alertDiv.className = 'w-full bg-indigo-900/20 border border-indigo-700/50 text-indigo-400 text-[10px] md:text-xs text-center py-2 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2';
-            alertDiv.innerHTML = '<span>🎓</span> E-DEVLET BELGESİ ONAYLANDI';
+            alertDiv.innerHTML = '<span>🎓</span> E-DEVLET KİMLİĞİ ONAYLANDI';
             referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
         };
 
-        // 3. Sarı "Belge Bekliyor" uyarı kutusu
         const insertPendingAlert = (referenceElement) => {
             const alertDiv = document.createElement('div');
             alertDiv.id = 'ui-pending-alert';
             alertDiv.className = 'w-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[10px] md:text-xs text-center py-3 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2';
-            alertDiv.innerHTML = '<span>⏳</span> BELGENİZ YÖNETİCİ ONAYINDA BEKLİYOR';
+            alertDiv.innerHTML = '<span>⏳</span> KİMLİĞİNİZ YÖNETİCİ ONAYINDA BEKLİYOR';
             referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
         };
 
@@ -197,14 +209,14 @@ export const UI = {
                 insertPendingAlert(btnPhone);
             }
         } 
-        // DURUM 2: Her şey tam, VIP veya PDF onaylandı! (MADALYALAR BURADA ASILIYOR)
+        // DURUM 2: Her şey tam, VIP veya PDF onaylandı
         else if (user.authStage === 'pdf_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
             
             if (btnPhone && btnPhone.parentElement) {
                 insertPhoneSuccessAlert(btnPhone);
-                insertPdfSuccessAlert(btnPhone); // Şık belge onay yazısı!
+                insertPdfSuccessAlert(btnPhone); 
             }
         } 
         // DURUM 3: Sadece telefon onaylı, PDF yüklemesi bekleniyor
@@ -246,13 +258,11 @@ export const UI = {
         if (!gridEl) return;
         gridEl.innerHTML = '';
 
-        // 101 ile 1000 arasını çiz
         for (let i = 101; i <= 1000; i++) {
             const btn = document.createElement('button');
             btn.className = 'vip-number-btn bg-slate-800 border border-slate-700 text-gray-400 font-mono text-[10px] md:text-xs py-2 rounded hover:border-kaos hover:text-kaos transition';
             btn.textContent = i;
             
-            // Rastgele dolu numaralar (Gerçekçilik için)
             if (i === 105 || i === 199 || i === 206 || i === 333 || i === 404 || i === 500) {
                 btn.classList.add('opacity-30', 'cursor-not-allowed', 'bg-red-900/20', 'border-red-900/50', 'text-red-500');
                 btn.disabled = true;
