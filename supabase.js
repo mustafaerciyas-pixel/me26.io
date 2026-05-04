@@ -12,13 +12,13 @@ export const DB = {
     // Sokağa sır vermeyen, veriyi paketleyip karanlık odaya (RPC) atan fonksiyon
     sistemeGiris: async (gizliPaket) => {
         const { data, error } = await supabase.rpc('me26_sistem_giris', { p_payload: gizliPaket });
-        if (error) console.error('Giriş Motoru Hatası:', error);
+        if (error) console.error('🔥 Giriş Motoru Hatası:', error.message);
         return data;
     },
 
     telefonuOnayla: async (uid, telNo) => {
         const { error } = await supabase.rpc('me26_telefon_onay', { p_uid: uid, p_tel: telNo });
-        if (error) console.error('Telefon Motoru Hatası:', error);
+        if (error) console.error('🔥 Telefon Motoru Hatası:', error.message);
     },
 
     belgeyiSirayaAl: async (uid, belgeData) => {
@@ -27,6 +27,15 @@ export const DB = {
             p_uid: uid, 
             p_data: belgeData 
         });
-        if (error) console.error('Belge Motoru Hatası:', error);
+        
+        // HATA RÖNTGENİ: Supabase'in gizlediği gerçek isyanı ekrana basar
+        if (error) {
+            console.error('🔥 SUPABASE ASIL HATA:', error.message);
+            console.error('🔥 DETAYLAR:', error.details);
+            console.error('🔥 İPUCU:', error.hint);
+            console.error('🔥 HATA KODU:', error.code);
+        } else {
+            console.log('✅ BELGE VERİTABANINA BAŞARIYLA YAZILDI!');
+        }
     }
 };
