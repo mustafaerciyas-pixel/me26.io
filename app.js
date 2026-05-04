@@ -23,7 +23,7 @@ export const Me26VotingSystem = {
                 if (STATE.isLoggedIn()) {
                     UI.toggleProfileDrawer(true);
                 } else {
-                    AUTH.loginWithGoogle(); // Kilitli ekrandan geleni direkt Google'a atar
+                    AUTH.loginWithGoogle(); 
                 }
             });
         }
@@ -33,8 +33,17 @@ export const Me26VotingSystem = {
         const lockedState = document.getElementById('locked-state');
         const manifestoGrid = document.getElementById('manifesto-grid');
 
+        // Menü Butonlarını Seçiyoruz
+        const navReg = document.getElementById('btn-register-nav');
+        const navLog = document.getElementById('btn-login-nav');
+        const navProf = document.getElementById('btn-profile-nav');
+        
+        const mobReg = document.getElementById('btn-register-mobile');
+        const mobLog = document.getElementById('btn-login-mobile');
+        const mobProf = document.getElementById('btn-profile-mobile');
+
         if (STATE.isLoggedIn()) {
-            // Şehir seçilmiş mi kontrolü (Eğer seçilmediyse oylamaları gizle, kilitli ekranı göster)
+            // Şehir seçilmiş mi kontrolü
             const isCitySelected = STATE.user.city && STATE.user.city !== 'Seçilmedi' && STATE.user.city !== 'Belirsiz';
 
             if (isCitySelected) {
@@ -51,11 +60,19 @@ export const Me26VotingSystem = {
                 }
             }
             
-            // URL'deki kendi referans kodumuzu profile davet linki olarak ekleyelim
             const inviteLinkEl = document.getElementById('ui-invite-link');
             if(inviteLinkEl && STATE.user && STATE.user.davetKodu) {
                 inviteLinkEl.textContent = `https://me26.org/katil?ref=${STATE.user.davetKodu}`;
             }
+
+            // GİRİŞ YAPILDI: Menüdeki Kayıt/Giriş butonlarını GİZLE, Kontrol Panelini GÖSTER
+            if(navReg) navReg.classList.add('hidden');
+            if(navLog) navLog.classList.add('hidden');
+            if(navProf) navProf.classList.remove('hidden');
+
+            if(mobReg) mobReg.classList.add('hidden');
+            if(mobLog) mobLog.classList.add('hidden');
+            if(mobProf) mobProf.classList.remove('hidden');
             
         } else {
             if(lockedState) lockedState.style.display = 'flex';
@@ -63,6 +80,15 @@ export const Me26VotingSystem = {
                 manifestoGrid.classList.add('hidden');
                 manifestoGrid.classList.remove('grid');
             }
+
+            // ÇIKIŞ YAPILDI: Kontrol Panelini GİZLE, Kayıt/Giriş butonlarını GÖSTER
+            if(navReg) navReg.classList.remove('hidden');
+            if(navLog) navLog.classList.remove('hidden');
+            if(navProf) navProf.classList.add('hidden');
+
+            if(mobReg) mobReg.classList.remove('hidden');
+            if(mobLog) mobLog.classList.remove('hidden');
+            if(mobProf) mobProf.classList.add('hidden');
         }
     },
 
@@ -76,7 +102,6 @@ export const Me26VotingSystem = {
         const container = btnEl.closest('.vote-buttons-container');
         const requiredAuth = container.getAttribute('data-auth'); 
 
-        // Not: Artık rol atamasını belgeye göre yaptığımız için, İçmimarlık tek kelime olarak kontrol edilir.
         if (requiredAuth === 'icmimar' && !userRole.includes('içmimar') && !userRole.includes('mimar')) {
             UI.showToast('Erişim Engellendi: Bu sandığı sadece İçmimarlar oylayabilir.', 'error');
             return;
@@ -168,6 +193,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btn = document.getElementById(id);
         if (btn) btn.onclick = AUTH.loginWithGoogle;
     });
+
+    // KONTROL PANELİ BUTONLARI -> Profil Çekmecesini Açar
+    ['btn-profile-nav', 'btn-profile-mobile'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.onclick = () => {
+            UI.toggleMobileMenu(false);
+            UI.toggleProfileDrawer(true);
+        };
+    });
     // ---------------------------------------------------------
 
     bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
@@ -190,10 +224,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.disabled = true;
 
         try {
-            await DB.sehirGuncelle(STATE.user.uid, selectedCity); // Supabase'e yaz
-            STATE.updateUser('city', selectedCity); // Lokal durumu güncelle
-            UI.renderProfile(); // Profil çekmecesini yenile (Görevi gizler)
-            Me26VotingSystem.updateVisibility(); // Sandıkların kilidini açar!
+            await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
+            STATE.updateUser('city', selectedCity); 
+            UI.renderProfile(); 
+            Me26VotingSystem.updateVisibility(); 
             
             UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
         } catch (error) {
