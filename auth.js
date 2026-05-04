@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase SMS & OTP Entegrasyonlu Sürüm
+   Firebase Google + SMS Entegrasyonlu Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -11,13 +11,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebas
 import {
     getAuth,
     RecaptchaVerifier,
-    signInWithPhoneNumber
+    signInWithPhoneNumber,
+    GoogleAuthProvider,
+    signInWithPopup
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseApp = initializeApp(ME26_CONFIG.firebaseConfig);
 const firebaseAuth = getAuth(firebaseApp);
 firebaseAuth.languageCode = 'tr';
 
+const googleProvider = new GoogleAuthProvider();
 let confirmationResult = null;
 
 const getEl = (id) => document.getElementById(id);
@@ -32,42 +35,28 @@ const resetPhoneModal = () => {
     if (step2) step2.classList.add('hidden');
     if (phoneInput) phoneInput.value = '';
     if (otpInput) otpInput.value = '';
-
     confirmationResult = null;
 };
 
 const normalizeTurkishPhone = (value) => {
     let phoneVal = String(value || '').replace(/\D/g, '');
-
-    if (phoneVal.startsWith('90')) {
-        phoneVal = phoneVal.substring(2);
-    }
-
-    if (phoneVal.startsWith('0')) {
-        phoneVal = phoneVal.substring(1);
-    }
-
+    if (phoneVal.startsWith('90')) phoneVal = phoneVal.substring(2);
+    if (phoneVal.startsWith('0')) phoneVal = phoneVal.substring(1);
     return phoneVal;
 };
 
 const setButtonLoading = (button, loadingText) => {
-    if (!button) {
-        return () => {};
-    }
-
-    const originalText = button.textContent;
-
+    if (!button) return () => {};
+    const originalText = button.innerHTML;
     button.textContent = loadingText;
     button.disabled = true;
-
     return () => {
-        button.textContent = originalText;
+        button.innerHTML = originalText;
         button.disabled = false;
     };
 };
 
 export const AUTH = {
-
     login: async () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
@@ -75,31 +64,29 @@ export const AUTH = {
             UI.showToast('Sisteme yeniden hoş geldin.', 'success');
             return;
         }
-
         UI.openModal('taahhut-modal');
     },
 
-    submitCommitment: async (roleType) => {
+    // YENİ: Google ile Giriş Fonksiyonu
+    loginWithGoogle: async () => {
         const citySelect = getEl('input-taahhut-sehir');
-        if (!citySelect) return;
-
-        const city = citySelect.value;
-
-        if (!city) {
-            UI.showToast('Lütfen önce şehrini seç.', 'error');
+        if (!citySelect || !citySelect.value) {
+            UI.showToast('Google ile katılmadan önce lütfen şehrini seç.', 'error');
             return;
         }
 
-        const role = roleType === 'icmimar'
-            ? 'İçmimar'
-            : 'İçmimarlık Öğrencisi';
+        const btn = getEl('btn-google-login');
+        const stopLoading = setButtonLoading(btn, 'GOOGLE BEKLENİYOR...');
 
         try {
+            const result = await signInWithPopup(firebaseAuth, googleProvider);
+            const user = result.user;
+
             STATE.setUser({
                 authStage: 'registered',
                 userNo: 'BEKLEYEN',
-                role,
-                city,
+                role: 'İçmimar / Öğrenci', // Varsayılan atanır, içeriden değiştirilebilir
+                city: citySelect.value,
                 votePower: '0.0x',
                 inviteCount: 0,
                 isVip: false
@@ -107,29 +94,57 @@ export const AUTH = {
 
             UI.closeModal('taahhut-modal');
             UI.renderProfile();
-
+            
             const wowNoEl = getEl('ui-wow-uye-no');
-            if (wowNoEl) {
-                wowNoEl.textContent = 'Aday Kurucu';
-            }
-
+            if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
+            
+            UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
             UI.openModal('wow-modal');
+
         } catch (error) {
-            console.error('Kayıt hatası:', error);
-            UI.showToast('Kayıt işlemi başarısız oldu.', 'error');
+            console.error('Google Giriş Hatası:', error);
+            UI.showToast('Google ile giriş iptal edildi veya başarısız oldu.', 'error');
+        } finally {
+            stopLoading();
         }
+    },
+
+    submitCommitment: async (roleType) => {
+        const citySelect = getEl('input-taahhut-sehir');
+        if (!citySelect || !citySelect.value) {
+            UI.showToast('Lütfen önce şehrini seç.', 'error');
+            return;
+        }
+
+        const role = roleType === 'icmimar' ? 'İçmimar' : 'İçmimarlık Öğrencisi';
+
+        STATE.setUser({
+            authStage: 'registered',
+            userNo: 'BEKLEYEN',
+            role,
+            city: citySelect.value,
+            votePower: '0.0x',
+            inviteCount: 0,
+            isVip: false
+        });
+
+        UI.closeModal('taahhut-modal');
+        UI.renderProfile();
+
+        const wowNoEl = getEl('ui-wow-uye-no');
+        if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
+
+        UI.openModal('wow-modal');
     },
 
     verifyPhone: async () => {
         const phoneInput = getEl('input-phone-number');
         const btnSubmit = getEl('btn-submit-phone');
-
         if (!phoneInput) return;
 
         const phoneVal = normalizeTurkishPhone(phoneInput.value);
-
         if (phoneVal.length !== 10 || !phoneVal.startsWith('5')) {
-            UI.showToast('Geçerli bir 10 haneli cep telefonu girin.', 'error');
+            UI.showToast('Geçerli bir 10 haneli cep telefonu girin (Örn: 5551234567).', 'error');
             return;
         }
 
@@ -157,14 +172,11 @@ export const AUTH = {
 
             const step1 = getEl('phone-step-1');
             const step2 = getEl('phone-step-2');
-
             if (step1) step1.classList.add('hidden');
             if (step2) step2.classList.remove('hidden');
         } catch (error) {
             console.error('SMS gönderme hatası:', error);
-
             UI.showToast('SMS gönderilemedi. Numarayı kontrol edip tekrar dene.', 'error');
-
             if (window.recaptchaVerifier && window.grecaptcha) {
                 try {
                     const widgetId = await window.recaptchaVerifier.render();
@@ -181,7 +193,6 @@ export const AUTH = {
     verifyOtp: async () => {
         const otpInput = getEl('input-otp-code');
         const btnVerify = getEl('btn-verify-otp');
-
         if (!otpInput) return;
 
         if (!confirmationResult) {
@@ -190,7 +201,6 @@ export const AUTH = {
         }
 
         const code = String(otpInput.value || '').replace(/\D/g, '');
-
         if (code.length !== 6) {
             UI.showToast('Lütfen 6 haneli doğrulama kodunu gir.', 'error');
             return;
@@ -208,7 +218,7 @@ export const AUTH = {
             UI.renderProfile();
             resetPhoneModal();
 
-            UI.showToast('Telefon başarıyla doğrulandı.', 'success');
+            UI.showToast('Telefon başarıyla doğrulandı. Oy gücün 0.5x oldu!', 'success');
         } catch (error) {
             console.error('OTP doğrulama hatası:', error);
             UI.showToast('Kod hatalı veya süresi dolmuş.', 'error');
@@ -219,26 +229,15 @@ export const AUTH = {
 
     verifyPdf: async () => {
         const fileInput = getEl('input-pdf-file');
-
-        if (!fileInput) return;
-
-        if (!fileInput.files || fileInput.files.length === 0) {
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             UI.showToast('Lütfen cihazından bir PDF belgesi seç.', 'error');
             return;
         }
-
-        const file = fileInput.files[0];
-
-        if (file.type !== 'application/pdf') {
+        if (fileInput.files[0].type !== 'application/pdf') {
             UI.showToast('Sadece PDF formatında belge yükleyebilirsin.', 'error');
             return;
         }
-
-        UI.showToast(
-            'Belgen sıraya alındı. Doğrulama sistemi devreye girdiğinde yetkin yükseltilecek.',
-            'success'
-        );
-
+        UI.showToast('Belgen sıraya alındı.', 'success');
         UI.closeModal('pdf-modal');
         fileInput.value = '';
     },
@@ -252,22 +251,13 @@ export const AUTH = {
         UI.showToast('Oturum kapatıldı. Stadyumdan çıkıldı.', 'success');
     },
 
-    deleteAccount: async () => {
-        const ok = confirm('Tüm verilerin yok edilecek. Bu işlem geri alınamaz. Emin misin?');
-
-        if (!ok) return;
-
-        try {
-            STATE.clearAll();
-            UI.toggleProfileDrawer(false);
-            UI.showView('landing');
-            UI.renderProfile();
-            resetPhoneModal();
-
-            UI.showToast('Tüm verilerin sistemden silindi.', 'success');
-        } catch (error) {
-            console.error('Hesap silme hatası:', error);
-            UI.showToast('Hesap silinirken bir hata oluştu.', 'error');
-        }
+    deleteAccount: () => {
+        if (!confirm('Tüm verilerin yok edilecek. Emin misin?')) return;
+        STATE.clearAll();
+        UI.toggleProfileDrawer(false);
+        UI.showView('landing');
+        UI.renderProfile();
+        resetPhoneModal();
+        UI.showToast('Tüm verilerin sistemden silindi.', 'success');
     }
 };
