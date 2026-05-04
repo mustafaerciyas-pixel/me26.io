@@ -7,34 +7,24 @@ import { UI } from './ui.js';
 import { AUTH } from './auth.js';
 
 // =========================================================================
-// YENİ EKLENEN: ORTAK AKIL SANDIĞI (YETKİ FİLTRESİ VE KİLİT MOTORU)
+// ORTAK AKIL SANDIĞI (YETKİ FİLTRESİ VE KİLİT MOTORU)
 // =========================================================================
 export const Me26VotingSystem = {
     init: function() {
-        // Tıklanan oylama butonlarını dinle
         document.querySelectorAll('.vote-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.handleVote(e.target));
         });
 
-        // Kilit Ekranındaki Yönlendirme Butonu (Profil çekmecesini veya giriş ekranını açar)
         const unlockBtn = document.getElementById('btn-unlock-manifesto');
         if(unlockBtn) {
             unlockBtn.addEventListener('click', () => {
                 if (STATE.isLoggedIn()) {
                     UI.toggleProfileDrawer(true);
                 } else {
-                    // Kullanıcıyı direkt giriş menüsüne yönlendirir
-                    const taahhutModal = document.getElementById('taahhut-modal');
-                    if(taahhutModal && typeof UI.openModal === 'function') {
-                        UI.openModal('taahhut-modal');
-                    } else {
-                        UI.toggleProfileDrawer(true); 
-                    }
+                    UI.openModal('taahhut-modal');
                 }
             });
         }
-        
-        console.log("🛠️ Me26 Oylama ve Kilit Motoru Başlatıldı.");
     },
 
     updateVisibility: function() {
@@ -42,14 +32,12 @@ export const Me26VotingSystem = {
         const manifestoGrid = document.getElementById('manifesto-grid');
 
         if (STATE.isLoggedIn()) {
-            // Giriş yapıldıysa kilidi sakla ve önergeleri (kartları) göster
             if(lockedState) lockedState.style.display = 'none';
             if(manifestoGrid) {
                 manifestoGrid.classList.remove('hidden');
                 manifestoGrid.classList.add('grid');
             }
         } else {
-            // Giriş yoksa önergeleri sakla, kilidi göster
             if(lockedState) lockedState.style.display = 'flex';
             if(manifestoGrid) {
                 manifestoGrid.classList.add('hidden');
@@ -64,13 +52,10 @@ export const Me26VotingSystem = {
             return;
         }
 
-        // STATE objesinden kullanıcının rolünü al ('İçmimar', 'Öğrenci' vb.)
         const userRole = (STATE.user && (STATE.user.role || STATE.user.job)) ? (STATE.user.role || STATE.user.job).toLowerCase() : '';
-        
         const container = btnEl.closest('.vote-buttons-container');
-        const requiredAuth = container.getAttribute('data-auth'); // 'icmimar', 'ogrenci', 'all'
+        const requiredAuth = container.getAttribute('data-auth'); 
 
-        // YETKİ KONTROLÜ (FİLTRE)
         if (requiredAuth === 'icmimar' && !userRole.includes('içmimar') && !userRole.includes('mimar')) {
             UI.showToast('Erişim Engellendi: Bu önergeyi sadece İçmimarlar oylayabilir.', 'error');
             return;
@@ -81,8 +66,6 @@ export const Me26VotingSystem = {
         }
 
         const choice = btnEl.getAttribute('data-vote');
-
-        // BUTONLARI KİLİTLE VE RENKLENDİR
         const allButtons = container.querySelectorAll('.vote-btn');
         allButtons.forEach(b => {
             b.disabled = true;
@@ -96,7 +79,6 @@ export const Me26VotingSystem = {
         else if (choice === 'abstain') btnEl.classList.add('bg-yellow-900/60', 'border-yellow-500', 'text-yellow-400');
         else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
 
-        // ANİMASYONU TETİKLE
         this.animateResults(container.parentElement, choice);
         UI.showToast('Oyunuz blokzincire başarıyla eklendi!', 'success');
     },
@@ -138,7 +120,6 @@ export const Me26VotingSystem = {
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Oylama motorunu başlat ve ekran kilidini kontrol et
     Me26VotingSystem.init();
     Me26VotingSystem.updateVisibility();
 
@@ -162,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // NAVİGASYON VE BUTONLAR
     ['btn-login-hero', 'btn-login-sticky', 'btn-desktop-nav-action', 'btn-mobile-nav-action'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.onclick = handleLoginOrProfile;
@@ -170,6 +152,25 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
     bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
+
+    // TAAHHÜT MODALI (İleri - Geri İşlemleri)
+    bind('btn-close-taahhut-modal', 'click', () => UI.closeModal('taahhut-modal'));
+    
+    bind('btn-taahhut-next', 'click', () => {
+        const city = document.getElementById('input-taahhut-sehir').value;
+        const role = document.getElementById('input-taahhut-rol').value;
+        if(!city || !role) {
+            UI.showToast('Lütfen şehir ve mesleki durum seçiniz.', 'error');
+            return;
+        }
+        document.getElementById('taahhut-step-1').classList.add('hidden');
+        document.getElementById('taahhut-step-2').classList.remove('hidden');
+    });
+
+    bind('btn-taahhut-back', 'click', () => {
+        document.getElementById('taahhut-step-2').classList.add('hidden');
+        document.getElementById('taahhut-step-1').classList.remove('hidden');
+    });
 
     // Sektör Paydaşı Seçildiğinde Detay Kutusunu Aç
     const roleSelect = document.getElementById('input-taahhut-rol');
@@ -184,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // KAYIT İŞLEMLERİ (Google veya Manuel)
+    // KAYIT İŞLEMLERİ
     bind('btn-google-login', 'click', AUTH.loginWithGoogle);
     bind('btn-manuel-login', 'click', AUTH.submitCommitment);
     
