@@ -10,14 +10,16 @@
 
     <link rel="icon" type="image/png" href="favicon.png">
 
-    <!-- 1. TAILWIND AYARLARI -->
+    <!-- 1. TAILWIND CDN (Önce motor yüklenir) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. TAILWIND AYARLARI (Renk kodları doğrudan tanımlandı) -->
     <script>
-        window.tailwind = window.tailwind || {};
-        window.tailwind.config = {
+        tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        kaos: 'var(--neon-hex)',
+                        kaos: '#F6C104',
                         zemin: '#0f172a'
                     },
                     fontFamily: {
@@ -28,11 +30,8 @@
         }
     </script>
     
-    <!-- 2. TAILWIND CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FONTLAR VE KLASÖRSÜZ CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
-    
-    <!-- KLASÖRSÜZ YAPI: Özel Tasarımlar ve Animasyonlar -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="ana-body" class="antialiased flex flex-col min-h-screen relative bg-zemin text-white transition-colors duration-1000">
@@ -40,14 +39,14 @@
     <!-- EKRAN BİLDİRİMLERİ (TOAST) -->
     <div id="toast-container" class="fixed bottom-6 left-6 z-[90000] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- MOBİL SOL MENÜ (Gizli Başlar) -->
+    <!-- MOBİL SOL MENÜ -->
     <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 transform -translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 pt-10">
         <button type="button" id="btn-close-mobile-menu" aria-label="Menüyü Kapat" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
         <a href="javascript:void(0)" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest info-link" data-info="kurallar">Kurallarımız</a>
         <a href="javascript:void(0)" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest info-link" data-info="sss">S.S.S.</a>
-        <button type="button" id="btn-mobile-nav-action" class="bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer">1 TIKLA KATIL</button>
+        <button type="button" id="btn-mobile-nav-action" class="bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-[0_0_15px_rgba(246,193,4,0.4)] cursor-pointer">1 TIKLA KATIL</button>
     </div>
 
     <!-- ÜST MENÜ (NAVİGASYON) -->
@@ -60,7 +59,7 @@
             <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
                 <a href="javascript:void(0)" class="hover:opacity-80 transition cursor-pointer info-link" data-info="manifesto">Manifesto</a>
                 <a href="javascript:void(0)" class="hover:opacity-80 transition cursor-pointer info-link" data-info="kurallar">Kurallar</a>
-                <button type="button" id="btn-desktop-nav-action" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest relative z-50">
+                <button type="button" id="btn-desktop-nav-action" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-[0_0_15px_rgba(246,193,4,0.4)] cursor-pointer text-center tracking-widest relative z-50">
                     1 TIKLA KATIL
                 </button>
             </div>
@@ -188,7 +187,7 @@
             </div>
             
             <!-- Giriş Sağ Taraf -->
-            <div class="bg-slate-900/95 border border-kaos p-8 md:p-10 rounded-3xl shadow-[0_0_40px_rgba(var(--neon-rgb),0.25)] w-full max-w-md relative text-center mx-auto">
+            <div class="bg-slate-900/95 border border-kaos p-8 md:p-10 rounded-3xl shadow-[0_0_40px_rgba(246,193,4,0.25)] w-full max-w-md relative text-center mx-auto">
                 <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-4 py-1.5 rounded-bl-lg uppercase tracking-widest">Sistem Açık</div>
                 <h3 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-8 mt-2">İÇMİMARLARIN ORTAK AKLINA KATIL</h3>
                 
@@ -212,7 +211,7 @@
         
         <!-- Mobil Alt Giriş Butonu -->
         <div class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-kaos/30 p-4 z-40" id="sticky-cta">
-            <button type="button" id="btn-login-sticky" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-kaos text-sm">
+            <button type="button" id="btn-login-sticky" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-[0_0_15px_rgba(246,193,4,0.4)] text-sm">
                 1 TIKLA KATIL (SİSTEME GİR)
             </button>
         </div>
@@ -273,7 +272,7 @@
     
     <!-- 1. Kayıt/Seçim Modalı -->
     <div id="taahhut-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative overflow-hidden shadow-kaos-lg">
+        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative overflow-hidden shadow-[0_0_40px_rgba(246,193,4,0.5)]">
             <h3 class="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-widest leading-tight">İçmimar mısın,<br>İçmimarlık Öğrencisi misin?</h3>
             <p class="text-gray-300 text-sm mb-8 font-medium">Ortak Akıl Sandığına girmeden önce şehrini ve mesleğini seç.</p>
             
@@ -320,7 +319,7 @@
 
     <!-- 2. Tebrikler Modalı (İlk Giriş) -->
     <div id="wow-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-gradient-to-br from-slate-900 to-black border border-kaos p-8 md:p-12 rounded-3xl max-w-lg w-full shadow-kaos-lg relative overflow-hidden text-center transform transition-transform duration-500" id="wow-content">
+        <div class="bg-gradient-to-br from-slate-900 to-black border border-kaos p-8 md:p-12 rounded-3xl max-w-lg w-full shadow-[0_0_40px_rgba(246,193,4,0.5)] relative overflow-hidden text-center transform transition-transform duration-500" id="wow-content">
             <span class="text-6xl block mb-4">🎉</span>
             <h3 class="text-3xl font-black text-white mb-2 uppercase tracking-widest">Tebrikler!</h3>
             <p class="text-kaos font-mono font-bold text-xl mb-2 tracking-widest" id="ui-wow-uye-no">Kurucu Üye #???</p>
@@ -329,14 +328,14 @@
                 <div class="text-xs text-kaos font-bold uppercase tracking-widest mb-3 flex items-center justify-center gap-2"><span>🚀</span> İLK GÖREVİN</div>
                 <p class="text-gray-200 text-sm leading-relaxed mb-4">Aşağıdaki bağlantıyı <strong class="text-white">3 kez paylaş</strong>, 101 ile 5000 arasında <strong class="text-white">VIP Kurucu Numaranı</strong> seç!</p>
             </div>
-            <button type="button" id="btn-wow-copy-link" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-[0_0_20px_rgba(var(--neon-rgb),0.5)] hover:scale-[1.02] transition cursor-pointer mb-4">🔗 LİNKİMİ KOPYALA VE BAŞLA</button>
+            <button type="button" id="btn-wow-copy-link" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-[0_0_20px_rgba(246,193,4,0.5)] hover:scale-[1.02] transition cursor-pointer mb-4">🔗 LİNKİMİ KOPYALA VE BAŞLA</button>
             <button type="button" id="btn-close-wow" class="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700">Sisteme Geç</button>
         </div>
     </div>
 
     <!-- 3. VIP Numara Seçim Modalı -->
     <div id="vip-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[99999] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-3xl w-full text-center relative shadow-kaos-lg overflow-hidden">
+        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-3xl w-full text-center relative shadow-[0_0_40px_rgba(246,193,4,0.5)] overflow-hidden">
             <button type="button" id="btn-close-vip-modal" aria-label="Kapat" class="absolute top-6 right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center">✕</button>
             <h3 class="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-3"><span>💎</span> VIP Kurucu No</h3>
             
@@ -352,14 +351,14 @@
                 <div class="bg-black/50 p-4 rounded-2xl border border-slate-700 mb-6">
                     <div class="grid grid-cols-4 md:grid-cols-8 gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-2" id="ui-vip-grid"></div>
                 </div>
-                <button type="button" id="btn-claim-vip-number" disabled class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:scale-[1.02] transition shadow-kaos disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed">BU NUMARAYI AL</button>
+                <button type="button" id="btn-claim-vip-number" disabled class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:scale-[1.02] transition shadow-[0_0_15px_rgba(246,193,4,0.4)] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed">BU NUMARAYI AL</button>
             </div>
         </div>
     </div>
 
     <!-- 4. Telefon Onayı Modalı (Firebase SMS Entegrasyonlu) -->
     <div id="phone-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-kaos-lg">
+        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_40px_rgba(246,193,4,0.5)]">
             <span class="text-5xl block mb-4">🛡️</span>
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Telefon Onayı</h3>
             
@@ -376,7 +375,7 @@
                 <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:opacity-90 transition shadow-md">SMS GÖNDER</button>
             </div>
 
-            <!-- Adım 2: SMS Kodu (OTP) Girme (Başlangıçta Gizli) -->
+            <!-- Adım 2: SMS Kodu (OTP) Girme -->
             <div id="phone-step-2" class="hidden">
                 <p class="text-gray-300 text-sm mb-8 font-medium">Telefonuna gelen 6 haneli doğrulama kodunu gir.</p>
                 <div class="text-left mb-6">
@@ -405,7 +404,7 @@
         </div>
     </div>
 
-    <!-- 6. Sorun Bildir Modalı (Genişletilmiş Kategoriler) -->
+    <!-- 6. Sorun Bildir Modalı -->
     <div id="onerge-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)]">
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>📝</span> Yeni Fikir Yaz</h3>
@@ -446,7 +445,7 @@
                 <div class="w-2 h-8 bg-kaos mr-3"></div>
                 <div>
                     <div class="text-white font-black tracking-widest text-lg">ME26 AĞI</div>
-                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Klasörsüz Yayın • Firebase OTP • Şeffaf MVP</div>
+                    <div class="text-[9px] text-gray-500 uppercase tracking-widest font-mono">Klasörsüz Yayın • Firebase OTP • SPA Destekli</div>
                 </div>
             </div>
             <div class="text-right text-[10px] text-gray-600 font-mono">
