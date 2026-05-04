@@ -1,13 +1,12 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   1 Tıkla Giriş + Kademeli Profilleme + SİNYAL MİMARİSİ
+   1 Tıkla Giriş + Taze Veri Motoru (No-Cache) + Sinyal Mimarisi
    ========================================================================== */
 
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { ME26_CONFIG } from './config.js';
 import { DB } from './supabase.js'; 
-// DİKKAT: app.js importu (Kısa Devre yaptığı için) kaldırıldı!
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
 import {
@@ -60,8 +59,7 @@ export const AUTH = {
     
     handleGoogleSuccess: async (user) => {
         try {
-            UI.showToast('Güvenli bağlantı kuruluyor...', 'info');
-            
+            // Arka planda sessizce taze veri çeker
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || null;
 
@@ -81,7 +79,7 @@ export const AUTH = {
 
             let authStage = 'registered';
             
-            // GÜVENLİK SENSÖRÜ
+            // SUPABASE'DEN GELEN GÜNCEL VERİLER (Yönetici ne yaptıysa o yansır)
             const guc = parseFloat(dbUser.oy_gucu || 0);
             
             if (guc >= 1.0) authStage = 'pdf_verified';
@@ -106,16 +104,13 @@ export const AUTH = {
             UI.renderProfile(); 
             UI.showView('voting');
             
+            // Eğer ilk girişse WOW modalını aç
             if (dbUser.basarili_davet_sayisi === 0 && guc === 0 && (!dbUser.telefon)) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
                 UI.openModal('wow-modal');
-                UI.showToast(`Stadyuma hoş geldin, ${dbUser.google_isim}!`, 'success');
-            } else {
-                UI.showToast(`Yeniden hoş geldin, ${dbUser.resmi_ad_soyad || dbUser.google_isim}!`, 'success');
             }
             
-            // HAVAYA SİNYAL FİŞEĞİ AT (app.js bunu duyup ekranı güncelleyecek)
             window.dispatchEvent(new Event('auth_changed'));
 
         } catch (error) {
@@ -136,7 +131,9 @@ export const AUTH = {
                 
                 const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
                     unsubscribe(); 
-                    if (user && !STATE.isLoggedIn()) {
+                    // DİKKAT: Buradaki "&& !STATE.isLoggedIn()" TEMBELLİĞİ SİLİNDİ!
+                    // Artık her sayfa yenilemesinde Supabase'e gidip güncel Onay ve Oy Gücünü zorla çekecek.
+                    if (user) {
                         await AUTH.handleGoogleSuccess(user);
                         resolve(true);
                     } else {
@@ -433,7 +430,7 @@ export const AUTH = {
         resetPhoneModal();
         UI.showToast('Oturum kapatıldı. Stadyumdan çıkıldı.', 'success');
         
-        window.dispatchEvent(new Event('auth_changed')); // Sinyal gönder
+        window.dispatchEvent(new Event('auth_changed')); 
     },
 
     deleteAccount: async () => {
@@ -448,7 +445,7 @@ export const AUTH = {
             resetPhoneModal();
             UI.showToast('Tüm verilerin sistemden silindi.', 'success');
             
-            window.dispatchEvent(new Event('auth_changed')); // Sinyal gönder
+            window.dispatchEvent(new Event('auth_changed')); 
         } catch(e) {
             UI.showToast('Hesap silinirken bir hata oluştu', 'error');
         }
