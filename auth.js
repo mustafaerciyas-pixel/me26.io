@@ -56,6 +56,27 @@ const setButtonLoading = (button, loadingText) => {
     };
 };
 
+// YENİ: Ortak Form Kontrolcüsü (Seçimleri Doğrular)
+const validateAndGetCommitmentData = () => {
+    const cityEl = getEl('input-taahhut-sehir');
+    const roleEl = getEl('input-taahhut-rol');
+    const paydasEl = getEl('input-paydas-detay');
+
+    if (!cityEl || !cityEl.value) throw new Error('Lütfen şehrini seç.');
+    if (!roleEl || !roleEl.value) throw new Error('Lütfen mesleki durumunu seç.');
+
+    let finalRole = roleEl.value;
+    
+    if (finalRole === 'Öğrenci') finalRole = 'İçmimarlık Öğrencisi';
+    if (finalRole === 'Paydaş') {
+        const detail = paydasEl.value.trim();
+        if (!detail) throw new Error('Lütfen paydaş türünü yaz (Örn: Mimar, Usta).');
+        finalRole = `Sektör Paydaşı (${detail})`;
+    }
+
+    return { city: cityEl.value, role: finalRole };
+};
+
 export const AUTH = {
     login: async () => {
         if (STATE.isLoggedIn()) {
@@ -67,11 +88,12 @@ export const AUTH = {
         UI.openModal('taahhut-modal');
     },
 
-    // YENİ: Google ile Giriş Fonksiyonu
     loginWithGoogle: async () => {
-        const citySelect = getEl('input-taahhut-sehir');
-        if (!citySelect || !citySelect.value) {
-            UI.showToast('Google ile katılmadan önce lütfen şehrini seç.', 'error');
+        let formData;
+        try {
+            formData = validateAndGetCommitmentData();
+        } catch (err) {
+            UI.showToast(err.message, 'error');
             return;
         }
 
@@ -85,8 +107,8 @@ export const AUTH = {
             STATE.setUser({
                 authStage: 'registered',
                 userNo: 'BEKLEYEN',
-                role: 'İçmimar / Öğrenci', // Varsayılan atanır, içeriden değiştirilebilir
-                city: citySelect.value,
+                role: formData.role,
+                city: formData.city,
                 votePower: '0.0x',
                 inviteCount: 0,
                 isVip: false
@@ -109,20 +131,20 @@ export const AUTH = {
         }
     },
 
-    submitCommitment: async (roleType) => {
-        const citySelect = getEl('input-taahhut-sehir');
-        if (!citySelect || !citySelect.value) {
-            UI.showToast('Lütfen önce şehrini seç.', 'error');
+    submitCommitment: async () => {
+        let formData;
+        try {
+            formData = validateAndGetCommitmentData();
+        } catch (err) {
+            UI.showToast(err.message, 'error');
             return;
         }
-
-        const role = roleType === 'icmimar' ? 'İçmimar' : 'İçmimarlık Öğrencisi';
 
         STATE.setUser({
             authStage: 'registered',
             userNo: 'BEKLEYEN',
-            role,
-            city: citySelect.value,
+            role: formData.role,
+            city: formData.city,
             votePower: '0.0x',
             inviteCount: 0,
             isVip: false
@@ -181,9 +203,7 @@ export const AUTH = {
                 try {
                     const widgetId = await window.recaptchaVerifier.render();
                     window.grecaptcha.reset(widgetId);
-                } catch (resetError) {
-                    console.error('reCAPTCHA sıfırlama hatası:', resetError);
-                }
+                } catch (resetError) {}
             }
         } finally {
             stopLoading();
