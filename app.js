@@ -1,170 +1,161 @@
-/* ==========================================================================
-   ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Görsel Zıplama (Flash) Engellendi
-   ========================================================================== */
+// =========================================================
+// ME26 SİSTEM DURUMU VE KİMLİK SİMÜLASYONU
+// =========================================================
 
-import { STATE } from './state.js';
-import { UI } from './ui.js';
-import { AUTH } from './auth.js';
-
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    // 1. ZILPAMAYI ÖNLE (FLASH FIX): Tarayıcı sormadan önce tüm ana ekranları gizle
-    document.getElementById('landing-view')?.classList.add('hidden');
-    document.getElementById('manifesto')?.classList.add('hidden');
-    document.getElementById('sticky-cta')?.classList.add('hidden');
-    document.getElementById('ana-footer')?.classList.add('hidden');
-    
-    // 2. HIZLI GİRİŞ (Lokal Hafıza Kontrolü)
-    // Eğer daha önce giriş yaptıysa, Firebase'i bile beklemeden anında Sandığı aç
-    if (STATE.isLoggedIn()) {
-        UI.showView('voting');
-        UI.renderProfile();
+const STATE = {
+    user: null, // Giriş yapmamışsa null
+    isLoggedIn: function() {
+        return this.user !== null;
     }
+};
 
-    // 3. FIREBASE KONTROLÜ: Yeni mi giriş yapıyor veya mobilden mi döndü? (Arka planda bekler)
-    const isRedirectLogin = await AUTH.checkRedirect();
-    
-    // 4. EKRAN KARARI: Eğer Google'dan yeni dönmediyse ve lokalde de girişi yoksa Ana Sayfayı aç
-    if (!isRedirectLogin && !STATE.isLoggedIn()) {
-        UI.showView('landing');
-        UI.renderProfile();
+// Geliştirici Testi: Ekranda hızlıca kimlik değiştirmek için
+function setMockUser(role) {
+    const badge = document.getElementById('current-user-role');
+    if (role === 'içmimar') {
+        STATE.user = { job: 'İçmimar', votePower: '1.0x' };
+        badge.innerHTML = '<span class="text-green-400 font-bold">Kayıtlı İçmimar (VIP)</span>';
+        Me26App.showToast('Sisteme "İçmimar" olarak giriş yapıldı.', 'success');
+    } else if (role === 'öğrenci') {
+        STATE.user = { job: 'İçmimarlık Öğrencisi', votePower: '0.5x' };
+        badge.innerHTML = '<span class="text-blue-400 font-bold">Öğrenci Temsilcisi</span>';
+        Me26App.showToast('Sisteme "Öğrenci" olarak giriş yapıldı.', 'success');
+    } else {
+        STATE.user = null;
+        badge.innerHTML = 'Giriş Yapılmadı';
+        Me26App.showToast('Sistemden çıkış yapıldı.', 'info');
     }
+}
 
-    // =========================================================
-    // DİNLEYİCİLER VE BUTON KONTROLLERİ
-    // =========================================================
+// =========================================================
+// ME26 ANA UYGULAMA VE OYLAMA MOTORU
+// =========================================================
 
-    const bind = (id, event, fn) => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener(event, fn);
-    };
-
-    const handleLoginOrProfile = () => {
-        if (STATE.isLoggedIn()) {
-            UI.toggleProfileDrawer(true);
-        } else {
-            AUTH.login();
-        }
-    };
-
-    ['btn-login-hero', 'btn-login-sticky', 'btn-desktop-nav-action', 'btn-mobile-nav-action'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = handleLoginOrProfile;
-    });
-
-    bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
-    bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
-    bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
-
-    const roleSelect = document.getElementById('input-taahhut-rol');
-    if (roleSelect) {
-        roleSelect.addEventListener('change', (e) => {
-            const divPaydas = document.getElementById('div-paydas-detay');
-            if (e.target.value === 'Paydaş') {
-                divPaydas.classList.remove('hidden');
-            } else {
-                divPaydas.classList.add('hidden');
-            }
+const Me26App = {
+    init: function() {
+        // Tüm oylama butonlarını dinle
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.handleVote(e.target));
         });
+        console.log("Me26 Sistem İçmimarı Motoru Başlatıldı.");
+    },
+
+    handleVote: function(btnEl) {
+        // 1. Giriş Kontrolü
+        if (!STATE.isLoggedIn()) {
+            this.showToast('Sandığa erişim reddedildi. Önce giriş yapmalısınız!', 'error');
+            return;
+        }
+
+        const container = btnEl.closest('.vote-buttons-container');
+        const requiredAuth = container.getAttribute('data-auth'); 
+        const userJob = STATE.user.job.toLowerCase();
+        const choice = btnEl.getAttribute('data-vote');
+
+        // 2. YETKİ (FİLTRE) KONTROLÜ
+        if (requiredAuth === 'icmimar' && !userJob.includes('içmimar') && !userJob.includes('mimar')) {
+            this.showToast('Erişim Engellendi: Bu önergeyi sadece Profesyonel İçmimarlar oylayabilir.', 'error');
+            return;
+        }
+        
+        if (requiredAuth === 'ogrenci' && !userJob.includes('öğrenci')) {
+            this.showToast('Erişim Engellendi: Bu önerge sadece Öğrencilerin oylamasına açıktır.', 'error');
+            return;
+        }
+
+        // 3. UI GÜNCELLEMESİ (Tıklananı parlat, diğerlerini kilitle)
+        const allButtons = container.querySelectorAll('.vote-btn');
+        allButtons.forEach(b => {
+            b.disabled = true;
+            b.classList.remove('hover:border-green-500', 'hover:border-yellow-500', 'hover:border-red-500');
+            b.classList.add('opacity-30', 'cursor-not-allowed');
+        });
+
+        btnEl.classList.remove('opacity-30', 'bg-slate-800', 'text-gray-400');
+        
+        if (choice === 'yes') {
+            btnEl.classList.add('bg-green-900/50', 'border-green-500', 'text-green-400');
+        } else if (choice === 'abstain') {
+            btnEl.classList.add('bg-yellow-900/50', 'border-yellow-500', 'text-yellow-400');
+        } else if (choice === 'no') {
+            btnEl.classList.add('bg-red-900/50', 'border-red-500', 'text-red-400');
+        }
+
+        // 4. CANLI SONUÇ ANİMASYONU
+        this.animateResults(container.parentElement, choice);
+        
+        const votePower = STATE.user.votePower || '1.0x';
+        this.showToast(`Oyunuz blokzincire başarıyla eklendi! (Güç: ${votePower})`, 'success');
+    },
+
+    animateResults: function(cardEl, userChoice) {
+        // Mevcut oyların üzerine kullanıcının oyunu simüle ederek ekler
+        let baseYes = Math.floor(Math.random() * 40) + 20; 
+        let baseAbstain = Math.floor(Math.random() * 10) + 5;
+        let baseNo = 100 - (baseYes + baseAbstain);
+
+        if (userChoice === 'yes') baseYes += 20;
+        if (userChoice === 'abstain') baseAbstain += 20;
+        if (userChoice === 'no') baseNo += 20;
+
+        const total = baseYes + baseAbstain + baseNo;
+        const percYes = Math.round((baseYes / total) * 100);
+        const percAbstain = Math.round((baseAbstain / total) * 100);
+        const percNo = 100 - (percYes + percAbstain);
+
+        const barYes = cardEl.querySelector('.vote-bar-yes');
+        const barAbstain = cardEl.querySelector('.vote-bar-abstain');
+        const barNo = cardEl.querySelector('.vote-bar-no');
+        
+        const textYes = cardEl.querySelector('.vote-text-yes');
+        const textAbstain = cardEl.querySelector('.vote-text-abstain');
+        const textNo = cardEl.querySelector('.vote-text-no');
+
+        // Akıcı animasyon için ufak bir gecikme
+        setTimeout(() => {
+            if (barYes) barYes.style.width = percYes + '%';
+            if (barAbstain) barAbstain.style.width = percAbstain + '%';
+            if (barNo) barNo.style.width = percNo + '%';
+
+            if (textYes) textYes.textContent = `%${percYes} Kabul`;
+            if (textAbstain) textAbstain.textContent = `%${percAbstain} Çekimser`;
+            if (textNo) textNo.textContent = `%${percNo} Ret`;
+        }, 50);
+    },
+
+    // Sistemin Canlı Bildirim (Toast) Aracı
+    showToast: function(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `p-3 rounded shadow-lg text-sm font-bold text-white flex items-center gap-2 toast-animate mb-2 max-w-xs`;
+        
+        let icon = '<i class="fas fa-info-circle"></i>';
+        if (type === 'success') {
+            toast.classList.add('bg-green-600', 'border', 'border-green-400');
+            icon = '<i class="fas fa-check-circle"></i>';
+        } else if (type === 'error') {
+            toast.classList.add('bg-red-600', 'border', 'border-red-400');
+            icon = '<i class="fas fa-exclamation-triangle"></i>';
+        } else {
+            toast.classList.add('bg-blue-600', 'border', 'border-blue-400');
+        }
+
+        toast.innerHTML = `${icon} <span>${message}</span>`;
+        container.appendChild(toast);
+
+        // 3 saniye sonra kaybolur
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
+};
 
-    bind('btn-taahhut-next', 'click', () => {
-        const cityEl = document.getElementById('input-taahhut-sehir');
-        const roleEl = document.getElementById('input-taahhut-rol');
-        const paydasEl = document.getElementById('input-paydas-detay');
-
-        if (!cityEl || !cityEl.value) {
-            UI.showToast('Lütfen önce şehrini seç.', 'error');
-            return;
-        }
-        if (!roleEl || !roleEl.value) {
-            UI.showToast('Lütfen mesleki durumunu seç.', 'error');
-            return;
-        }
-        if (roleEl.value === 'Paydaş' && (!paydasEl || !paydasEl.value.trim())) {
-            UI.showToast('Lütfen paydaş türünü yaz (Örn: Mimar, Usta).', 'error');
-            return;
-        }
-
-        document.getElementById('taahhut-step-1').classList.add('hidden');
-        document.getElementById('taahhut-step-2').classList.remove('hidden');
-    });
-
-    bind('btn-taahhut-back', 'click', () => {
-        document.getElementById('taahhut-step-1').classList.remove('hidden');
-        document.getElementById('taahhut-step-2').classList.add('hidden');
-    });
-
-    bind('btn-google-login', 'click', AUTH.loginWithGoogle);
-    bind('btn-manuel-login', 'click', AUTH.submitCommitment);
-    
-    bind('btn-close-wow', 'click', () => {
-        UI.closeModal('wow-modal');
-        UI.showView('voting');
-        UI.toggleProfileDrawer(true); 
-    });
-
-    bind('btn-logout', 'click', AUTH.logout);
-    bind('btn-delete-account', 'click', AUTH.deleteAccount);
-
-    // =========================================================
-    // VIP PAYLAŞIM VE NUMARA SEÇİM SİMÜLASYONU
-    // =========================================================
-    
-    const handleShareSimulate = () => {
-        if (!STATE.user) return;
-        let currentCount = STATE.user.inviteCount || 0;
-        
-        if (currentCount < 3) {
-            currentCount++;
-            STATE.updateUser('inviteCount', currentCount);
-            UI.renderProfile();
-            UI.showToast(`${currentCount}/3 Paylaşım yapıldı!`, 'success');
-            
-            if (currentCount === 3) {
-                UI.showToast('VIP Numara Seçimi KİLİDİ AÇILDI! 💎', 'success');
-            }
-        }
-    };
-
-    bind('btn-copy-invite', 'click', handleShareSimulate);
-    bind('btn-whatsapp-share', 'click', handleShareSimulate);
-    bind('btn-vip-copy-invite-locked', 'click', handleShareSimulate);
-
-    bind('btn-open-vip-modal', 'click', () => {
-        UI.updateVipModalState();
-        UI.openModal('vip-modal');
-    });
-    
-    bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
-
-    bind('btn-claim-vip-number', 'click', (e) => {
-        const selectedNum = e.target.dataset.selectedNumber;
-        if (!selectedNum) return;
-
-        STATE.updateUser('isVip', true);
-        STATE.updateUser('userNo', selectedNum);
-        
-        UI.closeModal('vip-modal');
-        UI.renderProfile();
-        UI.showToast(`Tebrikler! ${selectedNum} numaralı VIP Kurucu oldun. 💎`, 'success');
-    });
-
-    // =========================================================
-    // DİĞER MODALLAR (Telefon, PDF, Önerge)
-    // =========================================================
-
-    bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
-    bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
-    bind('btn-submit-phone', 'click', AUTH.verifyPhone);
-    bind('btn-verify-otp', 'click', AUTH.verifyOtp);
-
-    bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
-    bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
-    bind('btn-submit-pdf', 'click', AUTH.verifyPdf);
-
-    bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
-    bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
-
+// HTML yüklendiğinde sistemi ateşle
+document.addEventListener('DOMContentLoaded', () => {
+    Me26App.init();
 });
