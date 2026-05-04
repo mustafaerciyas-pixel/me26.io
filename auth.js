@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase Karanlık Oda (RPC) + E-Devlet YZ Okuyucu Sürümü
+   Firebase Auth + Supabase Karanlık Oda (RPC) + Belge Bekleme Modu (MVP)
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -58,17 +58,6 @@ const normalizeTurkishPhone = (value) => {
     return phoneVal;
 };
 
-const setButtonLoading = (button, loadingText) => {
-    if (!button) return () => {};
-    const originalText = button.innerHTML;
-    button.textContent = loadingText;
-    button.disabled = true;
-    return () => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-    };
-};
-
 const getCommitmentData = () => {
     const cityEl = getEl('input-taahhut-sehir');
     const roleEl = getEl('input-taahhut-rol');
@@ -103,16 +92,21 @@ export const AUTH = {
                 ref: refCode
             };
 
+            // Paketi Supabase RPC (Karanlık Oda) motoruna at
             const dbUser = await DB.sistemeGiris(gizliPaket);
 
+            // Temizlik
             localStorage.removeItem('me26_temp_city');
             localStorage.removeItem('me26_temp_role');
 
             if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
+            // SUPABASE'DEN GELEN YANITI HAFIZAYA (STATE) YAZ
             let authStage = 'registered';
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
             else if (dbUser.oy_gucu === 0.5) authStage = 'phone_verified';
+            // Yeni bekleme durumu desteği eklenebilir
+            else if (dbUser.belge_durumu === 'pending') authStage = 'document_pending'; 
 
             STATE.setUser({
                 uid: dbUser.id,
@@ -130,6 +124,7 @@ export const AUTH = {
             UI.renderProfile(); 
             UI.showView('voting');
             
+            // Eğer referans/davet sayısı 0 ise yeni kayıttır, WOW patlat
             if (dbUser.basarili_davet_sayisi === 0 && dbUser.oy_gucu === 0) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
@@ -200,12 +195,15 @@ export const AUTH = {
         localStorage.setItem('me26_temp_city', formData.city);
         localStorage.setItem('me26_temp_role', formData.role);
 
+        if (btn) {
+            btn.innerHTML = 'YÖNLENDİRİLİYOR...';
+            btn.disabled = true;
+        }
+
         if (isMobile || isSocialApp) {
-            setButtonLoading(btn, 'GÜVENLİ GİRİŞE YÖNLENDİRİLİYOR...');
             signInWithRedirect(firebaseAuth, googleProvider);
         } else {
             try {
-                setButtonLoading(btn, 'GOOGLE İLE BAĞLANILIYOR...');
                 const result = await signInWithPopup(firebaseAuth, googleProvider);
                 await AUTH.handleGoogleSuccess(result.user);
             } catch (error) {
@@ -214,8 +212,10 @@ export const AUTH = {
                     UI.showToast('Google ile giriş başarısız oldu.', 'error');
                 }
             } finally {
-                if(btn) btn.innerHTML = '<i class="fab fa-google text-lg"></i> Google ile Hızlı Katıl';
-                if(btn) btn.disabled = false;
+                if(btn) {
+                    btn.innerHTML = '<i class="fab fa-google text-lg"></i> Google ile Hızlı Katıl';
+                    btn.disabled = false;
+                }
             }
         }
     },
@@ -232,7 +232,12 @@ export const AUTH = {
         }
 
         const fullPhone = `+90${phoneVal}`;
-        const stopLoading = setButtonLoading(btnSubmit, 'SMS GÖNDERİLİYOR...');
+        let originalText = '';
+        if (btnSubmit) {
+            originalText = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = 'SMS GÖNDERİLİYOR...';
+            btnSubmit.disabled = true;
+        }
 
         try {
             if (!window.recaptchaVerifier) {
@@ -267,7 +272,10 @@ export const AUTH = {
                 } catch (resetError) {}
             }
         } finally {
-            stopLoading();
+            if (btnSubmit) {
+                btnSubmit.innerHTML = originalText;
+                btnSubmit.disabled = false;
+            }
         }
     },
 
@@ -287,7 +295,12 @@ export const AUTH = {
             return;
         }
 
-        const stopLoading = setButtonLoading(btnVerify, 'DOĞRULANIYOR...');
+        let originalText = '';
+        if (btnVerify) {
+            originalText = btnVerify.innerHTML;
+            btnVerify.innerHTML = 'DOĞRULANIYOR...';
+            btnVerify.disabled = true;
+        }
 
         try {
             await confirmationResult.confirm(code);
@@ -295,6 +308,7 @@ export const AUTH = {
             const phoneInput = getEl('input-phone-number');
             const phoneVal = normalizeTurkishPhone(phoneInput.value);
             
+            // Gizli fonksiyona gönder
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
@@ -309,121 +323,74 @@ export const AUTH = {
             console.error('OTP doğrulama hatası:', error);
             UI.showToast('Kod hatalı veya süresi dolmuş.', 'error');
         } finally {
-            stopLoading();
+            if (btnVerify) {
+                btnVerify.innerHTML = originalText;
+                btnVerify.disabled = false;
+            }
         }
     },
 
+    // KUSURSUZ MVP BELGE YÜKLEME (YZ OKUYUCU İPTAL EDİLDİ)
     verifyPdf: async () => {
+        // 1. Giriş Yapılmış Mı?
+        if (!STATE.isLoggedIn()) {
+            UI.showToast('Lütfen önce sisteme giriş yapın.', 'error');
+            return;
+        }
+
         const fileInput = document.getElementById('input-pdf-file');
         const btnSubmit = document.getElementById('btn-submit-pdf');
         
-        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        if (!fileInput || !btnSubmit) return;
+
+        // 2. Aynı Anda Çift Çalışmayı Engelleme
+        if (btnSubmit.dataset.loading === 'true') return;
+
+        // 3. Dosya Seçilmiş Mi?
+        if (!fileInput.files || fileInput.files.length === 0) {
             UI.showToast('Lütfen e-devletten aldığınız PDF belgesini seçin.', 'error');
             return;
         }
         
-        const stopLoading = setButtonLoading(btnSubmit, 'SİSTEM BELGEYİ OKUYOR...');
-        UI.showToast('Belge cihazınızda analiz ediliyor...', 'info');
-        
+        // 4. Dosya PDF Mi?
+        if (fileInput.files[0].type !== 'application/pdf') {
+            UI.showToast('Sadece PDF formatında belge yükleyebilirsiniz.', 'error');
+            return;
+        }
+
+        // Butonu Kilitle
+        btnSubmit.dataset.loading = 'true';
+        const originalText = btnSubmit.innerHTML;
+        btnSubmit.textContent = 'SİSTEME İLETİLİYOR...';
+        btnSubmit.disabled = true;
+
         try {
-            console.log("RÖNTGEN [1]: Dosya alındı.");
-            const file = fileInput.files[0];
-            const arrayBuffer = await file.arrayBuffer();
-            
-            // PDF.js Kütüphanesi donmasın diye ArrayBuffer'ı Uint8Array formatına çeviriyoruz.
-            const typedarray = new Uint8Array(arrayBuffer);
-            
-            console.log("RÖNTGEN [2]: PDF kütüphanesi aranıyor...");
-            const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
-            if (!pdfjsLib) throw new Error("PDF kütüphanesi bulunamadı. Lütfen sayfayı yenileyin.");
-            
-            // Standart ve resmi işçi (worker) tanımlaması
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-            
-            console.log("RÖNTGEN [3]: PDF motoru okumaya başlıyor...");
-            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-            
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                fullText += textContent.items.map(item => item.str).join(' ') + ' ';
-            }
-            
-            console.log("RÖNTGEN [4]: Metin söküldü! Uzunluk:", fullText.length);
+            // Gelecekte dosyayı Supabase Storage'a atacağın yer burası.
+            // await DB.uploadPdf(STATE.user.uid, fileInput.files[0]);
 
-            // 3. E-DEVLET METİN AYRIŞTIRICI MOTORU
-            const extract = (text, regex) => {
-                const match = text.match(regex);
-                return match ? match[1].trim() : '';
-            };
+            // 5. Durumu Güncelle (Oy gücü 1.0x DEĞİL, sadece bekleme moduna alıyoruz)
+            STATE.updateUser('authStage', 'document_pending');
 
-            const tc = extract(fullText, /Kimlik No\s*\|?\s*:\s*([0-9]{11})/i) || '11111111111';
-            const maskedTc = tc ? tc.substring(0,3) + '*****' + tc.substring(8) : 'Bulunamadı';
-            const adSoyad = extract(fullText, /Adı Soyadı\s*\|?\s*:\s*(.*?)(?=\s*Baba Adı|\s*Ana Adı)/i);
-            const babaAdi = extract(fullText, /Baba Adı\s*\|?\s*:\s*(.*?)(?=\s*Anne Adı)/i);
-            const anneAdi = extract(fullText, /Anne Adı\s*\|?\s*:\s*(.*?)(?=\s*Doğum Tarihi)/i);
-            const dogumTarihi = extract(fullText, /Doğum Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
+            // 6. Başarı Mesajı
+            UI.showToast('Belge inceleme kuyruğuna alındı.', 'success');
             
-            const program = extract(fullText, /Program\s*\|?\s*:\s*(.*?)(?=\s*Diploma No|\s*Kayıt Tarihi)/i);
-            const progParts = program.split('/');
-            const uni = progParts[0] ? progParts[0].trim() : 'Bilinmiyor';
-            const fakulte = progParts[1] ? progParts[1].trim() : 'Bilinmiyor';
-            const bolum = progParts[2] ? progParts[2].trim() : 'Bilinmiyor';
-            
-            const diplomaNo = extract(fullText, /Diploma No\s*\|?\s*:\s*(.*?)(?=\s*Diploma Notu|\s*Mezuniyet)/i);
-            const mezunTarihi = extract(fullText, /Mezuniyet Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
-            const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
-            const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
-
-            // LİYAKAT KONTROLÜ
-            const upperBolum = bolum.toUpperCase();
-            if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
-                 UI.showToast('HATA: Belgede "İçmimarlık" liyakatı doğrulanamadı!', 'error');
-                 stopLoading();
-                 return;
-            }
-
-            const durumText = extract(fullText, /Durum\s*\|?\s*?(.*?)(?=\s|$)/i).toUpperCase();
-            let durum = 'Öğrenci';
-            if (durumText.includes('MEZUN') || fullText.toUpperCase().includes('MEZUN BELGESİ')) {
-                durum = 'Mezun';
-            }
-
-            const belgeData = {
-                tc: maskedTc,
-                ad_soyad: adSoyad,
-                baba_adi: babaAdi,
-                anne_adi: anneAdi,
-                dogum_tarihi: dogumTarihi,
-                uni: uni,
-                fakulte: fakulte,
-                bolum: bolum,
-                diploma_no: diplomaNo,
-                mezun_tarihi: mezunTarihi,
-                barkod: barkod,
-                durum: durum
-            };
-
-            console.log("RÖNTGEN [5]: Supabase'e veri gönderiliyor...", belgeData);
-            
-            await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
-
-            console.log("RÖNTGEN [6]: İşlem kusursuz tamamlandı!");
-
-            STATE.updateUser('authStage', 'pdf_verified');
-            STATE.updateUser('votePower', '1.0x');
-
-            UI.showToast('Liyakat Onaylandı! Oy gücün 1.0x (Tam Yetki) oldu.', 'success');
+            // 7. Modalı Kapat
             UI.closeModal('pdf-modal');
+            
+            // 8. Profili Yeniden Çiz
             UI.renderProfile();
+            
+            // 9. Input'u Temizle
             fileInput.value = '';
 
         } catch (error) {
-            console.log("RÖNTGEN [HATA]:", error);
-            UI.showToast(`Belge okunamadı: ${error.message}`, 'error');
+            console.error("Belge Yükleme Hatası:", error);
+            UI.showToast('Belge kuyruğa alınamadı, lütfen tekrar deneyin.', 'error');
         } finally {
-            stopLoading();
+            // İşlem bitince butonu aç
+            btnSubmit.dataset.loading = 'false';
+            btnSubmit.innerHTML = originalText;
+            btnSubmit.disabled = false;
         }
     },
 
