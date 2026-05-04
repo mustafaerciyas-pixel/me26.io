@@ -1,6 +1,5 @@
 /* ==========================================================================
-   ME26 AĞI - ANA MOTOR VE ORKESTRA ŞEFİ (js/app.js)
-   (FİREBASE OTP ENTEGRASYONLU TAM SÜRÜM)
+   ME26 AĞI - ANA MOTOR VE ORKESTRA ŞEFİ (app.js)
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -8,195 +7,313 @@ import { UI } from './ui.js';
 import { AUTH } from './auth.js';
 import { VIP } from './vip.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+/* --------------------------------------------------------------------------
+   GÜVENLİ DOM YARDIMCILARI
+-------------------------------------------------------------------------- */
 
-    const renderProposals = () => {
-        const container = document.getElementById('proposals-container');
-        if (!container) return;
-        
-        container.innerHTML = ''; 
-        const proposals = STATE.getProposals();
+const getEl = (id) => document.getElementById(id);
 
-        if (proposals.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = "bg-black/40 border border-slate-700 rounded-2xl p-6 text-center text-gray-400 text-sm font-bold";
-            empty.textContent = "Henüz önerge yok. İlk sorunu sen bildir.";
-            container.appendChild(empty);
+const addClick = (id, callback) => {
+    const el = getEl(id);
+    if (el) el.addEventListener('click', callback);
+};
+
+/* --------------------------------------------------------------------------
+   ÖNERGE KARTLARI
+-------------------------------------------------------------------------- */
+
+const renderProposals = () => {
+    const container = getEl('proposals-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const proposals = STATE.getProposals();
+
+    if (proposals.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'bg-black/40 border border-slate-700 rounded-2xl p-6 text-center text-gray-400 text-sm font-bold';
+        empty.textContent = 'Henüz önerge yok. İlk sorunu sen bildir.';
+        container.appendChild(empty);
+        return;
+    }
+
+    proposals.forEach((proposal) => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-md transform transition hover:scale-[1.01] mb-4 toast-in';
+
+        const top = document.createElement('div');
+        top.className = 'flex justify-between items-start mb-3';
+
+        const textWrap = document.createElement('div');
+
+        const category = document.createElement('span');
+        category.className = 'text-[9px] font-bold tracking-widest text-kaos bg-kaos/10 px-2 py-1 rounded uppercase';
+        category.textContent = proposal.category;
+
+        const title = document.createElement('h3');
+        title.className = 'text-white font-black text-lg mt-2';
+        title.textContent = proposal.title;
+
+        textWrap.appendChild(category);
+        textWrap.appendChild(title);
+
+        const avatarWrap = document.createElement('div');
+        avatarWrap.className = 'flex -space-x-2';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'w-8 h-8 rounded-full bg-slate-600 border-2 border-slate-800 flex items-center justify-center text-xs font-bold text-white shadow-lg';
+        avatar.textContent = 'Sen';
+
+        avatarWrap.appendChild(avatar);
+
+        top.appendChild(textWrap);
+        top.appendChild(avatarWrap);
+
+        const desc = document.createElement('p');
+        desc.className = 'text-slate-400 text-sm mb-4';
+        desc.textContent = proposal.desc;
+
+        const footer = document.createElement('div');
+        footer.className = 'flex items-center justify-between text-xs text-slate-500 font-bold border-t border-slate-700/50 pt-3';
+
+        const supportWrap = document.createElement('div');
+        supportWrap.className = 'flex items-center gap-3';
+
+        const support = document.createElement('span');
+        support.className = 'flex items-center gap-1 text-green-400';
+        support.textContent = `${proposal.support || 1} Destek`;
+
+        supportWrap.appendChild(support);
+
+        const time = document.createElement('span');
+        time.textContent = 'Az önce';
+
+        footer.appendChild(supportWrap);
+        footer.appendChild(time);
+
+        card.appendChild(top);
+        card.appendChild(desc);
+        card.appendChild(footer);
+
+        container.appendChild(card);
+    });
+};
+
+/* --------------------------------------------------------------------------
+   SİSTEM BAŞLANGICI
+-------------------------------------------------------------------------- */
+
+const initSystem = () => {
+    if (STATE.isLoggedIn()) {
+        UI.showView('voting');
+    } else {
+        UI.showView('landing');
+    }
+
+    UI.renderProfile();
+    renderProposals();
+};
+
+/* --------------------------------------------------------------------------
+   BUTONLARI BAĞLA
+-------------------------------------------------------------------------- */
+
+const bindEvents = () => {
+    const handleMainAction = () => {
+        if (STATE.isLoggedIn()) {
+            UI.toggleProfileDrawer(true);
+            UI.toggleMobileMenu(false);
+        } else {
+            AUTH.login();
+            UI.toggleMobileMenu(false);
+        }
+    };
+
+    /* ----------------------------------------------------------------------
+       ANA GİRİŞ / PROFİL
+    ---------------------------------------------------------------------- */
+
+    addClick('btn-desktop-nav-action', handleMainAction);
+    addClick('btn-mobile-nav-action', handleMainAction);
+    addClick('btn-login-hero', handleMainAction);
+    addClick('btn-login-sticky', handleMainAction);
+
+    /* ----------------------------------------------------------------------
+       MOBİL MENÜ / PROFİL ÇEKMECESİ
+    ---------------------------------------------------------------------- */
+
+    addClick('btn-open-mobile-menu', () => UI.toggleMobileMenu(true));
+    addClick('btn-close-mobile-menu', () => UI.toggleMobileMenu(false));
+    addClick('btn-close-profile-drawer', () => UI.toggleProfileDrawer(false));
+
+    /* ----------------------------------------------------------------------
+       KİMLİK / KAYIT / YETKİ
+    ---------------------------------------------------------------------- */
+
+    addClick('btn-role-icmimar', () => AUTH.submitCommitment('icmimar'));
+    addClick('btn-role-ogrenci', () => AUTH.submitCommitment('ogrenci'));
+
+    addClick('btn-submit-phone', () => AUTH.verifyPhone());
+    addClick('btn-verify-otp', () => AUTH.verifyOtp());
+
+    addClick('btn-submit-pdf', () => AUTH.verifyPdf());
+
+    addClick('btn-open-pdf-modal', () => {
+        UI.toggleProfileDrawer(false);
+        UI.openModal('pdf-modal');
+    });
+
+    /* ----------------------------------------------------------------------
+       MODAL KAPATICILAR
+    ---------------------------------------------------------------------- */
+
+    addClick('btn-close-wow', () => {
+        UI.closeModal('wow-modal');
+        UI.showView('voting');
+    });
+
+    addClick('btn-close-phone-modal', () => {
+        UI.closeModal('phone-modal');
+    });
+
+    addClick('btn-close-pdf-modal', () => {
+        UI.closeModal('pdf-modal');
+    });
+
+    addClick('btn-close-vip-modal', () => {
+        UI.closeModal('vip-modal');
+    });
+
+    addClick('btn-close-proposal-modal', () => {
+        UI.closeModal('onerge-modal');
+    });
+
+    /* ----------------------------------------------------------------------
+       ÇIKIŞ / SİLME
+    ---------------------------------------------------------------------- */
+
+    addClick('btn-logout', () => AUTH.logout());
+    addClick('btn-delete-account', () => AUTH.deleteAccount());
+
+    /* ----------------------------------------------------------------------
+       VIP / PAYLAŞIM
+    ---------------------------------------------------------------------- */
+
+    addClick('btn-open-vip-modal', () => {
+        VIP.updateModalState();
+        UI.openModal('vip-modal');
+    });
+
+    addClick('btn-copy-invite', () => VIP.handleShare(false));
+    addClick('btn-wow-copy-link', () => VIP.handleShare(false));
+    addClick('btn-vip-copy-invite-locked', () => VIP.handleShare(false));
+    addClick('btn-whatsapp-share', () => VIP.handleShare(true));
+    addClick('btn-claim-vip-number', () => VIP.claimNumber());
+
+    /* ----------------------------------------------------------------------
+       ÖNERGE
+    ---------------------------------------------------------------------- */
+
+    addClick('btn-open-proposal-modal', () => {
+        if (!STATE.isLoggedIn()) {
+            UI.showToast('Sorun bildirmek için önce sisteme katıl.', 'error');
+            AUTH.login();
             return;
         }
 
-        proposals.forEach(prop => {
-            const card = document.createElement('div');
-            card.className = "bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-md transform transition hover:scale-[1.01] mb-4 toast-in";
-            
-            card.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <span class="prop-category text-[9px] font-bold tracking-widest text-kaos bg-kaos/10 px-2 py-1 rounded uppercase"></span>
-                        <h3 class="prop-title text-white font-black text-lg mt-2"></h3>
-                    </div>
-                    <div class="flex -space-x-2">
-                        <div class="w-8 h-8 rounded-full bg-slate-600 border-2 border-slate-800 flex items-center justify-center text-xs font-bold text-white shadow-lg">Sen</div>
-                    </div>
-                </div>
-                <p class="prop-desc text-slate-400 text-sm mb-4"></p>
-                <div class="flex items-center justify-between text-xs text-slate-500 font-bold border-t border-slate-700/50 pt-3">
-                    <div class="flex items-center gap-3">
-                        <span class="flex items-center gap-1 text-green-400">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg> 1 Destek
-                        </span>
-                    </div>
-                    <span>Az önce</span>
-                </div>
-            `;
+        UI.openModal('onerge-modal');
+    });
 
-            card.querySelector('.prop-category').textContent = prop.category;
-            card.querySelector('.prop-title').textContent = prop.title;
-            card.querySelector('.prop-desc').textContent = prop.desc;
-            
-            container.appendChild(card);
-        });
-    };
+    addClick('btn-submit-proposal', () => {
+        const titleEl = getEl('input-proposal-title');
+        const descEl = getEl('input-proposal-desc');
+        const catEl = getEl('input-proposal-category');
 
-    const initSystem = () => {
-        if (STATE.isLoggedIn()) {
-            UI.showView('voting');
-        } else {
-            UI.showView('landing');
+        const title = titleEl ? titleEl.value.trim() : '';
+        const desc = descEl ? descEl.value.trim() : '';
+        const category = catEl ? catEl.value.trim() : '';
+
+        if (!title || !desc || !category) {
+            UI.showToast('Lütfen tüm alanları doldurun.', 'error');
+            return;
         }
-        UI.renderProfile();
-        renderProposals(); 
-    };
 
-    const addClick = (id, callback) => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('click', callback);
-    };
+        const ok = STATE.addProposal({ title, desc, category });
 
-    const bindEvents = () => {
-        const handleMainAction = () => {
-            if (STATE.isLoggedIn()) {
-                UI.toggleProfileDrawer(true); 
-                UI.toggleMobileMenu(false);   
-            } else {
-                AUTH.login(); 
-                UI.toggleMobileMenu(false);
-            }
-        };
+        if (!ok) {
+            UI.showToast('Önerge kaydedilemedi.', 'error');
+            return;
+        }
 
-        addClick('btn-desktop-nav-action', handleMainAction);
-        addClick('btn-mobile-nav-action', handleMainAction);
-        addClick('btn-login-hero', handleMainAction);
-        addClick('btn-login-sticky', handleMainAction);
+        renderProposals();
 
-        addClick('btn-open-mobile-menu', () => UI.toggleMobileMenu(true));
-        addClick('btn-close-mobile-menu', () => UI.toggleMobileMenu(false));
-        addClick('btn-close-profile-drawer', () => UI.toggleProfileDrawer(false));
+        if (titleEl) titleEl.value = '';
+        if (descEl) descEl.value = '';
+        if (catEl) catEl.value = '';
 
-        addClick('btn-role-icmimar', () => AUTH.submitCommitment('icmimar'));
-        addClick('btn-role-ogrenci', () => AUTH.submitCommitment('ogrenci'));
-        
-        // FİREBASE SMS VE OTP BAĞLANTILARI
-        addClick('btn-submit-phone', () => AUTH.verifyPhone());
-        addClick('btn-verify-otp', () => AUTH.verifyOtp()); 
-        
-        addClick('btn-submit-pdf', () => AUTH.verifyPdf());
-        
-        addClick('btn-open-pdf-modal', () => {
-            UI.toggleProfileDrawer(false);
-            UI.openModal('pdf-modal');
-        });
-        addClick('btn-close-wow', () => { UI.closeModal('wow-modal'); UI.showView('voting'); });
-        addClick('btn-close-phone-modal', () => UI.closeModal('phone-modal'));
-        addClick('btn-close-pdf-modal', () => UI.closeModal('pdf-modal'));
-        addClick('btn-close-vip-modal', () => UI.closeModal('vip-modal'));
-        addClick('btn-close-proposal-modal', () => UI.closeModal('onerge-modal'));
+        UI.closeModal('onerge-modal');
+        UI.showToast('Fikrin meclise sunuldu ve destek sırasına alındı.', 'success');
+    });
+};
 
-        addClick('btn-logout', () => AUTH.logout());
-        addClick('btn-delete-account', () => AUTH.deleteAccount());
+/* --------------------------------------------------------------------------
+   OYLAMA SİSTEMİ
+-------------------------------------------------------------------------- */
 
-        addClick('btn-open-vip-modal', () => {
-            VIP.updateModalState();
-            UI.openModal('vip-modal');
-        });
-        addClick('btn-copy-invite', () => VIP.handleShare(false));
-        addClick('btn-wow-copy-link', () => VIP.handleShare(false));
-        addClick('btn-vip-copy-invite-locked', () => VIP.handleShare(false));
-        addClick('btn-whatsapp-share', () => VIP.handleShare(true));
-        addClick('btn-claim-vip-number', () => VIP.claimNumber());
+const bindVotingEvents = () => {
+    document.addEventListener('click', (event) => {
+        const voteBtn = event.target.closest('.btn-vote');
 
-        addClick('btn-open-proposal-modal', () => {
-            if (!STATE.isLoggedIn()) {
-                UI.showToast("Sorun bildirmek için önce sisteme katıl.", "error");
-                AUTH.login();
-                return;
-            }
-            UI.openModal('onerge-modal');
-        });
-
-        addClick('btn-submit-proposal', () => {
-            const titleEl = document.getElementById('input-proposal-title');
-            const descEl = document.getElementById('input-proposal-desc');
-            const catEl = document.getElementById('input-proposal-category');
-            
-            if(!titleEl?.value || !descEl?.value || !catEl?.value) {
-                UI.showToast("Lütfen tüm alanları doldurun.", "error");
-                return;
-            }
-
-            STATE.addProposal({
-                title: titleEl.value,
-                desc: descEl.value,
-                category: catEl.value
-            });
-
-            renderProposals();
-
-            UI.showToast("Fikriniz meclise sunuldu ve destek sırasına alındı.", "success");
-            UI.closeModal('onerge-modal');
-            
-            titleEl.value = ''; descEl.value = ''; catEl.value = '';
-        });
-    };
-
-    document.addEventListener('click', (e) => {
-        const voteBtn = e.target.closest('.btn-vote');
         if (voteBtn) {
             if (!STATE.isLoggedIn()) {
-                UI.showToast("Oy kullanmak için önce sisteme katıl.", "error");
+                UI.showToast('Oy kullanmak için önce sisteme katıl.', 'error');
                 AUTH.login();
                 return;
             }
-            
+
             const card = voteBtn.closest('.poll-card');
-            if (card) {
-                const activeArea = card.querySelector('.poll-active-area');
-                const resultArea = card.querySelector('.poll-result-area');
-                if (activeArea && resultArea) {
-                    activeArea.classList.add('hidden');
-                    resultArea.classList.remove('hidden');
-                    UI.showToast("Oyunuz sisteme kaydedildi.", "success");
-                }
+            if (!card) return;
+
+            const activeArea = card.querySelector('.poll-active-area');
+            const resultArea = card.querySelector('.poll-result-area');
+
+            if (activeArea && resultArea) {
+                activeArea.classList.add('hidden');
+                resultArea.classList.remove('hidden');
             }
+
+            UI.showToast('Oyun sisteme kaydedildi.', 'success');
+            return;
         }
 
-        const changeVoteBtn = e.target.closest('.btn-change-vote');
+        const changeVoteBtn = event.target.closest('.btn-change-vote');
+
         if (changeVoteBtn) {
             if (!STATE.isLoggedIn()) return;
 
             const card = changeVoteBtn.closest('.poll-card');
-            if (card) {
-                const activeArea = card.querySelector('.poll-active-area');
-                const resultArea = card.querySelector('.poll-result-area');
-                if (activeArea && resultArea) {
-                    resultArea.classList.add('hidden');
-                    activeArea.classList.remove('hidden');
-                    UI.showToast("Oyunuz sıfırlandı. Yeniden oy kullanabilirsiniz.", "success");
-                }
+            if (!card) return;
+
+            const activeArea = card.querySelector('.poll-active-area');
+            const resultArea = card.querySelector('.poll-result-area');
+
+            if (activeArea && resultArea) {
+                resultArea.classList.add('hidden');
+                activeArea.classList.remove('hidden');
             }
+
+            UI.showToast('Oyun sıfırlandı. Yeniden oy kullanabilirsin.', 'success');
         }
     });
+};
 
+/* --------------------------------------------------------------------------
+   ÇALIŞTIR
+-------------------------------------------------------------------------- */
+
+document.addEventListener('DOMContentLoaded', () => {
     initSystem();
     bindEvents();
+    bindVotingEvents();
 });

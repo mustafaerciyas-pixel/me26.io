@@ -1,12 +1,24 @@
-/* ==========================================================================
-   ME26 AĞI - SİSTEM AYARLARI VE YAPILANDIRMA (js/config.js)
+ /* ==========================================================================
+   ME26 AĞI - SİSTEM AYARLARI VE YAPILANDIRMA (config.js)
    ========================================================================== */
 
 export const ME26_CONFIG = {
-    // VIP kilidini açmak için gereken paylaşım sayısı
+    // 1. SİSTEM MODU
+    // "production" = Direkt yayın
+    mode: "production",
+
+    // 2. VIP PAYLAŞIM KURALLARI
     requiredInvitesForVip: 3,
 
-    // Firebase (SMS & Auth) Bağlantı Ayarları
+    // 3. VIP KURUCU NUMARA ARALIĞI
+    vipMin: 101,
+    vipMax: 5000,
+
+    // 4. KURUCU KONTENJANI
+    founderLimit: 2000,
+    initialCount: 0,
+
+    // 5. FIREBASE SMS & AUTH BAĞLANTI AYARLARI
     firebaseConfig: {
         apiKey: "AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA",
         authDomain: "me26-io.firebaseapp.com",
