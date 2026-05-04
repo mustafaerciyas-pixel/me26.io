@@ -6,29 +6,30 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 import { ME26_CONFIG } from './config.js';
 
+// Supabase bağlantısını başlat
 export const supabase = createClient(ME26_CONFIG.supabaseUrl, ME26_CONFIG.supabaseKey);
 
 export const DB = {
-    // Sokağa sır vermeyen, veriyi paketleyip karanlık odaya (RPC) atan fonksiyon
+    // 1. SİSTEME GİRİŞ MOTORU
     sistemeGiris: async (gizliPaket) => {
         const { data, error } = await supabase.rpc('me26_sistem_giris', { p_payload: gizliPaket });
         if (error) console.error('🔥 Giriş Motoru Hatası:', error.message);
         return data;
     },
 
+    // 2. TELEFON ONAY MOTORU
     telefonuOnayla: async (uid, telNo) => {
         const { error } = await supabase.rpc('me26_telefon_onay', { p_uid: uid, p_tel: telNo });
         if (error) console.error('🔥 Telefon Motoru Hatası:', error.message);
     },
 
+    // 3. E-DEVLET BELGE MOTORU
     belgeyiSirayaAl: async (uid, belgeData) => {
-        // Tüm detaylar 'belgeData' isimli tek bir şifreli paket (JSON) olarak gider
         const { error } = await supabase.rpc('me26_belge_yukle', { 
             p_uid: uid, 
             p_data: belgeData 
         });
         
-        // HATA RÖNTGENİ: Supabase'in gizlediği gerçek isyanı ekrana basar
         if (error) {
             console.error('🔥 SUPABASE ASIL HATA:', error.message);
             console.error('🔥 DETAYLAR:', error.details);
@@ -39,19 +40,16 @@ export const DB = {
         }
     },
 
-    // YENİ EKLENEN GÖREV 1: KULLANICI ŞEHRİNİ (TRİBÜNÜNÜ) GÜNCELLEME
+    // 4. GÖREV 1: ŞEHİR (TRİBÜN) GÜNCELLEME MOTORU
     sehirGuncelle: async (uid, secilenSehir) => {
-        const { data, error } = await supabase
-            .from('users') 
-            .update({ sehir_tribunu: secilenSehir })
-            .eq('id', uid)
-            .select()
-            .single();
+        const { error } = await supabase.rpc('me26_sehir_guncelle', { 
+            p_uid: uid, 
+            p_sehir: secilenSehir 
+        });
 
         if (error) {
             console.error('🔥 Şehir Güncelleme Hatası:', error.message);
-            throw error;
+            throw error; // UI.js tarafında hata mesajı (Toast) göstermek için fırlatıyoruz
         }
-        return data;
     }
 };
