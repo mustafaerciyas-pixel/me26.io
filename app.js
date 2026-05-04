@@ -143,19 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     Me26VotingSystem.init();
 
-    // SİTE YÜKLENDİĞİNDE URL VEYA FIREBASE ÇEREZİYLE YÖNLENDİRMELERİ KONTROL ET
-    const isRedirect = await AUTH.checkRedirect();
-    
-    if (!isRedirect) {
-        if (STATE.isLoggedIn()) {
-            UI.showView('voting');
-        } else {
-            UI.showView('landing');
-        }
-        UI.renderProfile();
-        Me26VotingSystem.updateVisibility();
-    }
-
+    // 1. ADIM: SAYFA YÜKLENİR YÜKLENMEZ TÜM BUTONLARI ANINDA AKTİF ET!
     const bind = (id, event, fn) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, fn);
@@ -224,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-wow-copy-link', 'click', copyLinkToClipboard);
     bind('btn-vip-copy-invite-locked', 'click', copyLinkToClipboard);
 
-    bind('btn-share-id-card', 'click', copyLinkToClipboard); // İleride Instagram API bağlanacak
+    bind('btn-share-id-card', 'click', copyLinkToClipboard); 
     bind('btn-whatsapp-share', 'click', () => {
         const link = document.getElementById('ui-invite-link')?.textContent || 'https://me26.org';
         window.open(`https://wa.me/?text=Sadece İçmimarların Girebildiği Dijital Stadyuma Katıl: ${link}`, '_blank');
@@ -248,4 +236,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ÇIKIŞ
     bind('btn-logout', 'click', AUTH.logout);
     bind('btn-delete-account', 'click', AUTH.deleteAccount);
+
+    // 2. ADIM: BUTONLARI AKTİF ETTİKTEN SONRA ARKAPLANDA FIREBASE'İ KONTROL ET
+    const isRedirect = await AUTH.checkRedirect();
+    
+    if (!isRedirect) {
+        if (STATE.isLoggedIn()) {
+            UI.showView('voting');
+        } else {
+            UI.showView('landing');
+        }
+        UI.renderProfile();
+        Me26VotingSystem.updateVisibility();
+    }
 });
