@@ -16,7 +16,7 @@ export const ME26_CONFIG = {
     // 4. KURUCU KONTENJANI
     founderLimit: 2000,
 
-    // 5. FIREBASE SMS & AUTH BAĞLANTI AYARLARI (Senin mevcut ayarların)
+    // 5. FIREBASE SMS & AUTH BAĞLANTI AYARLARI 
     firebaseConfig: {
         apiKey: "AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA",
         authDomain: "me26-io.firebaseapp.com",
@@ -27,7 +27,7 @@ export const ME26_CONFIG = {
     },
 
     // 6. SUPABASE VERİTABANI BAĞLANTISI
-    // Buraya Supabase panelinden aldığın Project URL ve API Key gelecek
-    supabaseUrl: "BURAYA_SUPABASE_URL_YAZILACAK",
-    supabaseKey: "BURAYA_SUPABASE_ANON_KEY_YAZILACAK"
+    // Az önce attığın token'ın içinden URL ve API anahtarın çıkarılıp işlendi.
+    supabaseUrl: "https://ukmkojfntsmeikjcrvz.supabase.co", 
+    supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw" 
 };
