@@ -6,7 +6,7 @@
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { ME26_CONFIG } from './config.js';
-import { Me26VotingSystem } from './app.js'; // <-- YENİ EKLENDİ (Motoru İçeri Aldık)
+import { Me26VotingSystem } from './app.js'; 
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
 import {
@@ -78,7 +78,6 @@ const getCommitmentData = () => {
 
 export const AUTH = {
     
-    // Google Girişi Başarılı Olduğunda Çalışacak Ortak Fonksiyon
     handleGoogleSuccess: (user) => {
         const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
         const savedRole = localStorage.getItem('me26_temp_role') || 'Sistem Üyesi';
@@ -106,14 +105,12 @@ export const AUTH = {
         UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
         UI.openModal('wow-modal');
         
-        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Kilit Açılır, Manifestolar Sahaya İner)
+        Me26VotingSystem.updateVisibility(); 
     },
 
-    // Sadece Yönlendirme (Redirect) Sonrası Kontrol Yapan Motor
     checkRedirect: () => {
         return new Promise(async (resolve) => {
             try {
-                // 1. Redirect ile mi gelmiş kontrol et
                 const result = await getRedirectResult(firebaseAuth);
                 if (result && result.user) {
                     AUTH.handleGoogleSuccess(result.user);
@@ -121,10 +118,8 @@ export const AUTH = {
                     return;
                 }
                 
-                // 2. Çerez düşmesi ihtimaline karşı Firebase hafızasını kontrol et
                 const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
                     unsubscribe(); 
-                    // Kullanıcı var ama sistemimizde "giriş yapmadı" görünüyorsa yeni gelmiştir
                     if (user && !STATE.isLoggedIn()) {
                         AUTH.handleGoogleSuccess(user);
                         resolve(true);
@@ -159,7 +154,6 @@ export const AUTH = {
         const formData = getCommitmentData();
         const btn = getEl('btn-google-login');
 
-        // AKILLI CİHAZ ALGILAMA (Smart Auth Motoru)
         const ua = navigator.userAgent || navigator.vendor || window.opera;
         const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
         const isSocialApp = /Instagram|WhatsApp|FBAN|FBAV/i.test(ua);
@@ -168,11 +162,9 @@ export const AUTH = {
         localStorage.setItem('me26_temp_role', formData.role);
 
         if (isMobile || isSocialApp) {
-            // TELEFON & INSTAGRAM: Yönlendirme Kullan (Popup engelini aşar)
             setButtonLoading(btn, 'GÜVENLİ GİRİŞE YÖNLENDİRİLİYOR...');
             signInWithRedirect(firebaseAuth, googleProvider);
         } else {
-            // MASAÜSTÜ & BİLGİSAYAR: Popup Kullan (Çerez sorununu aşar)
             try {
                 const result = await signInWithPopup(firebaseAuth, googleProvider);
                 AUTH.handleGoogleSuccess(result.user);
@@ -205,7 +197,7 @@ export const AUTH = {
         if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
 
         UI.openModal('wow-modal');
-        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Anonim Girişte de Kilit Açılsın)
+        Me26VotingSystem.updateVisibility(); 
     },
 
     verifyPhone: async () => {
@@ -312,7 +304,7 @@ export const AUTH = {
     },
 
     logout: () => {
-        signOut(firebaseAuth).catch(() => {}); // Firebase'den de çıkış yap
+        signOut(firebaseAuth).catch(() => {}); 
         STATE.clearSession();
         UI.toggleProfileDrawer(false);
         UI.showView('landing');
@@ -320,12 +312,12 @@ export const AUTH = {
         resetPhoneModal();
         UI.showToast('Oturum kapatıldı. Stadyumdan çıkıldı.', 'success');
         
-        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Çıkış Yapınca Manifestolar Gizlenir, Kilit Gelir)
+        Me26VotingSystem.updateVisibility(); 
     },
 
     deleteAccount: () => {
         if (!confirm('Tüm verilerin yok edilecek. Emin misin?')) return;
-        signOut(firebaseAuth).catch(() => {}); // Firebase'den de çıkış yap
+        signOut(firebaseAuth).catch(() => {}); 
         STATE.clearAll();
         UI.toggleProfileDrawer(false);
         UI.showView('landing');
@@ -333,6 +325,6 @@ export const AUTH = {
         resetPhoneModal();
         UI.showToast('Tüm verilerin sistemden silindi.', 'success');
         
-        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Hesap Silinince Manifestolar Gizlenir, Kilit Gelir)
+        Me26VotingSystem.updateVisibility(); 
     }
 };
