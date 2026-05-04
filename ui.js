@@ -1,173 +1,220 @@
 /* ==========================================================================
-   ME26 AĞI - ARAYÜZ (UI) VE DOM YÖNETİCİSİ (ui.js)
+   ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
+   VIP Kurucu Grid Sistemi Entegre Edilmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
-import { ME26_CONFIG } from './config.js';
-
-// DOM Seçici Yardımcısı
-const getEl = (id) => document.getElementById(id);
 
 export const UI = {
-    
-    // 1. Ekran Bildirimleri (Toast)
-    showToast: (message, type = 'success') => {
-        const container = getEl('toast-container');
-        if (!container) return;
+    // Sayfa Görünümlerini Değiştirme (Landing <-> Voting)
+    showView: (viewId) => {
+        document.getElementById('landing-view').classList.add('hidden');
+        document.getElementById('voting-view').classList.add('hidden');
+        document.getElementById('manifesto')?.classList.add('hidden');
+        document.getElementById('sticky-cta')?.classList.add('hidden');
+        document.getElementById('ana-footer')?.classList.add('hidden');
 
-        const toast = document.createElement('div');
-        
-        // Başarı veya Hata renkleri
-        const bgColor = type === 'success' ? 'bg-green-500/90' : 'bg-red-500/90';
-        const borderColor = type === 'success' ? 'border-green-400' : 'border-red-400';
-        const icon = type === 'success' ? '✅' : '❌';
-
-        toast.className = `${bgColor} border ${borderColor} text-white px-5 py-3 rounded-xl shadow-lg font-bold text-sm flex items-center gap-3 toast-in backdrop-blur-md z-[99999]`;
-        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-
-        container.appendChild(toast);
-
-        // 3 saniye sonra kaybolma animasyonu
-        setTimeout(() => {
-            toast.classList.remove('toast-in');
-            toast.classList.add('toast-out');
-            setTimeout(() => toast.remove(), 500); // Animasyon bitmesini bekle
-        }, 3000);
+        if (viewId === 'landing') {
+            document.getElementById('landing-view').classList.remove('hidden');
+            document.getElementById('manifesto')?.classList.remove('hidden');
+            document.getElementById('sticky-cta')?.classList.remove('hidden');
+            document.getElementById('ana-footer')?.classList.remove('hidden');
+        } else if (viewId === 'voting') {
+            document.getElementById('voting-view').classList.remove('hidden');
+        }
     },
 
-    // 2. Modalları Aç
-    openModal: (id) => {
-        const modal = getEl(id);
+    // Modalları Açıp Kapatma
+    openModal: (modalId) => {
+        const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
     },
 
-    // 3. Modalları Kapat
-    closeModal: (id) => {
-        const modal = getEl(id);
+    closeModal: (modalId) => {
+        const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
     },
 
-    // 4. Mobil Menüyü Aç/Kapat
-    toggleMobileMenu: (forceShow = false) => {
-        const menu = getEl('mobile-menu');
+    // Çekmece ve Menüler
+    toggleMobileMenu: (show) => {
+        const menu = document.getElementById('mobile-menu');
         if (!menu) return;
-        if (forceShow) {
+        if (show) {
             menu.classList.remove('-translate-x-full');
         } else {
             menu.classList.add('-translate-x-full');
         }
     },
 
-    // 5. Sağ Profil Çekmecesini Aç/Kapat
-    toggleProfileDrawer: (forceShow = false) => {
-        const drawer = getEl('profile-drawer');
+    toggleProfileDrawer: (show) => {
+        const drawer = document.getElementById('profile-drawer');
         if (!drawer) return;
-        if (forceShow) {
+        if (show) {
             drawer.classList.remove('translate-x-full');
         } else {
             drawer.classList.add('translate-x-full');
         }
     },
 
-    // 6. SPA Sayfa Geçişi (Giriş Ekranı <-> Oylama Ekranı)
-    showView: (viewName) => {
-        const landing = getEl('landing-view');
-        const voting = getEl('voting-view');
-        const stickyCta = getEl('sticky-cta');
+    // Bildirim (Toast) Mesajları
+    showToast: (message, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        const isSuccess = type === 'success';
+        toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-xs font-bold uppercase tracking-widest transform transition-all duration-500 translate-y-10 opacity-0 ${
+            isSuccess ? 'bg-green-900/90 text-green-400 border border-green-700' : 'bg-red-900/90 text-red-400 border border-red-700'
+        }`;
         
-        if (viewName === 'landing') {
-            if (landing) { landing.classList.remove('hidden'); landing.classList.add('flex'); }
-            if (voting) { voting.classList.add('hidden'); voting.classList.remove('flex'); }
-            if (stickyCta) stickyCta.classList.remove('hidden');
-        } else if (viewName === 'voting') {
-            if (landing) { landing.classList.add('hidden'); landing.classList.remove('flex'); }
-            if (voting) { voting.classList.remove('hidden'); voting.classList.add('flex'); }
-            if (stickyCta) stickyCta.classList.add('hidden');
+        toast.innerHTML = `<span>${isSuccess ? '✅' : '❌'}</span><span>${message}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.remove('translate-y-10', 'opacity-0');
+        }, 10);
+
+        setTimeout(() => {
+            toast.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    },
+
+    // Profili Ekrana Çizme (Verileri HTML'e Basma)
+    renderProfile: () => {
+        if (!STATE.isLoggedIn()) return;
+
+        const user = STATE.user;
+        
+        const setEl = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        };
+
+        // Temel Bilgiler
+        setEl('ui-user-city', user.city);
+        setEl('ui-user-role', user.role);
+        setEl('ui-vote-power', user.votePower);
+
+        // Kimlik Numarası ve Rozet
+        const idBadge = document.getElementById('ui-role-badge');
+        const userIdEl = document.getElementById('ui-user-id');
+        
+        if (user.isVip) {
+            if (idBadge) {
+                idBadge.textContent = 'VIP KURUCU';
+                idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
+            }
+            if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
+        } else {
+            if (idBadge) {
+                idBadge.textContent = 'Aday Kurucu';
+                idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
+            }
+            if (userIdEl) userIdEl.textContent = 'TR-IA-BEKLEYEN';
+        }
+
+        // Paylaşım ve VIP Barı
+        const inviteCount = user.inviteCount || 0;
+        setEl('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
+        
+        const progressBar = document.getElementById('ui-vip-progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${Math.min((inviteCount / 3) * 100, 100)}%`;
+        }
+
+        const vipStatus = document.getElementById('ui-vip-status');
+        if (vipStatus) {
+            if (user.isVip) {
+                vipStatus.textContent = 'VIP AKTİF';
+                vipStatus.className = 'text-[9px] text-slate-900 font-black bg-kaos px-2 py-1 rounded border border-kaos shadow-kaos';
+            } else if (inviteCount >= 3) {
+                vipStatus.textContent = 'KİLİT AÇILDI';
+                vipStatus.className = 'text-[9px] text-green-400 font-bold bg-green-900/30 px-2 py-1 rounded border border-green-700';
+            } else {
+                vipStatus.textContent = 'KİLİTLİ';
+                vipStatus.className = 'text-[9px] text-gray-500 font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700';
+            }
+        }
+
+        // Yetki Butonlarını Gizle/Göster
+        const btnPhone = document.getElementById('btn-open-phone-modal');
+        const btnPdf = document.getElementById('btn-open-pdf-modal');
+
+        if (user.authStage === 'phone_verified' || user.authStage === 'pdf_verified') {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            if (btnPdf) btnPdf.classList.remove('hidden'); // Telefon onaylandıysa PDF açılır
+        } else {
+            if (btnPhone) btnPhone.classList.remove('hidden');
+            if (btnPdf) btnPdf.classList.add('hidden');
+        }
+
+        if (user.authStage === 'pdf_verified' && btnPdf) {
+            btnPdf.classList.add('hidden'); // PDF de yüklendiyse butonu sakla
         }
     },
 
-    // 7. Profil ve Arayüzü Kullanıcı Verisine Göre Güncelle (Canlı Veri Render)
-    renderProfile: () => {
-        const user = STATE.getUser();
+    // =========================================================
+    // VIP KURUCU NUMARA MOTORU
+    // =========================================================
+    
+    updateVipModalState: () => {
+        const lockedState = document.getElementById('vip-locked-state');
+        const unlockedState = document.getElementById('vip-unlocked-state');
+        const inviteCount = STATE.user?.inviteCount || 0;
 
-        // A. Kimlik Kartı Metinleri
-        const idEl = getEl('ui-user-id');
-        const roleEl = getEl('ui-user-role');
-        const cityEl = getEl('ui-user-city');
-        const powerEl = getEl('ui-vote-power');
-        const badgeEl = getEl('ui-role-badge');
-        
-        if (idEl) idEl.textContent = `TR-IA-${user.userNo !== "BEKLEYEN" ? user.userNo : "???"}`;
-        if (roleEl) roleEl.textContent = user.role;
-        if (cityEl) cityEl.textContent = user.city;
-        if (powerEl) powerEl.textContent = user.votePower;
-
-        // B. Yetki Rozeti (Badge)
-        if (badgeEl) {
-            if (STATE.isFullyVerified()) {
-                badgeEl.textContent = 'Tam Yetkili';
-                badgeEl.className = 'bg-green-500/20 text-green-400 border border-green-500/30 px-1.5 py-0.5 rounded text-[8px]';
-            } else if (STATE.isPhoneVerified()) {
-                badgeEl.textContent = 'Telefon Onaylı';
-                badgeEl.className = 'bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded text-[8px]';
-            } else {
-                badgeEl.textContent = 'Onay Bekliyor';
-                badgeEl.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px]';
-            }
+        if (inviteCount >= 3 || STATE.user?.isVip) {
+            lockedState.classList.add('hidden');
+            unlockedState.classList.remove('hidden');
+            UI.renderVipGrid();
+        } else {
+            lockedState.classList.remove('hidden');
+            unlockedState.classList.add('hidden');
         }
+    },
 
-        // C. VIP İlerleme Barı
-        const vipStatusEl = getEl('ui-vip-status');
-        const vipProgressEl = getEl('ui-vip-progress-bar');
-        const vipCountEl = getEl('ui-vip-invite-count');
-        
-        const required = ME26_CONFIG.requiredInvitesForVip || 3;
-        const currentCount = Math.min(user.inviteCount, required);
-        const progressPercent = (currentCount / required) * 100;
+    renderVipGrid: () => {
+        const gridEl = document.getElementById('ui-vip-grid');
+        if (!gridEl) return;
+        gridEl.innerHTML = '';
 
-        if (vipProgressEl) vipProgressEl.style.width = `${progressPercent}%`;
-        if (vipCountEl) vipCountEl.textContent = `${currentCount} / ${required} Paylaşım`;
-
-        if (vipStatusEl) {
-            if (user.isVip) {
-                vipStatusEl.textContent = 'AKTİF';
-                vipStatusEl.className = 'text-[9px] text-black font-bold bg-kaos px-2 py-1 rounded border border-kaos uppercase';
-            } else if (currentCount >= required) {
-                vipStatusEl.textContent = 'AÇILDI';
-                vipStatusEl.className = 'text-[9px] text-green-400 font-bold bg-green-500/20 px-2 py-1 rounded border border-green-500/30 uppercase';
+        // 101 ile 1000 arasını çiz
+        for (let i = 101; i <= 1000; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'vip-number-btn bg-slate-800 border border-slate-700 text-gray-400 font-mono text-[10px] md:text-xs py-2 rounded hover:border-kaos hover:text-kaos transition';
+            btn.textContent = i;
+            
+            // Rastgele dolu numaralar (Gerçekçilik için)
+            if (i === 105 || i === 199 || i === 206 || i === 333 || i === 404 || i === 500) {
+                btn.classList.add('opacity-30', 'cursor-not-allowed', 'bg-red-900/20', 'border-red-900/50', 'text-red-500');
+                btn.disabled = true;
             } else {
-                vipStatusEl.textContent = 'KİLİTLİ';
-                vipStatusEl.className = 'text-[9px] text-kaos font-bold bg-kaos/10 px-2 py-1 rounded border border-kaos/30 uppercase';
+                btn.onclick = () => UI.selectVipNumber(i, btn);
             }
+            gridEl.appendChild(btn);
         }
+    },
 
-        // D. Dinamik Buton Metinleri (Kullanıcı giriş yaptıysa "Profili Aç" yazar)
-        const btnHero = getEl('btn-login-hero');
-        const btnSticky = getEl('btn-login-sticky');
-        const btnDesktop = getEl('btn-desktop-nav-action');
-        const btnMobile = getEl('btn-mobile-nav-action');
+    selectVipNumber: (num, btnEl) => {
+        document.querySelectorAll('.vip-number-btn').forEach(b => {
+            b.classList.remove('bg-kaos', 'text-slate-900', 'font-black', 'border-kaos');
+            if(!b.disabled) b.classList.add('bg-slate-800', 'text-gray-400');
+        });
+        
+        btnEl.classList.remove('bg-slate-800', 'text-gray-400');
+        btnEl.classList.add('bg-kaos', 'text-slate-900', 'font-black', 'border-kaos');
 
-        const loginText = STATE.isLoggedIn() ? 'PROFİLİ AÇ' : '1 TIKLA KATIL';
-        
-        if (btnHero) btnHero.textContent = loginText;
-        if (btnSticky) btnSticky.textContent = loginText;
-        if (btnDesktop) btnDesktop.textContent = loginText;
-        if (btnMobile) btnMobile.textContent = loginText;
-        
-        // E. Belge Yükleme Butonu Görünürlüğü (Sadece giriş yapıp tam yetkili olmayanlara göster)
-        const pdfBtn = getEl('btn-open-pdf-modal');
-        if (pdfBtn) {
-            if (STATE.isLoggedIn() && !STATE.isFullyVerified()) {
-                pdfBtn.classList.remove('hidden');
-            } else {
-                pdfBtn.classList.add('hidden');
-            }
+        const claimBtn = document.getElementById('btn-claim-vip-number');
+        if (claimBtn) {
+            claimBtn.disabled = false;
+            claimBtn.dataset.selectedNumber = num;
+            claimBtn.textContent = num + ' NUMARAYI KİLİTLE';
         }
     }
 };
