@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase Karanlık Oda (RPC) + Belge Bekleme Modu (MVP)
+   Firebase Auth + Supabase Karanlık Oda (RPC) + Gerçek E-Devlet YZ Okuyucu
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -80,7 +80,6 @@ export const AUTH = {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || null;
 
-            // KOD GİZLİLİĞİ: Sütun isimleri yok! Şifrelenmiş paket.
             const gizliPaket = {
                 uid: user.uid,
                 g_isim: user.displayName,
@@ -92,21 +91,17 @@ export const AUTH = {
                 ref: refCode
             };
 
-            // Paketi Supabase RPC (Karanlık Oda) motoruna at
             const dbUser = await DB.sistemeGiris(gizliPaket);
 
-            // Temizlik
             localStorage.removeItem('me26_temp_city');
             localStorage.removeItem('me26_temp_role');
 
             if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
-            // SUPABASE'DEN GELEN YANITI HAFIZAYA (STATE) YAZ
             let authStage = 'registered';
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
             else if (dbUser.oy_gucu === 0.5) authStage = 'phone_verified';
-            // Yeni bekleme durumu desteği
-            else if (dbUser.belge_durumu === 'pending') authStage = 'document_pending'; 
+            else if (dbUser.belge_durumu === 'pending' || dbUser.belge_durumu?.includes('Bekliyor')) authStage = 'document_pending'; 
 
             STATE.setUser({
                 uid: dbUser.id,
@@ -124,7 +119,6 @@ export const AUTH = {
             UI.renderProfile(); 
             UI.showView('voting');
             
-            // Eğer referans/davet sayısı 0 ise yeni kayıttır, WOW patlat
             if (dbUser.basarili_davet_sayisi === 0 && dbUser.oy_gucu === 0) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
@@ -308,7 +302,6 @@ export const AUTH = {
             const phoneInput = getEl('input-phone-number');
             const phoneVal = normalizeTurkishPhone(phoneInput.value);
             
-            // Gizli fonksiyona gönder
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
@@ -330,9 +323,8 @@ export const AUTH = {
         }
     },
 
-    // KUSURSUZ MVP BELGE YÜKLEME (SUPABASE BAĞLANTILI)
+    // GERÇEK PDF OKUYUCU (VERİLERİ TABLOYA İŞLER)
     verifyPdf: async () => {
-        // 1. Giriş Yapılmış Mı?
         if (!STATE.isLoggedIn()) {
             UI.showToast('Lütfen önce sisteme giriş yapın.', 'error');
             return;
@@ -342,68 +334,128 @@ export const AUTH = {
         const btnSubmit = document.getElementById('btn-submit-pdf');
         
         if (!fileInput || !btnSubmit) return;
-
-        // 2. Aynı Anda Çift Çalışmayı Engelleme
         if (btnSubmit.dataset.loading === 'true') return;
 
-        // 3. Dosya Seçilmiş Mi?
         if (!fileInput.files || fileInput.files.length === 0) {
             UI.showToast('Lütfen e-devletten aldığınız PDF belgesini seçin.', 'error');
             return;
         }
         
-        // 4. Dosya PDF Mi?
         if (fileInput.files[0].type !== 'application/pdf') {
             UI.showToast('Sadece PDF formatında belge yükleyebilirsiniz.', 'error');
             return;
         }
 
-        // Butonu Kilitle
         btnSubmit.dataset.loading = 'true';
         const originalText = btnSubmit.innerHTML;
-        btnSubmit.textContent = 'SUPABASE\'E İLETİLİYOR...';
+        btnSubmit.textContent = 'BELGE ANALİZ EDİLİYOR...';
         btnSubmit.disabled = true;
 
         try {
-            // 🔥 SUPABASE'E "MANUEL İNCELEME" SİNYALİ GÖNDERİYORUZ
-            // Mevcut veritabanı fonksiyonunu (RPC) bozmamak için sahte ama geçerli bir paket yolluyoruz.
-            const belgeData = {
-                tc: "GİZLİ",
-                ad_soyad: "MANUEL İNCELEME",
-                baba_adi: "-",
-                anne_adi: "-",
-                dogum_tarihi: "-",
-                uni: "Sistemde",
-                fakulte: "İnceleniyor",
-                bolum: "PDF Yüklendi",
-                diploma_no: "BEKLİYOR",
-                mezun_tarihi: "-",
-                barkod: "MANUEL",
-                durum: "İnceleme Bekliyor"
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+            const typedarray = new Uint8Array(arrayBuffer);
+            
+            const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
+            if (!pdfjsLib) throw new Error("PDF kütüphanesi bulunamadı.");
+            
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            
+            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+            
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                fullText += textContent.items.map(item => item.str).join(' ') + ' ';
+            }
+            
+            // Fazla boşlukları temizle ki arama kolaylaşsın
+            fullText = fullText.replace(/\s+/g, ' ');
+
+            // Esnek Metin Cımbızlayıcı
+            const extract = (text, regex) => {
+                const match = text.match(regex);
+                return match ? match[1].trim() : 'Bulunamadı';
             };
 
+            const tcMatch = extract(fullText, /Kimlik No\s*\|?\s*:\s*([0-9]{11})/i);
+            const maskedTc = tcMatch !== 'Bulunamadı' ? tcMatch.substring(0,3) + '*****' + tcMatch.substring(8) : 'GİZLİ';
+            
+            const adSoyad = extract(fullText, /Adı Soyadı\s*\|?\s*:\s*(.*?)(?=\s*Baba Adı|\s*Ana Adı|\s*Doğum)/i);
+            const babaAdi = extract(fullText, /Baba Adı\s*\|?\s*:\s*(.*?)(?=\s*Anne Adı|\s*Doğum)/i);
+            const anneAdi = extract(fullText, /Anne Adı\s*\|?\s*:\s*(.*?)(?=\s*Doğum Tarihi)/i);
+            const dogumTarihi = extract(fullText, /Doğum Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
+            
+            const programRaw = extract(fullText, /Program\s*\|?\s*:\s*(.*?)(?=\s*Kayıt Tarihi|\s*Diploma No|\s*Mezuniyet)/i);
+            let uni = "Bulunamadı", fakulte = "Bulunamadı", bolum = "Bulunamadı";
+            if (programRaw !== 'Bulunamadı') {
+                const parts = programRaw.split('/');
+                uni = parts[0] ? parts[0].trim() : 'Bulunamadı';
+                fakulte = parts[1] ? parts[1].trim() : 'Bulunamadı';
+                bolum = parts[2] ? parts[2].trim() : 'Bulunamadı';
+            }
+            
+            const diplomaNo = extract(fullText, /Diploma No\s*\|?\s*:\s*(.*?)(?=\s*Diploma Notu|\s*Mezuniyet|\s*Not Ortalaması)/i);
+            const mezunTarihi = extract(fullText, /Mezuniyet Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
+            
+            const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
+            const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
+
+            let durum = 'Öğrenci';
+            if (fullText.toUpperCase().includes('MEZUN') || extract(fullText, /Durum\s*\|?\s*?(.*?)(?=\s|$)/i).toUpperCase().includes('MEZUN')) {
+                durum = 'Mezun';
+            }
+
+            // GÜVENLİ LİYAKAT KONTROLÜ
+            let finalDurum = durum;
+            let oyGucu = '1.0x';
+            let authStage = 'pdf_verified';
+
+            const upperBolum = bolum.toUpperCase();
+            if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
+                // Eğer bölüm İçmimarlık değilse çökmek yerine manuel incelemeye atar
+                finalDurum = 'Reddedildi / Manuel İnceleme Bekliyor';
+                oyGucu = '0.0x'; // Yetki vermiyoruz
+                authStage = 'document_pending';
+            }
+
+            // GERÇEK BİLGİLERİ PAKETLE
+            const belgeData = {
+                tc: maskedTc,
+                ad_soyad: adSoyad,
+                baba_adi: babaAdi,
+                anne_adi: anneAdi,
+                dogum_tarihi: dogumTarihi,
+                uni: uni,
+                fakulte: fakulte,
+                bolum: bolum,
+                diploma_no: diplomaNo,
+                mezun_tarihi: mezunTarihi,
+                barkod: barkod,
+                durum: finalDurum
+            };
+
+            // SUPABASE'E GERÇEK VERİLERİ GÖNDER
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
-            // 5. Durumu Güncelle (Oy gücü 1.0x DEĞİL, sadece bekleme moduna alıyoruz)
-            STATE.updateUser('authStage', 'document_pending');
+            STATE.updateUser('authStage', authStage);
+            if(oyGucu !== '0.0x') STATE.updateUser('votePower', oyGucu);
 
-            // 6. Başarı Mesajı
-            UI.showToast('Belge veritabanına işlendi ve kuyruğa alındı!', 'success');
+            if(oyGucu === '1.0x'){
+                UI.showToast('Liyakat Onaylandı! Oy gücün 1.0x (Tam Yetki) oldu.', 'success');
+            } else {
+                UI.showToast('Belgede İçmimarlık tespit edilemedi, incelenmek üzere kuyruğa alındı.', 'info');
+            }
             
-            // 7. Modalı Kapat
             UI.closeModal('pdf-modal');
-            
-            // 8. Profili Yeniden Çiz
             UI.renderProfile();
-            
-            // 9. Input'u Temizle
             fileInput.value = '';
 
         } catch (error) {
-            console.error("Belge Yükleme Hatası:", error);
-            UI.showToast('Belge Supabase kuyruğuna alınamadı, lütfen tekrar deneyin.', 'error');
+            console.error("Belge Okuma Hatası:", error);
+            UI.showToast('Belge okunamadı. Lütfen orijinal PDF yüklediğinizden emin olun.', 'error');
         } finally {
-            // İşlem bitince butonu aç
             btnSubmit.dataset.loading = 'false';
             btnSubmit.innerHTML = originalText;
             btnSubmit.disabled = false;
