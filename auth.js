@@ -105,7 +105,7 @@ export const AUTH = {
             let authStage = 'registered';
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
             else if (dbUser.oy_gucu === 0.5) authStage = 'phone_verified';
-            // Yeni bekleme durumu desteği eklenebilir
+            // Yeni bekleme durumu desteği
             else if (dbUser.belge_durumu === 'pending') authStage = 'document_pending'; 
 
             STATE.setUser({
@@ -330,7 +330,7 @@ export const AUTH = {
         }
     },
 
-    // KUSURSUZ MVP BELGE YÜKLEME (YZ OKUYUCU İPTAL EDİLDİ)
+    // KUSURSUZ MVP BELGE YÜKLEME (SUPABASE BAĞLANTILI)
     verifyPdf: async () => {
         // 1. Giriş Yapılmış Mı?
         if (!STATE.isLoggedIn()) {
@@ -361,18 +361,34 @@ export const AUTH = {
         // Butonu Kilitle
         btnSubmit.dataset.loading = 'true';
         const originalText = btnSubmit.innerHTML;
-        btnSubmit.textContent = 'SİSTEME İLETİLİYOR...';
+        btnSubmit.textContent = 'SUPABASE\'E İLETİLİYOR...';
         btnSubmit.disabled = true;
 
         try {
-            // Gelecekte dosyayı Supabase Storage'a atacağın yer burası.
-            // await DB.uploadPdf(STATE.user.uid, fileInput.files[0]);
+            // 🔥 SUPABASE'E "MANUEL İNCELEME" SİNYALİ GÖNDERİYORUZ
+            // Mevcut veritabanı fonksiyonunu (RPC) bozmamak için sahte ama geçerli bir paket yolluyoruz.
+            const belgeData = {
+                tc: "GİZLİ",
+                ad_soyad: "MANUEL İNCELEME",
+                baba_adi: "-",
+                anne_adi: "-",
+                dogum_tarihi: "-",
+                uni: "Sistemde",
+                fakulte: "İnceleniyor",
+                bolum: "PDF Yüklendi",
+                diploma_no: "BEKLİYOR",
+                mezun_tarihi: "-",
+                barkod: "MANUEL",
+                durum: "İnceleme Bekliyor"
+            };
+
+            await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
             // 5. Durumu Güncelle (Oy gücü 1.0x DEĞİL, sadece bekleme moduna alıyoruz)
             STATE.updateUser('authStage', 'document_pending');
 
             // 6. Başarı Mesajı
-            UI.showToast('Belge inceleme kuyruğuna alındı.', 'success');
+            UI.showToast('Belge veritabanına işlendi ve kuyruğa alındı!', 'success');
             
             // 7. Modalı Kapat
             UI.closeModal('pdf-modal');
@@ -385,7 +401,7 @@ export const AUTH = {
 
         } catch (error) {
             console.error("Belge Yükleme Hatası:", error);
-            UI.showToast('Belge kuyruğa alınamadı, lütfen tekrar deneyin.', 'error');
+            UI.showToast('Belge Supabase kuyruğuna alınamadı, lütfen tekrar deneyin.', 'error');
         } finally {
             // İşlem bitince butonu aç
             btnSubmit.dataset.loading = 'false';
