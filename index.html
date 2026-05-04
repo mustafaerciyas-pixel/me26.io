@@ -79,7 +79,7 @@
         <button type="button" id="btn-close-mobile-menu" aria-label="Menüyü Kapat" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
-        <!-- Menü linkleri (Manifesto, Kurallar, SSS) kaldırıldı -->
+        <!-- Menü linkleri (Manifesto, Kurallar, SSS) ileri bir tarihe kadar kaldırıldı -->
         <button type="button" id="btn-mobile-nav-action" class="bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer">1 TIKLA KATIL</button>
     </div>
 
@@ -91,7 +91,7 @@
             </a>
             
             <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
-                <!-- Menü linkleri (Manifesto, Kurallar) kaldırıldı -->
+                <!-- Menü linkleri (Manifesto, Kurallar) ileri bir tarihe kadar kaldırıldı -->
                 <button type="button" id="btn-desktop-nav-action" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest relative z-50">
                     1 TIKLA KATIL
                 </button>
@@ -167,7 +167,11 @@
 
             <!-- Ayarlar & Çıkış -->
             <div class="p-6 text-center flex flex-col gap-4 bg-black/40">
-                <button type="button" id="btn-open-pdf-modal" class="hidden w-full bg-slate-800 border border-green-500/50 text-green-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest">📜 Belge Yükle ve Tam Yetkili Ol</button>
+                <!-- TELEFONU DOĞRULA BUTONU (YENİ EKLENDİ) -->
+                <button type="button" id="btn-open-phone-modal" class="w-full bg-slate-800 border border-blue-500/50 text-blue-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📱 Telefonu Doğrula (0.5x Oy Gücü)</button>
+                
+                <button type="button" id="btn-open-pdf-modal" class="hidden w-full bg-slate-800 border border-green-500/50 text-green-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📜 Belge Yükle ve Tam Yetkili Ol</button>
+                
                 <div class="flex justify-between border-t border-slate-700 pt-4">
                     <button type="button" id="btn-logout" class="text-gray-400 hover:text-white text-[10px] font-bold uppercase tracking-widest transition">Çıkış Yap</button>
                     <button type="button" id="btn-delete-account" class="text-red-900 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest underline decoration-red-900 transition">Hesabımı ve Bilgilerimi Sil</button>
