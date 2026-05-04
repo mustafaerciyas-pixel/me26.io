@@ -1,11 +1,12 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   1 Tıkla Giriş + Kademeli Profilleme Sürümü
+   1 Tıkla Giriş + Kademeli Profilleme Sürümü (Şehir Kaydetme Aktif)
    ========================================================================== */
 
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { AUTH } from './auth.js';
+import { DB } from './supabase.js';
 
 // =========================================================================
 // CANLI OYLAMA SANDIĞI (YETKİ FİLTRESİ VE SUPABASE BAĞLANTISI)
@@ -33,10 +34,21 @@ export const Me26VotingSystem = {
         const manifestoGrid = document.getElementById('manifesto-grid');
 
         if (STATE.isLoggedIn()) {
-            if(lockedState) lockedState.style.display = 'none';
-            if(manifestoGrid) {
-                manifestoGrid.classList.remove('hidden');
-                manifestoGrid.classList.add('grid');
+            // Şehir seçilmiş mi kontrolü (Eğer seçilmediyse oylamaları gizle, kilitli ekranı göster)
+            const isCitySelected = STATE.user.city && STATE.user.city !== 'Seçilmedi' && STATE.user.city !== 'Belirsiz';
+
+            if (isCitySelected) {
+                if(lockedState) lockedState.style.display = 'none';
+                if(manifestoGrid) {
+                    manifestoGrid.classList.remove('hidden');
+                    manifestoGrid.classList.add('grid');
+                }
+            } else {
+                if(lockedState) lockedState.style.display = 'flex';
+                if(manifestoGrid) {
+                    manifestoGrid.classList.add('hidden');
+                    manifestoGrid.classList.remove('grid');
+                }
             }
             
             // URL'deki kendi referans kodumuzu profile davet linki olarak ekleyelim
@@ -162,6 +174,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
     bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
     
+    // GÖREV 1: ŞEHİR (TRİBÜN) KAYDETME İŞLEMİ
+    bind('btn-save-profile-city', 'click', async () => {
+        const citySelect = document.getElementById('input-profile-city');
+        const selectedCity = citySelect.value;
+        
+        if (!selectedCity) {
+            UI.showToast('Lütfen listeden bir tribün (şehir) seçin.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-save-profile-city');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '...';
+        btn.disabled = true;
+
+        try {
+            await DB.sehirGuncelle(STATE.user.uid, selectedCity); // Supabase'e yaz
+            STATE.updateUser('city', selectedCity); // Lokal durumu güncelle
+            UI.renderProfile(); // Profil çekmecesini yenile (Görevi gizler)
+            Me26VotingSystem.updateVisibility(); // Sandıkların kilidini açar!
+            
+            UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
+        } catch (error) {
+            UI.showToast('Şehir kaydedilemedi. Bağlantınızı kontrol edin.', 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+
     bind('btn-close-wow', 'click', () => {
         UI.closeModal('wow-modal');
         UI.showView('voting');
