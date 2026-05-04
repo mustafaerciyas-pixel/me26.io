@@ -326,43 +326,54 @@ export const AUTH = {
             UI.showToast('Lütfen e-devletten aldığınız PDF belgesini seçin.', 'error');
             return;
         }
-        if (fileInput.files[0].type !== 'application/pdf') {
-            UI.showToast('Sadece PDF formatında belge yükleyebilirsiniz.', 'error');
-            return;
-        }
         
         const stopLoading = setButtonLoading(btnSubmit, 'SİSTEM BELGEYİ OKUYOR...');
+        UI.showToast('Belge cihazınızda analiz ediliyor...', 'info');
         
         try {
             const file = fileInput.files[0];
-            const arrayBuffer = await file.arrayBuffer();
-            
             const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
-            if (!pdfjsLib) throw new Error("PDF kütüphanesi bulunamadı.");
             
-            // 🔥 KURŞUN GEÇİRMEZ ÇÖZÜM: Firebase COOP/CORS Güvenlik Duvarını Aşmak
-            // Dış kütüphaneyi "metin" olarak indirip yerel bir dosya (Blob) yapıyoruz.
-            // Böylece tarayıcı dışarıdan kod çalıştırdığımızı anlamıyor ve engellemiyor!
-            if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-                UI.showToast('Yapay Zeka motoru indiriliyor...', 'info');
-                const workerReq = await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
-                const workerCode = await workerReq.text();
-                const blob = new Blob([workerCode], { type: 'text/javascript' });
-                pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+            if (!pdfjsLib) {
+                throw new Error("PDF kütüphanesi bulunamadı. Lütfen sayfayı yenileyin.");
             }
             
-            UI.showToast('Belge cihazınızda analiz ediliyor...', 'info');
+            // 🔥 GÜVENLİK DUVARINI TAMAMEN DEVRE DIŞI BIRAK (İŞÇİ YOK!)
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+            pdfjsLib.GlobalWorkerOptions.disableWorker = true;
 
-            const typedarray = new Uint8Array(arrayBuffer);
-            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-            
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                fullText += textContent.items.map(item => item.str).join(' ') + ' ';
-            }
+            // 🔥 SESSİZ DONMAYI ENGELLEYEN 15 SANİYELİK ZAMAN AŞIMI BOMBASI
+            const readPdf = new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function() {
+                    try {
+                        const typedarray = new Uint8Array(this.result);
+                        const loadingTask = pdfjsLib.getDocument(typedarray);
+                        const pdf = await loadingTask.promise;
+                        
+                        let fullText = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const textContent = await page.getTextContent();
+                            fullText += textContent.items.map(item => item.str).join(' ') + ' ';
+                        }
+                        resolve(fullText);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.onerror = () => reject(new Error("Dosya tarayıcıda okunamadı."));
+                reader.readAsArrayBuffer(file);
+            });
 
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Süre doldu! Tarayıcınız işlemi engelliyor.")), 15000)
+            );
+
+            // Hangisi önce biterse (Ya okur, ya da 15 saniye sonra hata fırlatır, ASLA donmaz)
+            const fullText = await Promise.race([readPdf, timeout]);
+
+            // --- AYRIŞTIRMA İŞLEMLERİ ---
             const extract = (text, regex) => {
                 const match = text.match(regex);
                 return match ? match[1].trim() : '';
@@ -374,18 +385,17 @@ export const AUTH = {
             const babaAdi = extract(fullText, /Baba Adı\s*\|?\s*:\s*(.*?)(?=\s*Anne Adı)/i);
             const anneAdi = extract(fullText, /Anne Adı\s*\|?\s*:\s*(.*?)(?=\s*Doğum Tarihi)/i);
             const dogumTarihi = extract(fullText, /Doğum Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
-            
             const program = extract(fullText, /Program\s*\|?\s*:\s*(.*?)(?=\s*Diploma No|\s*Kayıt Tarihi)/i);
             const progParts = program.split('/');
             const uni = progParts[0] ? progParts[0].trim() : 'Bilinmiyor';
             const fakulte = progParts[1] ? progParts[1].trim() : 'Bilinmiyor';
             const bolum = progParts[2] ? progParts[2].trim() : 'Bilinmiyor';
-            
             const diplomaNo = extract(fullText, /Diploma No\s*\|?\s*:\s*(.*?)(?=\s*Diploma Notu|\s*Mezuniyet)/i);
             const mezunTarihi = extract(fullText, /Mezuniyet Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
             const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
+            // LİYAKAT KONTROLÜ
             const upperBolum = bolum.toUpperCase();
             if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
                  UI.showToast('HATA: Belgede "İçmimarlık" liyakatı doğrulanamadı!', 'error');
@@ -414,6 +424,7 @@ export const AUTH = {
                 durum: durum
             };
 
+            // SUPABASE'E GÖNDER
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
             STATE.updateUser('authStage', 'pdf_verified');
@@ -425,8 +436,8 @@ export const AUTH = {
             fileInput.value = '';
 
         } catch (error) {
-            console.error("PDF Okuma hatası:", error);
-            UI.showToast('Belge okunamadı. Lütfen sayfayı yenileyip tekrar deneyin.', 'error');
+            console.error("PDF Okuma Hatası (Ayrıntılı):", error);
+            UI.showToast(`Hata: ${error.message || 'Belge okunamadı.'}`, 'error');
         } finally {
             stopLoading();
         }
