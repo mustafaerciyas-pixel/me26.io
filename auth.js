@@ -45,6 +45,7 @@ const normalizeTurkishPhone = (value) => {
     return phoneVal;
 };
 
+// SMS onayındaki butonlar için loading efekti (Google'da kullanmıyoruz)
 const setButtonLoading = (button, loadingText) => {
     if (!button) return () => {};
     const originalText = button.innerHTML;
@@ -56,7 +57,7 @@ const setButtonLoading = (button, loadingText) => {
     };
 };
 
-// YENİ: Ortak Form Kontrolcüsü (Seçimleri Doğrular)
+// Ortak Form Kontrolcüsü (Seçimleri Doğrular)
 const validateAndGetCommitmentData = () => {
     const cityEl = getEl('input-taahhut-sehir');
     const roleEl = getEl('input-taahhut-rol');
@@ -97,9 +98,10 @@ export const AUTH = {
             return;
         }
 
-        const btn = getEl('btn-google-login');
-        const stopLoading = setButtonLoading(btn, 'GOOGLE BEKLENİYOR...');
-
+        // DİKKAT: Tarayıcının popup engelleyicisine takılmamak için burada
+        // butonu devre dışı bırakmıyoruz (Loading efekti eklemiyoruz).
+        // Kullanıcı tıkladığı an Google penceresi doğrudan açılmalı.
+        
         try {
             const result = await signInWithPopup(firebaseAuth, googleProvider);
             const user = result.user;
@@ -125,9 +127,10 @@ export const AUTH = {
 
         } catch (error) {
             console.error('Google Giriş Hatası:', error);
-            UI.showToast('Google ile giriş iptal edildi veya başarısız oldu.', 'error');
-        } finally {
-            stopLoading();
+            // Kullanıcı pencereyi kendisi kapatırsa hata verme, sessizce dur
+            if (error.code !== 'auth/popup-closed-by-user') {
+                UI.showToast('Google ile giriş başarısız oldu.', 'error');
+            }
         }
     },
 
