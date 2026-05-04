@@ -74,7 +74,6 @@ export const Me26VotingSystem = {
             return;
         }
 
-        // Oy gücünü kontrol et (Örn: "0.0x" ise oy vermesine izin verme)
         const currentPower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
         if (currentPower === 0) {
             UI.showToast('Geçersiz Oy Gücü! Profil panelinden telefonu veya e-devlet belgesini doğrulamalısın.', 'error');
@@ -96,15 +95,12 @@ export const Me26VotingSystem = {
         if (choice === 'yes') btnEl.classList.add('bg-green-900/60', 'border-green-500', 'text-green-400');
         else if (choice === 'abstain') btnEl.classList.add('bg-yellow-900/60', 'border-yellow-500', 'text-yellow-400');
         else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
-
-        // İleride buraya: await DB.insertVote(poll_id, user_id, choice, currentPower) eklenecek
         
         this.animateResults(container.parentElement, choice, currentPower);
         UI.showToast(`Oyunuz blokzincire başarıyla işlendi! (Güç: ${currentPower}x)`, 'success');
     },
 
     animateResults: function(cardEl, userChoice, votePower) {
-        // Şu anki veritabanı simülasyonu (Gerçek veri gelene kadar rastgele hareket ettirir)
         let baseYes = Math.floor(Math.random() * 40) + 20; 
         let baseAbstain = Math.floor(Math.random() * 10) + 5;
         let baseNo = 100 - (baseYes + baseAbstain);
@@ -143,7 +139,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     Me26VotingSystem.init();
 
-    // 1. ADIM: SAYFA YÜKLENİR YÜKLENMEZ TÜM BUTONLARI ANINDA AKTİF ET!
     const bind = (id, event, fn) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, fn);
@@ -167,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
     bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
 
-    // TAAHHÜT MODALI (İleri - Geri İşlemleri)
+    // TAAHHÜT MODALI 
     bind('btn-close-taahhut-modal', 'click', () => UI.closeModal('taahhut-modal'));
     
     bind('btn-taahhut-next', 'click', () => {
@@ -195,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         UI.toggleProfileDrawer(true); 
     });
 
-    // PAYLAŞIM VE LİNK KOPYALAMA İŞLEMLERİ
+    // PAYLAŞIM VE LİNK KOPYALAMA
     const copyLinkToClipboard = async () => {
         const inviteLinkEl = document.getElementById('ui-invite-link');
         const link = inviteLinkEl ? inviteLinkEl.textContent : 'https://me26.org';
@@ -218,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.open(`https://wa.me/?text=Sadece İçmimarların Girebildiği Dijital Stadyuma Katıl: ${link}`, '_blank');
     });
 
-    // VIP KURUCU MODALI (Eklenen Kablolar)
+    // VIP KURUCU MODALI 
     bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
     bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
 
@@ -228,11 +223,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-submit-phone', 'click', AUTH.verifyPhone);
     bind('btn-verify-otp', 'click', AUTH.verifyOtp);
 
-    // BELGE (PDF) İŞLEMLERİ (Yapay Zeka Tetiği)
-    bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
-    bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
-    bind('btn-submit-pdf', 'click', AUTH.verifyPdf);
-
     // FİKİR (ÖNERGE) MODALI
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
     bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
@@ -241,7 +231,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-logout', 'click', AUTH.logout);
     bind('btn-delete-account', 'click', AUTH.deleteAccount);
 
-    // 2. ADIM: BUTONLARI AKTİF ETTİKTEN SONRA ARKAPLANDA FIREBASE'İ KONTROL ET
+    // KUSURSUZ BELGE (PDF) BAĞLANTISI (Çift Çalışmayı Önleyen Klonlama Yöntemi)
+    bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
+    bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
+    
+    const btnSubmitPdf = document.getElementById('btn-submit-pdf');
+    if (btnSubmitPdf) {
+        const newBtn = btnSubmitPdf.cloneNode(true);
+        btnSubmitPdf.parentNode.replaceChild(newBtn, btnSubmitPdf);
+        newBtn.addEventListener('click', AUTH.verifyPdf);
+    }
+
+    // YÖNLENDİRME VE GÖRÜNÜM KONTROLÜ
     const isRedirect = await AUTH.checkRedirect();
     
     if (!isRedirect) {
@@ -254,17 +255,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         Me26VotingSystem.updateVisibility();
     }
 });
-// KURSUN GEÇİRMEZ BUTON TETİKLEYİCİSİ (Kablo kopmalarını önler)
-document.addEventListener('click', (e) => {
-    const pdfBtn = e.target.closest('#btn-submit-pdf');
-    if (pdfBtn) {
-        e.preventDefault();
-        AUTH.verifyPdf();
-    }
-});
-
-// Arkada gereksiz çalışan Recaptcha'nın çökmesini engelleyen yama
-const rc = document.getElementById('recaptcha-container');
-if (rc && !rc.getAttribute('style')) {
-    rc.setAttribute('style', 'display:none;');
-}
