@@ -1,6 +1,5 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Google (Redirect) + SMS Entegrasyonlu Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -57,7 +56,6 @@ const setButtonLoading = (button, loadingText) => {
     };
 };
 
-// Form verilerini okuma (Doğrulama işlemini artık app.js'de "Devam Et" butonu yapıyor)
 const getCommitmentData = () => {
     const cityEl = getEl('input-taahhut-sehir');
     const roleEl = getEl('input-taahhut-rol');
@@ -105,10 +103,13 @@ export const AUTH = {
                 UI.showView('voting');
                 UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
                 UI.openModal('wow-modal');
+                
+                return true; // Başarılı dönüş bildirimi
             }
+            return false; // Bekleyen bir giriş yok
         } catch (error) {
             console.error('Yönlendirme hatası:', error);
-            UI.showToast('Google ile giriş tamamlanamadı.', 'error');
+            return false;
         }
     },
 
@@ -120,7 +121,6 @@ export const AUTH = {
             return;
         }
         
-        // YENİ: Modal her açıldığında Adım 1'den başlasın
         const step1 = getEl('taahhut-step-1');
         const step2 = getEl('taahhut-step-2');
         if(step1) step1.classList.remove('hidden');
