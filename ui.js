@@ -150,40 +150,58 @@ export const UI = {
         }
 
         // =========================================================
-        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI (DÜZELTİLEN KISIM)
+        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI
         // =========================================================
         const btnPhone = document.getElementById('btn-open-phone-modal');
         const btnPdf = document.getElementById('btn-open-pdf-modal');
 
-        // Önce ekranda kalmış olabilecek eski "Bekliyor" uyarılarını temizleyelim
-        const existingAlert = document.getElementById('ui-pending-alert');
-        if (existingAlert) existingAlert.remove();
+        // Önce ekranda kalmış olabilecek dinamik uyarıları temizleyelim
+        document.getElementById('ui-pending-alert')?.remove();
+        document.getElementById('ui-phone-success-alert')?.remove();
 
-        // 1. DURUM: Belge yüklendi, Yönetici onayı bekliyor
+        // 1. Yeşil "Telefon Doğrulandı" uyarı kutusunu üreten fonksiyon
+        const insertPhoneSuccessAlert = (referenceElement) => {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'ui-phone-success-alert';
+            alertDiv.className = 'w-full bg-green-900/20 border border-green-700/50 text-green-400 text-[10px] md:text-xs text-center py-2 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2';
+            alertDiv.innerHTML = '<span>✅</span> TELEFON DOĞRULANDI';
+            referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
+        };
+
+        // 2. Sarı "Belge Bekliyor" uyarı kutusunu üreten fonksiyon
+        const insertPendingAlert = (referenceElement) => {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'ui-pending-alert';
+            alertDiv.className = 'w-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[10px] md:text-xs text-center py-3 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2';
+            alertDiv.innerHTML = '<span>⏳</span> BELGENİZ YÖNETİCİ ONAYINDA BEKLİYOR';
+            referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
+        };
+
+        // DURUM 1: Belge yüklendi, Yönetici onayı bekliyor
         if (user.authStage === 'document_pending') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
             
-            // Butonların olduğu alana dinamik bir "Bekliyor" tabelası asıyoruz
+            // Butonların olduğu alana önce yeşil sonra sarı tabelayı asıyoruz
             if (btnPhone && btnPhone.parentElement) {
-                const alertDiv = document.createElement('div');
-                alertDiv.id = 'ui-pending-alert';
-                alertDiv.className = 'w-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[10px] md:text-xs text-center py-3 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mt-2';
-                alertDiv.innerHTML = '<span>⏳</span> BELGENİZ YÖNETİCİ ONAYINDA BEKLİYOR';
-                btnPhone.parentElement.insertBefore(alertDiv, btnPhone);
+                insertPhoneSuccessAlert(btnPhone);
+                insertPendingAlert(btnPhone);
             }
         } 
-        // 2. DURUM: Her şey tam, VIP veya PDF onaylandı
+        // DURUM 2: Her şey tam, VIP veya PDF onaylandı (Butonlara gerek yok)
         else if (user.authStage === 'pdf_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
         } 
-        // 3. DURUM: Sadece telefon onaylı, PDF yüklemesi bekleniyor
+        // DURUM 3: Sadece telefon onaylı, PDF yüklemesi bekleniyor
         else if (user.authStage === 'phone_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
-            if (btnPdf) btnPdf.classList.remove('hidden');
+            if (btnPdf) {
+                btnPdf.classList.remove('hidden');
+                insertPhoneSuccessAlert(btnPdf); // PDF butonunun hemen üstüne yeşil tik gelsin
+            }
         } 
-        // 4. DURUM: Sadece kayıt oldu, telefon onayı bekleniyor
+        // DURUM 4: Sadece kayıt oldu, telefon onayı bekleniyor
         else {
             if (btnPhone) btnPhone.classList.remove('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
