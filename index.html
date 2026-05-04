@@ -64,6 +64,10 @@
         <div class="flex flex-col gap-5 w-full px-10 mt-8">
             <button type="button" id="btn-register-mobile" class="w-full bg-kaos text-slate-900 px-8 py-4 rounded-xl text-xl font-black uppercase tracking-widest shadow-kaos cursor-pointer">KAYIT OL</button>
             <button type="button" id="btn-login-mobile" class="w-full bg-slate-800 text-white border border-slate-600 px-8 py-4 rounded-xl text-xl font-black uppercase tracking-widest shadow-md cursor-pointer">GİRİŞ YAP</button>
+            
+            <button type="button" id="btn-profile-mobile" class="hidden w-full bg-kaos text-slate-900 px-8 py-4 rounded-xl text-xl font-black uppercase tracking-widest shadow-kaos cursor-pointer">
+                <i class="fas fa-user-circle mr-2"></i> KONTROL PANELİ
+            </button>
         </div>
     </div>
 
@@ -79,6 +83,10 @@
                 </button>
                 <button type="button" id="btn-login-nav" class="bg-slate-800 text-white border border-slate-600 px-5 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition cursor-pointer tracking-widest relative z-50 shadow-md">
                     GİRİŞ YAP
+                </button>
+
+                <button type="button" id="btn-profile-nav" class="hidden bg-kaos text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer tracking-widest relative z-50">
+                    <i class="fas fa-user-circle mr-1"></i> KONTROL PANELİ
                 </button>
             </div>
             <button type="button" id="btn-open-mobile-menu" aria-label="Mobil Menüyü Aç" class="md:hidden text-white hover:text-kaos outline-none">
@@ -149,7 +157,7 @@
                 </button>
             </div>
 
-            <!-- YENİ: GÖREV 1 ŞEHİR SEÇİMİ (ui.js Tarafından Gösterilip/Gizlenecek) -->
+            <!-- GÖREV 1: ŞEHİR SEÇİMİ -->
             <div id="ui-city-selector-container" class="p-6 border-b border-slate-700 bg-yellow-500/5 hidden">
                 <div class="text-[11px] text-yellow-500 font-black uppercase tracking-widest mb-3 flex items-center gap-2"><span>📌</span> GÖREV 1: TRİBÜNÜNÜ SEÇ</div>
                 <p class="text-[10px] text-gray-400 mb-4 leading-relaxed font-medium">Sandıkları görmek ve mesleki gücünü aktifleştirmek için bulunduğun şehri seçmelisin.</p>
@@ -408,7 +416,6 @@
     </div>
 
     <!-- ================= GİZLİ PENCERELER (MODALLAR) ================= -->
-    <!-- (Taahhüt Modalı Tamamen Silinmiştir) -->
 
     <!-- 2. Tebrikler Modalı (İlk Giriş) -->
     <div id="wow-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4 hidden">
