@@ -254,3 +254,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         Me26VotingSystem.updateVisibility();
     }
 });
+// KURSUN GEÇİRMEZ BUTON TETİKLEYİCİSİ (Kablo kopmalarını önler)
+document.addEventListener('click', (e) => {
+    const pdfBtn = e.target.closest('#btn-submit-pdf');
+    if (pdfBtn) {
+        e.preventDefault();
+        AUTH.verifyPdf();
+    }
+});
+
+// Arkada gereksiz çalışan Recaptcha'nın çökmesini engelleyen yama
+const rc = document.getElementById('recaptcha-container');
+if (rc && !rc.getAttribute('style')) {
+    rc.setAttribute('style', 'display:none;');
+}
