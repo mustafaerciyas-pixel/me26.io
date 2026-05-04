@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   1 Tıkla Giriş + Kademeli Profilleme Sürümü (Şehir Kaydetme Aktif)
+   1 Tıkla Giriş + Kademeli Profilleme + Sinyal Alıcısı Aktif
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -8,9 +8,6 @@ import { UI } from './ui.js';
 import { AUTH } from './auth.js';
 import { DB } from './supabase.js';
 
-// =========================================================================
-// CANLI OYLAMA SANDIĞI (YETKİ FİLTRESİ VE SUPABASE BAĞLANTISI)
-// =========================================================================
 export const Me26VotingSystem = {
     init: function() {
         document.querySelectorAll('.vote-btn').forEach(btn => {
@@ -33,7 +30,6 @@ export const Me26VotingSystem = {
         const lockedState = document.getElementById('locked-state');
         const manifestoGrid = document.getElementById('manifesto-grid');
 
-        // Menü Butonlarını Seçiyoruz
         const navReg = document.getElementById('btn-register-nav');
         const navLog = document.getElementById('btn-login-nav');
         const navProf = document.getElementById('btn-profile-nav');
@@ -43,7 +39,6 @@ export const Me26VotingSystem = {
         const mobProf = document.getElementById('btn-profile-mobile');
 
         if (STATE.isLoggedIn()) {
-            // Şehir seçilmiş mi kontrolü
             const isCitySelected = STATE.user.city && STATE.user.city !== 'Seçilmedi' && STATE.user.city !== 'Belirsiz';
 
             if (isCitySelected) {
@@ -65,7 +60,6 @@ export const Me26VotingSystem = {
                 inviteLinkEl.textContent = `https://me26.org/katil?ref=${STATE.user.davetKodu}`;
             }
 
-            // GİRİŞ YAPILDI: Menüdeki Kayıt/Giriş butonlarını GİZLE, Kontrol Panelini GÖSTER
             if(navReg) navReg.classList.add('hidden');
             if(navLog) navLog.classList.add('hidden');
             if(navProf) navProf.classList.remove('hidden');
@@ -81,7 +75,6 @@ export const Me26VotingSystem = {
                 manifestoGrid.classList.remove('grid');
             }
 
-            // ÇIKIŞ YAPILDI: Kontrol Panelini GİZLE, Kayıt/Giriş butonlarını GÖSTER
             if(navReg) navReg.classList.remove('hidden');
             if(navLog) navLog.classList.remove('hidden');
             if(navProf) navProf.classList.add('hidden');
@@ -119,7 +112,6 @@ export const Me26VotingSystem = {
 
         const choice = btnEl.getAttribute('data-vote');
         
-        // GÖRSEL (UI) KİLİTLEME VE RENKLENDİRME
         const allButtons = container.querySelectorAll('.vote-btn');
         allButtons.forEach(b => {
             b.disabled = true;
@@ -169,21 +161,20 @@ export const Me26VotingSystem = {
     }
 };
 
-// =========================================================================
-// EVENT LISTENER'LAR (ŞALTER KUTUSU)
-// =========================================================================
 document.addEventListener('DOMContentLoaded', async () => {
     
     Me26VotingSystem.init();
+
+    // SİNYAL ALICISI EKLENDİ (Kısa Devreyi Çözen Sistem)
+    window.addEventListener('auth_changed', () => {
+        Me26VotingSystem.updateVisibility();
+    });
 
     const bind = (id, event, fn) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, fn);
     };
 
-    // ---------------------------------------------------------
-    // TÜM TURNİKELER TEK TIKLA GOOGLE'A BAĞLANDI (FORMSUZ GİRİŞ)
-    // ---------------------------------------------------------
     const loginButtons = [
         'btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile',
         'btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'
@@ -194,7 +185,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btn) btn.onclick = AUTH.loginWithGoogle;
     });
 
-    // KONTROL PANELİ BUTONLARI -> Profil Çekmecesini Açar
     ['btn-profile-nav', 'btn-profile-mobile'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.onclick = () => {
@@ -202,13 +192,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             UI.toggleProfileDrawer(true);
         };
     });
-    // ---------------------------------------------------------
 
     bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
     bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
     
-    // GÖREV 1: ŞEHİR (TRİBÜN) KAYDETME İŞLEMİ
     bind('btn-save-profile-city', 'click', async () => {
         const citySelect = document.getElementById('input-profile-city');
         const selectedCity = citySelect.value;
@@ -244,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         UI.toggleProfileDrawer(true); 
     });
 
-    // PAYLAŞIM VE LİNK KOPYALAMA
     const copyLinkToClipboard = async () => {
         const inviteLinkEl = document.getElementById('ui-invite-link');
         const link = inviteLinkEl ? inviteLinkEl.textContent : 'https://me26.org';
@@ -267,25 +254,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.open(`https://wa.me/?text=Sadece İçmimarların Girebildiği Dijital Stadyuma Katıl: ${link}`, '_blank');
     });
 
-    // VIP KURUCU MODALI 
     bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
     bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
 
-    // TELEFON VE SMS MODALI
     bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
     bind('btn-submit-phone', 'click', AUTH.verifyPhone);
     bind('btn-verify-otp', 'click', AUTH.verifyOtp);
 
-    // FİKİR (ÖNERGE) MODALI
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
     bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
 
-    // ÇIKIŞ VE SİLME
     bind('btn-logout', 'click', AUTH.logout);
     bind('btn-delete-account', 'click', AUTH.deleteAccount);
 
-    // KUSURSUZ BELGE (PDF) BAĞLANTISI
     bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
     bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
     
@@ -296,7 +278,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         newBtn.addEventListener('click', AUTH.verifyPdf);
     }
 
-    // YÖNLENDİRME VE GÖRÜNÜM KONTROLÜ
     const isRedirect = await AUTH.checkRedirect();
     
     if (!isRedirect) {
