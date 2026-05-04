@@ -67,7 +67,7 @@
             </a>
             <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
                 <button type="button" id="btn-desktop-nav-action" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest relative z-50">
-                    1 TIKLA KATIL
+                    KONTROL PANELİ (GİRİŞ)
                 </button>
             </div>
             <button type="button" id="btn-open-mobile-menu" aria-label="Mobil Menüyü Aç" class="md:hidden text-white hover:text-kaos outline-none">
@@ -111,7 +111,7 @@
                     </div>
                 </div>
                 <button type="button" id="btn-share-id-card" class="w-full relative z-10 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-[11px] font-bold py-3 rounded-lg transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
-                    KİMLİĞİMİ PAYLAŞ (HİKAYE)
+                    <i class="fab fa-instagram text-lg"></i> KİMLİĞİMİ PAYLAŞ (HİKAYE)
                 </button>
             </div>
 
@@ -125,13 +125,13 @@
                     <div id="ui-vip-progress-bar" class="bg-kaos h-full rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between items-center mb-4 text-[10px] text-gray-300 font-bold uppercase tracking-widest">
-                    <span>Durum</span><span id="ui-vip-invite-count" class="text-kaos">0 / 3 Paylaşım</span>
+                    <span>Durum</span><span id="ui-vip-invite-count" class="text-kaos">0 / 3 Katılım</span>
                 </div>
-                <p class="text-[10px] text-gray-400 mb-3 font-medium leading-relaxed">3 paylaşım yap, VIP Kurucu Numaranı seç.</p>
-                <div class="bg-black border border-slate-600 p-3 rounded-lg text-kaos font-mono text-xs text-center select-all mb-3 cursor-pointer" id="ui-invite-link">https://me26.org/katil</div>
+                <p class="text-[10px] text-gray-400 mb-3 font-medium leading-relaxed">Senin davet kodunla 3 kişi sisteme katıldığında, VIP Kurucu Numaranı seçebilirsin.</p>
+                <div class="bg-black border border-slate-600 p-3 rounded-lg text-kaos font-mono text-xs text-center select-all mb-3 cursor-pointer" id="ui-invite-link">https://me26.org/katil?ref=TR-IA-BEKLEYEN</div>
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <button type="button" id="btn-copy-invite" class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 rounded transition uppercase tracking-widest shadow-md">Kopyala</button>
-                    <button type="button" id="btn-whatsapp-share" class="bg-green-600 hover:bg-green-500 text-white text-[10px] font-bold py-3 rounded transition uppercase tracking-widest shadow-md">WhatsApp</button>
+                    <button type="button" id="btn-copy-invite" class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 rounded transition uppercase tracking-widest shadow-md">Kodu Kopyala</button>
+                    <button type="button" id="btn-whatsapp-share" class="bg-green-600 hover:bg-green-500 text-white text-[10px] font-bold py-3 rounded transition uppercase tracking-widest shadow-md"><i class="fab fa-whatsapp text-sm mr-1"></i> WhatsApp</button>
                 </div>
                 <button type="button" id="btn-open-vip-modal" class="w-full bg-slate-800 border border-kaos/50 hover:border-kaos hover:text-white text-gray-300 text-[11px] font-bold py-3 rounded-lg transition uppercase tracking-widest shadow-md group">
                     🔒 <span class="group-hover:text-kaos transition">SEÇİM EKRANINI AÇ</span>
@@ -140,7 +140,7 @@
 
             <div class="p-6 text-center flex flex-col gap-4 bg-black/40">
                 <button type="button" id="btn-open-phone-modal" class="w-full bg-slate-800 border border-blue-500/50 text-blue-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📱 Telefonu Doğrula (0.5x Oy Gücü)</button>
-                <button type="button" id="btn-open-pdf-modal" class="hidden w-full bg-slate-800 border border-green-500/50 text-green-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📜 Belge Yükle ve Tam Yetkili Ol</button>
+                <button type="button" id="btn-open-pdf-modal" class="w-full bg-slate-800 border border-green-500/50 text-green-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📜 E-Devlet Yükle (1.0x Tam Yetki)</button>
                 
                 <div class="flex justify-between border-t border-slate-700 pt-4">
                     <button type="button" id="btn-logout" class="text-gray-400 hover:text-white text-[10px] font-bold uppercase tracking-widest transition">Çıkış Yap</button>
@@ -157,8 +157,13 @@
                 <span>🏟️ ANKARA TRİBÜNÜ AÇILIYOR</span>
                 <span>🏟️ İSTANBUL TRİBÜNÜ AÇILIYOR</span>
                 <span>🏟️ İZMİR TRİBÜNÜ AÇILIYOR</span>
+                <span>🏟️ DİYARBAKIR TRİBÜNÜ AÇILIYOR</span>
+                <span>🏟️ MERSİN TRİBÜNÜ AÇILIYOR</span>
+                <span>🏟️ KONYA TRİBÜNÜ AÇILIYOR</span>
+                <span>🏟️ SAMSUN TRİBÜNÜ AÇILIYOR</span>
+                <span>🏟️ TRABZON TRİBÜNÜ AÇILIYOR</span>
                 <span>🏟️ ANTALYA TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ BURSA TRİBÜNÜ AÇILIYOR</span>
+                <span>🏟️ KOCAELİ TRİBÜNÜ AÇILIYOR</span>
                 <span class="text-white">⚡ ŞEHRİNDEKİ İÇMİMARLARI VE İÇMİMARLIK ÖĞRENCİLERİNİ TRİBÜNE ÇAĞIR!</span>
             </div>
         </div>
@@ -209,7 +214,7 @@
                     1 TIKLA KATIL
                 </button>
                 <p class="text-[11px] text-gray-400 font-medium tracking-widest mt-5 uppercase">
-                    İçmimar veya İçmimarlık Öğrencisiysen, tek tıkla sisteme gir.
+                    Sadece İçmimar veya İçmimarlık Öğrencisiysen, tek tıkla sisteme gir.
                 </p>
             </div>
         </main>
@@ -221,13 +226,13 @@
         </div>
     </div>
 
-    <!-- ================= İÇERİSİ (VOTING VIEW) ================= -->
+    <!-- ================= İÇERİSİ (VOTING VIEW - 3 CANLI OYLAMA) ================= -->
     <div id="voting-view" class="flex-grow w-full max-w-5xl mx-auto flex-col p-4 md:p-8 z-10 mt-6 mb-20 relative hidden">
         
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl overflow-hidden mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="p-8 md:p-12 text-center border-b border-slate-700 bg-black/40">
-                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest"><span class="text-kaos">ORTAK AKIL</span> SANDIĞI</h2>
-                <p class="text-gray-400 text-sm mt-4 tracking-wide">Oylamalar 25 Mayıs 2026'da bitecek ve çıkan kararlar hemen uygulanacak.</p>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest"><span class="text-kaos">CANLI</span> OYLAMALAR</h2>
+                <p class="text-gray-400 text-sm mt-4 tracking-wide">Aşağıdaki oylamalara katılabilmek için Profil panelinden kimliğini ve oy gücünü güncellemelisin.</p>
             </div>
             
             <div class="p-6 md:p-10 space-y-10 bg-slate-800/20" id="polls-container">
@@ -255,176 +260,97 @@
                     <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center border border-slate-700 mb-6 shadow-[0_0_20px_rgba(0,0,0,0.8)] z-10">
                         <i class="fas fa-lock text-3xl text-slate-400"></i>
                     </div>
-                    <h2 class="text-2xl md:text-3xl font-black text-white mb-3 z-10 tracking-widest uppercase">Gizli Senato Dosyaları</h2>
+                    <h2 class="text-2xl md:text-3xl font-black text-white mb-3 z-10 tracking-widest uppercase">Sandıklar Kilitli</h2>
                     <p class="text-gray-400 text-sm md:text-base max-w-lg mx-auto mb-8 z-10 font-medium leading-relaxed">
-                        Me26 Ortak Akıl Sandığı'ndaki önergeleri okumak, mesleğin geleceğini belirleyecek oylamalara katılmak ve tartışmaları görmek için onaylı bir <span class="text-kaos font-bold">Me26 ID</span>'sine sahip olmalısınız.
+                        Me26 Ortak Akıl Sandığı'ndaki canlı oylamaları görmek ve mesleğin geleceğini belirleyecek kararlara katılmak için kayıt işlemini tamamlamalısınız.
                     </p>
                     <button type="button" id="btn-unlock-manifesto" class="bg-kaos text-slate-900 hover:opacity-90 font-black py-4 px-8 rounded-xl transition-all z-10 uppercase tracking-widest text-sm shadow-kaos">
-                        Kimliğini Doğrula ve ID Al
+                        Kimliğini Doğrula ve Sandıkları Aç
                     </button>
                 </div>
 
-                <!-- MANİFESTO KARTLARI -->
-                <div id="manifesto-grid" class="hidden grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 3 GERÇEK CANLI OYLAMA (SADECE GİRİŞ YAPANLAR GÖRÜR) -->
+                <div id="manifesto-grid" class="hidden grid-cols-1 gap-8">
                     
-                    <!-- Madde 1 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #01</span>
-                            <span class="text-[10px] bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlar</span>
+                    <!-- Canlı Oylama 1 (GENEL) -->
+                    <div class="bg-black/50 border border-blue-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-blue-400 transition-colors shadow-lg">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
+                            <span class="text-xs font-black text-blue-900 bg-blue-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-900 animate-pulse"></span> CANLI OYLAMA #1</span>
+                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama (Öğrenci + İçmimar)</span>
                         </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Tabela ve Unvan Kirliliği (%51 Şartı)</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Yönetmeliklere uygun olarak; şirket hisselerinin en az %51'i bir İçmimara ait olmayan hiçbir firmanın, mobilyacının veya müteahhidin ticari olarak İçmimarlık unvanı ve tabelası kullanmasına izin verilmemelidir.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="icmimar">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
+                        <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Zorunlu Meslek Odası Aidatları Kaldırılsın Mı?</h3>
+                        <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">İçmimarlar Odası'nın her yıl zorunlu olarak tahsil ettiği ve icraya kadar giden yıllık aidat sisteminin iptal edilmesi ve odanın sadece gönüllü bağış/hizmet bedeli ile işlemesi yönünde yasal kampanya başlatılsın mı?</p>
+                        
+                        <!-- YETKİ: all -->
+                        <div class="flex gap-3 vote-buttons-container" data-auth="all">
+                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">EVET, KALDIRILSIN</button>
+                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition shadow-md">HAYIR, KALSIN</button>
                         </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
+                        <div class="w-full mt-6 vote-results-bar">
+                            <div class="flex justify-between text-xs text-gray-400 mb-2 px-1 font-black tracking-wider">
+                                <span class="text-green-400 vote-text-yes">%0</span>
+                                <span class="text-red-400 vote-text-no">%0</span>
+                            </div>
+                            <div class="h-2 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner">
+                                <div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#22c55e]"></div>
+                                <div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#ef4444]"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Madde 2 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #02</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama</span>
+                    <!-- Canlı Oylama 2 (SADECE İÇMİMARLAR) -->
+                    <div class="bg-black/50 border border-red-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-red-400 transition-colors shadow-lg">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
+                            <span class="text-xs font-black text-red-900 bg-red-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-900 animate-pulse"></span> CANLI OYLAMA #2</span>
+                            <span class="text-[10px] bg-red-900/50 text-red-400 border border-red-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlar (Öğrenci Oylayamaz)</span>
                         </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Sahte İçmimar Avı</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Üniversitede içmimarlık okumadığı halde insanları kandıranları bulup anında mahkemeye verecek özel bir 'Hukuki Müdahale Timi' kurulmalıdır.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="all">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
+                        <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Proje Asgari Bedelleri Enflasyona Endekslensin Mi?</h3>
+                        <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Sektördeki fiyat kırma (damping) sorununu çözmek için; tasarım ve metrekare bazlı asgari proje bedellerinin her ay otomatik olarak TÜİK/ENAG enflasyon oranına bağlanarak dijital bir algoritmayla belirlenmesini onaylıyor musunuz?</p>
+                        
+                        <!-- YETKİ: icmimar -->
+                        <div class="flex gap-3 vote-buttons-container" data-auth="icmimar">
+                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">ONAYLIYORUM</button>
+                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition shadow-md">KARARSIZIM</button>
+                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition shadow-md">REDDEDİYORUM</button>
                         </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
+                        <div class="w-full mt-6 vote-results-bar">
+                            <div class="flex justify-between text-xs text-gray-400 mb-2 px-1 font-black tracking-wider">
+                                <span class="text-green-400 vote-text-yes">%0</span>
+                                <span class="text-yellow-400 vote-text-abstain">%0</span>
+                                <span class="text-red-400 vote-text-no">%0</span>
+                            </div>
+                            <div class="h-2 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner">
+                                <div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#22c55e]"></div>
+                                <div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#eab308]"></div>
+                                <div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#ef4444]"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Madde 3 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #03</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama</span>
+                    <!-- Canlı Oylama 3 (SADECE ÖĞRENCİLER) -->
+                    <div class="bg-black/50 border border-green-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-green-400 transition-colors shadow-lg">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
+                            <span class="text-xs font-black text-green-900 bg-green-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-900 animate-pulse"></span> CANLI OYLAMA #3</span>
+                            <span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider"><i class="fas fa-lock mr-1"></i>Sadece Öğrenciler (İçmimarlar Oylayamaz)</span>
                         </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Dijital Yönetim (DAO Sistemi)</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Kritik kararlar kapalı kapılar ardında değil; tüm üyelerin bulundukları şehirden, şeffaf ve eşit oy hakkıyla katılabildiği 'DAO' altyapısıyla alınmalıdır.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="all">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
+                        <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Zorunlu Şantiye Stajı Süresi Uzatılsın Mı?</h3>
+                        <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Öğrencilerin mezun olduktan sonra sahada sudan çıkmış balığa dönmemesi için, üniversitelerdeki mevcut zorunlu "Şantiye Stajı" süresinin (genelde 20-30 gün) en az 60 iş gününe çıkarılmasını ve sigortanın devlet tarafından ödenmesini talep ediyor musunuz?</p>
+                        
+                        <!-- YETKİ: ogrenci -->
+                        <div class="flex gap-3 vote-buttons-container" data-auth="ogrenci">
+                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">EVET, UZATILSIN</button>
+                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition shadow-md">HAYIR, GEREK YOK</button>
                         </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
-                    </div>
-
-                    <!-- Madde 4 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #04</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama</span>
+                        <div class="w-full mt-6 vote-results-bar">
+                            <div class="flex justify-between text-xs text-gray-400 mb-2 px-1 font-black tracking-wider">
+                                <span class="text-green-400 vote-text-yes">%0</span>
+                                <span class="text-red-400 vote-text-no">%0</span>
+                            </div>
+                            <div class="h-2 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner">
+                                <div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#22c55e]"></div>
+                                <div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#ef4444]"></div>
+                            </div>
                         </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Yeni Mezun İstihdamı (Kota)</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Sektörde çığ gibi büyüyen genç işsizliğini kırmak için; kamu projelerinde ve büyük şantiyelerde 'Yeni Mezun İçmimar İstihdam Kotası' yasal bir kural olmalıdır.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="all">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
-                        </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
-                    </div>
-
-                    <!-- Madde 5 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #05</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama</span>
-                        </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Öğrenci-Usta Eşleşmesi</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Her içmimarlık öğrencisine üniversiteye adım attığı an sektörü öğretecek tecrübeli bir İçmimar mentör olarak atanmalıdır.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="all">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
-                        </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
-                    </div>
-
-                    <!-- Madde 6 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #06</span>
-                            <span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-lock mr-1"></i>Sadece Öğrenciler</span>
-                        </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Doğru Stajyer Eğitimi</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Öğrenciler stajlarını diğer meslek gruplarının değil, işi gerçekten çok iyi bilen sadece yetkin bir İçmimarın yanında yapabilmelidir.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="ogrenci">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
-                        </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
-                    </div>
-
-                    <!-- Madde 7 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #07</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama</span>
-                        </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Küresel Unvan Standartı</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Üniversitelerin İngilizce sayfalarında mesleğimizin 'Interior Design' olarak basitleştirilmesi yasaklanmalı; YÖK nezdinde akademik unvan 'Interior Architecture' olarak kesinleştirilmelidir.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="all">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
-                        </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
-                    </div>
-
-                    <!-- Madde 8 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #08</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama</span>
-                        </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Dünyadaki Doğru Adımız</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Bizim eğitimimiz mimari tabanlı olduğu için yabancı dilde hakkımız olan 'Interior Architecture' adını kullanalım ki dünyadaki diğer içmimarlarla aynı seviyede tanınabilelim.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="all">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
-                        </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
-                    </div>
-
-                    <!-- Madde 9 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #09</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama</span>
-                        </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">İçmimar Kelimesinin Yazılışı</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Mesleğimizin adı her zaman bitişik yazılır: İçmimar. Bunu 'iç mimar' diye yazan kurumları tespit ederek doğrusunun kullanımı için kurumsal bir uyarı mekanizması işletilmelidir.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="all">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
-                        </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
-                    </div>
-
-                    <!-- Madde 10 -->
-                    <div class="bg-black/50 border border-slate-700 p-5 rounded-2xl relative overflow-hidden hover:border-slate-500 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-black text-slate-900 bg-slate-400 px-2 py-1 rounded uppercase tracking-wider">Madde #10</span>
-                            <span class="text-[10px] bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded font-bold uppercase tracking-wider"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlar</span>
-                        </div>
-                        <h3 class="text-base font-black text-white mb-2 leading-tight">Mesleki Sınırların Korunması</h3>
-                        <p class="text-sm text-gray-400 mb-5 h-20 overflow-y-auto custom-scrollbar pr-2 font-medium">Mimar, mühendis veya diğer meslek gruplarının yetki sınırlarını aşarak yetkisiz bir şekilde 'içmimarlık hizmeti' vermesinin önüne geçecek caydırıcı düzenlemeler hayata geçirilmelidir.</p>
-                        <div class="flex gap-2 vote-buttons-container" data-auth="icmimar">
-                            <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition">KABUL</button>
-                            <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition">ÇEKİMSER</button>
-                            <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-700 py-3 rounded-xl text-[11px] font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition">RET</button>
-                        </div>
-                        <div class="w-full mt-4 vote-results-bar"><div class="flex justify-between text-[10px] text-gray-400 mb-1 px-1 font-black tracking-wider"><span class="text-green-400 vote-text-yes">%0</span><span class="text-yellow-400 vote-text-abstain">%0</span><span class="text-red-400 vote-text-no">%0</span></div><div class="h-1.5 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner"><div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#22c55e]"></div><div class="vote-bar-abstain bg-yellow-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#eab308]"></div><div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_8px_#ef4444]"></div></div></div>
                     </div>
 
                 </div>
@@ -461,7 +387,7 @@
                     <label for="input-taahhut-sehir" class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>🏟️</span> Şehrini Seç (Tribün)</label>
                     <select id="input-taahhut-sehir" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none font-bold text-sm focus:border-kaos transition h-14 custom-scrollbar">
                         <option value="" disabled selected>Şehrini Seç...</option>
-                        <option value="Adana">Adana</option><option value="Ankara">Ankara</option><option value="İstanbul">İstanbul</option><option value="İzmir">İzmir</option><option value="Yurtdışı">Yurtdışı</option>
+                        <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option><option value="Ağrı">Ağrı</option><option value="Amasya">Amasya</option><option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Artvin">Artvin</option><option value="Aydın">Aydın</option><option value="Balıkesir">Balıkesir</option><option value="Bilecik">Bilecik</option><option value="Bingöl">Bingöl</option><option value="Bitlis">Bitlis</option><option value="Bolu">Bolu</option><option value="Burdur">Burdur</option><option value="Bursa">Bursa</option><option value="Çanakkale">Çanakkale</option><option value="Çankırı">Çankırı</option><option value="Çorum">Çorum</option><option value="Denizli">Denizli</option><option value="Diyarbakır">Diyarbakır</option><option value="Edirne">Edirne</option><option value="Elazığ">Elazığ</option><option value="Erzincan">Erzincan</option><option value="Erzurum">Erzurum</option><option value="Eskişehir">Eskişehir</option><option value="Gaziantep">Gaziantep</option><option value="Giresun">Giresun</option><option value="Gümüşhane">Gümüşhane</option><option value="Hakkari">Hakkari</option><option value="Hatay">Hatay</option><option value="Isparta">Isparta</option><option value="Mersin">Mersin</option><option value="İstanbul">İstanbul</option><option value="İzmir">İzmir</option><option value="Kars">Kars</option><option value="Kastamonu">Kastamonu</option><option value="Kayseri">Kayseri</option><option value="Kırklareli">Kırklareli</option><option value="Kırşehir">Kırşehir</option><option value="Kocaeli">Kocaeli</option><option value="Konya">Konya</option><option value="Kütahya">Kütahya</option><option value="Malatya">Malatya</option><option value="Manisa">Manisa</option><option value="Kahramanmaraş">Kahramanmaraş</option><option value="Mardin">Mardin</option><option value="Muğla">Muğla</option><option value="Muş">Muş</option><option value="Nevşehir">Nevşehir</option><option value="Niğde">Niğde</option><option value="Ordu">Ordu</option><option value="Rize">Rize</option><option value="Sakarya">Sakarya</option><option value="Samsun">Samsun</option><option value="Siirt">Siirt</option><option value="Sinop">Sinop</option><option value="Sivas">Sivas</option><option value="Tekirdağ">Tekirdağ</option><option value="Tokat">Tokat</option><option value="Trabzon">Trabzon</option><option value="Tunceli">Tunceli</option><option value="Şanlıurfa">Şanlıurfa</option><option value="Uşak">Uşak</option><option value="Van">Van</option><option value="Yozgat">Yozgat</option><option value="Zonguldak">Zonguldak</option><option value="Aksaray">Aksaray</option><option value="Bayburt">Bayburt</option><option value="Karaman">Karaman</option><option value="Kırıkkale">Kırıkkale</option><option value="Batman">Batman</option><option value="Şırnak">Şırnak</option><option value="Bartın">Bartın</option><option value="Ardahan">Ardahan</option><option value="Iğdır">Iğdır</option><option value="Yalova">Yalova</option><option value="Karabük">Karabük</option><option value="Kilis">Kilis</option><option value="Osmaniye">Osmaniye</option><option value="Düzce">Düzce</option><option value="Yurtdışı">Yurtdışı</option>
                     </select>
                 </div>
 
@@ -471,16 +397,10 @@
                         <option value="" disabled selected>Seçim Yap...</option>
                         <option value="İçmimar">İçmimarım</option>
                         <option value="Öğrenci">İçmimarlık Öğrencisiyim</option>
-                        <option value="Paydaş">Sektör Paydaşıyım</option>
                     </select>
                 </div>
-
-                <div id="div-paydas-detay" class="mb-6 text-left hidden transition-all duration-300">
-                    <label for="input-paydas-detay" class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>✍️</span> Paydaş Türünü Yaz</label>
-                    <input type="text" id="input-paydas-detay" placeholder="Örn: Mimar, Mobilya Üreticisi, Usta..." class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
-                </div>
                 
-                <button type="button" id="btn-taahhut-next" class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md mt-4 hover:scale-[1.02]">
+                <button type="button" id="btn-taahhut-next" class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md mt-6 hover:scale-[1.02]">
                     DEVAM ET
                 </button>
             </div>
@@ -488,7 +408,7 @@
             <!-- ADIM 2: Giriş Yöntemi -->
             <div id="taahhut-step-2" class="w-full hidden transition-opacity duration-300">
                 <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Nasıl Girmek İstersin?</h3>
-                <p class="text-gray-300 text-sm mb-8 font-medium">Seçimlerin kaydedildi. Giriş yöntemini belirle.</p>
+                <p class="text-gray-300 text-sm mb-8 font-medium">Seçimlerin kaydedildi. Sisteme güvenli giriş yap.</p>
                 
                 <div class="flex flex-col gap-4">
                     <button type="button" id="btn-google-login" class="w-full bg-white hover:bg-gray-200 text-slate-900 border border-gray-300 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md flex items-center justify-center gap-3">
@@ -496,13 +416,13 @@
                         Google ile Hızlı Katıl
                     </button>
                     
-                    <div class="flex items-center my-1">
+                    <div class="flex items-center my-1 hidden">
                         <div class="flex-grow border-t border-slate-700"></div>
                         <span class="px-3 text-gray-500 text-[10px] font-bold uppercase tracking-widest">VEYA</span>
                         <div class="flex-grow border-t border-slate-700"></div>
                     </div>
 
-                    <button type="button" id="btn-manuel-login" class="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md">
+                    <button type="button" id="btn-manuel-login" class="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md hidden">
                         Manuel (Anonim) Devam Et
                     </button>
                 </div>
@@ -525,7 +445,7 @@
             <p class="text-gray-300 text-sm mb-6 font-medium leading-relaxed">İçmimarlar ve İçmimarlık Öğrencileri için kurulan bu dijital stadyumun ilk ekibindesin.</p>
             <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl mb-6">
                 <div class="text-xs text-kaos font-bold uppercase tracking-widest mb-3 flex items-center justify-center gap-2"><span>🚀</span> İLK GÖREVİN</div>
-                <p class="text-gray-200 text-sm leading-relaxed mb-4">Aşağıdaki bağlantıyı <strong class="text-white">3 kez paylaş</strong>, 101 ile 5000 arasında <strong class="text-white">VIP Kurucu Numaranı</strong> seç!</p>
+                <p class="text-gray-200 text-sm leading-relaxed mb-4">Senin özel davet kodunla <strong class="text-white">3 kişi</strong> sisteme kayıt olduğunda, 101 ile 5000 arasında <strong class="text-white">VIP Kurucu Numaranı</strong> seçebileceksin!</p>
             </div>
             <button type="button" id="btn-wow-copy-link" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-kaos hover:scale-[1.02] transition cursor-pointer mb-4">🔗 LİNKİMİ KOPYALA VE BAŞLA</button>
             <button type="button" id="btn-close-wow" class="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700">Sisteme Geç</button>
@@ -541,8 +461,8 @@
             <div id="vip-locked-state" class="mt-8 mb-4 hidden">
                 <span class="text-7xl mb-6 block drop-shadow-md">🔒</span>
                 <p class="text-kaos font-black text-xl mb-3 tracking-widest uppercase">Ekrana Giriş Kapalı</p>
-                <p class="text-gray-300 text-sm mb-8 font-medium max-w-sm mx-auto leading-relaxed">Bu ekranı açmak ve özel numaranı seçmek için aşağıdaki bağlantıyı 3 kez paylaşmalısın.</p>
-                <button type="button" id="btn-vip-copy-invite-locked" class="w-full max-w-xs mx-auto bg-slate-800 text-white hover:text-kaos hover:border-kaos font-black py-4 rounded-xl uppercase tracking-widest border border-slate-600 transition shadow-md block">🔗 LİNKİMİ KOPYALA</button>
+                <p class="text-gray-300 text-sm mb-8 font-medium max-w-sm mx-auto leading-relaxed">Bu ekranı açmak ve özel numaranı seçmek için senin davet kodunla en az 3 kişinin sisteme katılması gerekiyor.</p>
+                <button type="button" id="btn-vip-copy-invite-locked" class="w-full max-w-xs mx-auto bg-slate-800 text-white hover:text-kaos hover:border-kaos font-black py-4 rounded-xl uppercase tracking-widest border border-slate-600 transition shadow-md block">🔗 KODUMU KOPYALA</button>
             </div>
 
             <div id="vip-unlocked-state" class="mt-6 hidden">
@@ -586,17 +506,17 @@
         </div>
     </div>
 
-    <!-- 5. PDF Yükleme Modalı -->
+    <!-- 5. PDF Yükleme Modalı (E-Devlet) -->
     <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-green-500 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_30px_rgba(34,197,94,0.3)]">
             <span class="text-5xl block mb-4">📜</span>
-            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Tam Yetkili Ol</h3>
-            <p class="text-gray-300 text-sm mb-6 font-medium leading-relaxed">Tam yetki süreci açıldığında belgen sıraya alınacak ve uygunluk kontrolünden sonra oy gücün güncellenecek.</p>
+            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">E-Devlet ile Onay</h3>
+            <p class="text-gray-300 text-sm mb-6 font-medium leading-relaxed">E-devletten alacağın "Mezuniyet" veya "Öğrenci" belgesini yükleyerek oy gücünü anında 1.0x (Tam Yetki) yap.</p>
             <div class="bg-black/60 border border-slate-700 p-4 rounded-xl relative overflow-hidden group mb-6 text-left">
-                <label for="input-pdf-file" class="block text-[10px] font-black text-gray-300 mb-3 uppercase tracking-widest flex items-center"><span class="text-green-500 mr-2 text-lg">🛡️</span> Telefonunda Güvenle Okut (Kayıt Tutulmaz)</label>
+                <label for="input-pdf-file" class="block text-[10px] font-black text-gray-300 mb-3 uppercase tracking-widest flex items-center"><span class="text-green-500 mr-2 text-lg">🛡️</span> PDF Belgeni Seç</label>
                 <input type="file" id="input-pdf-file" accept="application/pdf" class="w-full text-sm text-gray-300 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-green-500/20 file:text-green-400 hover:file:bg-green-500 hover:file:text-white transition cursor-pointer outline-none">
             </div>
-            <button type="button" id="btn-submit-pdf" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition">BELGEMİ SIRAYA AL</button>
+            <button type="button" id="btn-submit-pdf" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition">BELGEMİ DOĞRULA VE YETKİ AL</button>
             <button type="button" id="btn-close-pdf-modal" class="mt-5 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700 transition">İptal Et</button>
         </div>
     </div>
