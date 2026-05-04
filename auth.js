@@ -57,35 +57,29 @@ const setButtonLoading = (button, loadingText) => {
     };
 };
 
-const validateAndGetCommitmentData = () => {
+// Form verilerini okuma (Doğrulama işlemini artık app.js'de "Devam Et" butonu yapıyor)
+const getCommitmentData = () => {
     const cityEl = getEl('input-taahhut-sehir');
     const roleEl = getEl('input-taahhut-rol');
     const paydasEl = getEl('input-paydas-detay');
 
-    if (!cityEl || !cityEl.value) throw new Error('Lütfen şehrini seç.');
-    if (!roleEl || !roleEl.value) throw new Error('Lütfen mesleki durumunu seç.');
-
-    let finalRole = roleEl.value;
-    
+    let finalRole = roleEl ? roleEl.value : 'Sistem Üyesi';
     if (finalRole === 'Öğrenci') finalRole = 'İçmimarlık Öğrencisi';
     if (finalRole === 'Paydaş') {
-        const detail = paydasEl.value.trim();
-        if (!detail) throw new Error('Lütfen paydaş türünü yaz (Örn: Mimar, Usta).');
+        const detail = paydasEl ? paydasEl.value.trim() : '';
         finalRole = `Sektör Paydaşı (${detail})`;
     }
 
-    return { city: cityEl.value, role: finalRole };
+    return { city: cityEl ? cityEl.value : 'Bilinmiyor', role: finalRole };
 };
 
 export const AUTH = {
-    // YENİ: Google'dan aynı sayfaya geri dönüldüğünü yakalayan sistem
     checkRedirect: async () => {
         try {
             const result = await getRedirectResult(firebaseAuth);
             if (result && result.user) {
                 const user = result.user;
                 
-                // Google'a gitmeden önce hafızaya aldığımız seçimleri geri çağırıyoruz
                 const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
                 const savedRole = localStorage.getItem('me26_temp_role') || 'Sistem Üyesi';
                 
@@ -99,7 +93,6 @@ export const AUTH = {
                     isVip: false
                 });
                 
-                // Hafızayı temizle
                 localStorage.removeItem('me26_temp_city');
                 localStorage.removeItem('me26_temp_role');
                 
@@ -126,37 +119,30 @@ export const AUTH = {
             UI.showToast('Sisteme yeniden hoş geldin.', 'success');
             return;
         }
+        
+        // YENİ: Modal her açıldığında Adım 1'den başlasın
+        const step1 = getEl('taahhut-step-1');
+        const step2 = getEl('taahhut-step-2');
+        if(step1) step1.classList.remove('hidden');
+        if(step2) step2.classList.add('hidden');
+
         UI.openModal('taahhut-modal');
     },
 
     loginWithGoogle: async () => {
-        let formData;
-        try {
-            formData = validateAndGetCommitmentData();
-        } catch (err) {
-            UI.showToast(err.message, 'error');
-            return;
-        }
+        const formData = getCommitmentData();
 
         const btn = getEl('btn-google-login');
         setButtonLoading(btn, 'GOOGLE\'A GİDİLİYOR...');
 
-        // YENİ: Sayfa değişeceği için seçimleri tarayıcı hafızasına alıyoruz
         localStorage.setItem('me26_temp_city', formData.city);
         localStorage.setItem('me26_temp_role', formData.role);
 
-        // YENİ: Pop-up açmak yerine aynı sayfayı Google'a yönlendiriyoruz
         signInWithRedirect(firebaseAuth, googleProvider);
     },
 
     submitCommitment: async () => {
-        let formData;
-        try {
-            formData = validateAndGetCommitmentData();
-        } catch (err) {
-            UI.showToast(err.message, 'error');
-            return;
-        }
+        const formData = getCommitmentData();
 
         STATE.setUser({
             authStage: 'registered',
