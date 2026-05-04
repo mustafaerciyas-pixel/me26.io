@@ -31,7 +31,7 @@ let confirmationResult = null;
 
 const getEl = (id) => document.getElementById(id);
 
-// Şehre özel rastgele davet kodu üretici (Gizli tutulmasında sakınca olmayan tek veri)
+// Şehre özel rastgele davet kodu üretici
 const generateInviteCode = (city) => {
     const cityCode = (city || 'TR').substring(0, 3).toUpperCase();
     const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -320,6 +320,8 @@ export const AUTH = {
 
     verifyPdf: async () => {
         const fileInput = getEl('input-pdf-file');
+        const btnSubmit = getEl('btn-submit-pdf');
+        
         if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             UI.showToast('Lütfen e-devletten aldığınız PDF belgesini seçin.', 'error');
             return;
@@ -329,19 +331,100 @@ export const AUTH = {
             return;
         }
         
-        UI.showToast('Belgeniz güvenli bir şekilde sisteme aktarılıyor...', 'info');
+        const stopLoading = setButtonLoading(btnSubmit, 'SİSTEM BELGEYİ OKUYOR...');
+        UI.showToast('Belge cihazınızda analiz ediliyor (Gizlilik kalkanı aktif)...', 'info');
         
         try {
-            // Gizli fonksiyona gönder
-            await DB.belgeyiSirayaAl(STATE.user.uid);
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+            
+            const pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                fullText += textContent.items.map(item => item.str).join(' ') + ' ';
+            }
 
-            UI.showToast('Belgeniz sıraya alındı! Liyakat kontrolünden sonra onaylanacaktır.', 'success');
+            // Metin Ayrıştırıcı Motor
+            const extract = (text, regex) => {
+                const match = text.match(regex);
+                return match ? match[1].trim() : '';
+            };
+
+            // E-Devlet Formatından Tüm Bilgileri Söküp Çıkarma
+            const tc = extract(fullText, /Kimlik No\s*\|?\s*:\s*([0-9]{11})/i);
+            const maskedTc = tc ? tc.substring(0,3) + '*****' + tc.substring(8) : 'Bulunamadı';
+            
+            const adSoyad = extract(fullText, /Adı Soyadı\s*\|?\s*:\s*(.*?)(?=\s*Baba Adı|\s*Ana Adı)/i);
+            const babaAdi = extract(fullText, /Baba Adı\s*\|?\s*:\s*(.*?)(?=\s*Anne Adı)/i);
+            const anneAdi = extract(fullText, /Anne Adı\s*\|?\s*:\s*(.*?)(?=\s*Doğum Tarihi)/i);
+            const dogumTarihi = extract(fullText, /Doğum Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
+            
+            // Program Satırını Parçalama (Üniversite / Fakülte / Bölüm)
+            const program = extract(fullText, /Program\s*\|?\s*:\s*(.*?)(?=\s*Diploma No|\s*Kayıt Tarihi)/i);
+            const progParts = program.split('/');
+            const uni = progParts[0] ? progParts[0].trim() : 'Bilinmiyor';
+            const fakulte = progParts[1] ? progParts[1].trim() : 'Bilinmiyor';
+            const bolum = progParts[2] ? progParts[2].trim() : 'Bilinmiyor';
+            
+            const diplomaNo = extract(fullText, /Diploma No\s*\|?\s*:\s*(.*?)(?=\s*Diploma Notu|\s*Mezuniyet)/i);
+            const mezunTarihi = extract(fullText, /Mezuniyet Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
+            
+            const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
+            const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
+
+            // LİYAKAT KONTROLÜ (İçmimarlık Geçmiyorsa Reddet)
+            const upperBolum = bolum.toUpperCase();
+            if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
+                 UI.showToast('HATA: Belgede "İçmimarlık" liyakatı doğrulanamadı!', 'error');
+                 stopLoading();
+                 return;
+            }
+
+            // Durum (Öğrenci veya Mezun)
+            const durumText = extract(fullText, /Durum\s*\|?\s*?(.*?)(?=\s|$)/i).toUpperCase();
+            let durum = 'Öğrenci';
+            if (durumText.includes('MEZUN') || fullText.toUpperCase().includes('MEZUN BELGESİ')) {
+                durum = 'Mezun';
+            }
+
+            // Tüm veriyi Supabase'e gönderilecek şekilde paketle
+            const belgeData = {
+                tc: maskedTc,
+                ad_soyad: adSoyad,
+                baba_adi: babaAdi,
+                anne_adi: anneAdi,
+                dogum_tarihi: dogumTarihi,
+                uni: uni,
+                fakulte: fakulte,
+                bolum: bolum,
+                diploma_no: diplomaNo,
+                mezun_tarihi: mezunTarihi,
+                barkod: barkod,
+                durum: durum
+            };
+
+            // Paketi RPC kuryesine teslim et
+            await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
+
+            // Arayüzü Güncelle
+            STATE.updateUser('authStage', 'pdf_verified');
+            STATE.updateUser('votePower', '1.0x');
+
+            UI.showToast('Liyakat Onaylandı! Oy gücün 1.0x (Tam Yetki) oldu.', 'success');
             UI.closeModal('pdf-modal');
+            UI.renderProfile();
             fileInput.value = '';
 
         } catch (error) {
-            console.error("PDF Yükleme hatası:", error);
-            UI.showToast('Belge gönderilirken bir hata oluştu.', 'error');
+            console.error("PDF Okuma hatası:", error);
+            UI.showToast('Belge okunamadı. Orijinal E-Devlet barkodlu PDF yükleyin.', 'error');
+        } finally {
+            stopLoading();
         }
     },
 
