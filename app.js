@@ -10,7 +10,6 @@ import { VIP } from './vip.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. ÖNERGELERİ ÇİZME SİSTEMİ (Güvenli DOM & Boş Durum) ---
     const renderProposals = () => {
         const container = document.getElementById('proposals-container');
         if (!container) return;
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = ''; 
         const proposals = STATE.getProposals();
 
-        // Boş Durum (Empty State) Kontrolü
         if (proposals.length === 0) {
             const empty = document.createElement('div');
             empty.className = "bg-black/40 border border-slate-700 rounded-2xl p-6 text-center text-gray-400 text-sm font-bold";
@@ -52,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // XSS Koruması: Metinleri sadece textContent ile bas
             card.querySelector('.prop-category').textContent = prop.category;
             card.querySelector('.prop-title').textContent = prop.title;
             card.querySelector('.prop-desc').textContent = prop.desc;
@@ -61,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- 2. SİSTEMİ BAŞLAT (INIT) ---
     const initSystem = () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
@@ -69,19 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
             UI.showView('landing');
         }
         UI.renderProfile();
-        renderProposals(); // Kayıtlı önergeleri veya boş durumu ekrana bas
+        renderProposals(); 
     };
 
-    // --- 3. GÜVENLİ TIKLAMA YARDIMCISI ---
     const addClick = (id, callback) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('click', callback);
     };
 
-    // --- 4. BUTONLARI VE EKRANLARI BAĞLA ---
     const bindEvents = () => {
-        
-        // A. GİRİŞ VE PROFİL AKSİYONLARI
         const handleMainAction = () => {
             if (STATE.isLoggedIn()) {
                 UI.toggleProfileDrawer(true); 
@@ -97,21 +89,19 @@ document.addEventListener('DOMContentLoaded', () => {
         addClick('btn-login-hero', handleMainAction);
         addClick('btn-login-sticky', handleMainAction);
 
-        // B. MOBİL MENÜ VE ÇEKMECE
         addClick('btn-open-mobile-menu', () => UI.toggleMobileMenu(true));
         addClick('btn-close-mobile-menu', () => UI.toggleMobileMenu(false));
         addClick('btn-close-profile-drawer', () => UI.toggleProfileDrawer(false));
 
-        // C. KİMLİK VE YETKİ (FİREBASE SMS GÜNCELLEMESİ)
         addClick('btn-role-icmimar', () => AUTH.submitCommitment('icmimar'));
         addClick('btn-role-ogrenci', () => AUTH.submitCommitment('ogrenci'));
         
-        addClick('btn-submit-phone', () => AUTH.verifyPhone()); // Adım 1: SMS Gönder
-        addClick('btn-verify-otp', () => AUTH.confirmSmsCode()); // Adım 2: Kodu Doğrula
+        // FİREBASE SMS VE OTP BAĞLANTILARI
+        addClick('btn-submit-phone', () => AUTH.verifyPhone());
+        addClick('btn-verify-otp', () => AUTH.verifyOtp()); 
         
         addClick('btn-submit-pdf', () => AUTH.verifyPdf());
         
-        // D. MODAL YÖNETİMİ
         addClick('btn-open-pdf-modal', () => {
             UI.toggleProfileDrawer(false);
             UI.openModal('pdf-modal');
@@ -122,11 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
         addClick('btn-close-vip-modal', () => UI.closeModal('vip-modal'));
         addClick('btn-close-proposal-modal', () => UI.closeModal('onerge-modal'));
 
-        // E. ÇIKIŞ VE SİLME
         addClick('btn-logout', () => AUTH.logout());
         addClick('btn-delete-account', () => AUTH.deleteAccount());
 
-        // F. VIP VE PAYLAŞIM SİSTEMİ (vip.js modülü)
         addClick('btn-open-vip-modal', () => {
             VIP.updateModalState();
             UI.openModal('vip-modal');
@@ -137,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         addClick('btn-whatsapp-share', () => VIP.handleShare(true));
         addClick('btn-claim-vip-number', () => VIP.claimNumber());
 
-        // G. YENİ ÖNERGE SİSTEMİ
         addClick('btn-open-proposal-modal', () => {
             if (!STATE.isLoggedIn()) {
                 UI.showToast("Sorun bildirmek için önce sisteme katıl.", "error");
@@ -157,14 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Hafızaya (localStorage) kaydet
             STATE.addProposal({
                 title: titleEl.value,
                 desc: descEl.value,
                 category: catEl.value
             });
 
-            // Ekranı baştan çiz (Yeni eklenen en üstte görünür veya boş durum kalkar)
             renderProposals();
 
             UI.showToast("Fikriniz meclise sunuldu ve destek sırasına alındı.", "success");
@@ -174,9 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- 5. OYLAMA SİSTEMİ (Event Delegation) ---
     document.addEventListener('click', (e) => {
-        // Evet / Hayır Oy Butonları
         const voteBtn = e.target.closest('.btn-vote');
         if (voteBtn) {
             if (!STATE.isLoggedIn()) {
@@ -197,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Oy Değiştirme Butonu
         const changeVoteBtn = e.target.closest('.btn-change-vote');
         if (changeVoteBtn) {
             if (!STATE.isLoggedIn()) return;
@@ -215,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Motoru Çalıştır
     initSystem();
     bindEvents();
 });
