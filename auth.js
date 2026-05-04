@@ -332,22 +332,27 @@ export const AUTH = {
         }
         
         const stopLoading = setButtonLoading(btnSubmit, 'SİSTEM BELGEYİ OKUYOR...');
-        UI.showToast('Belge cihazınızda analiz ediliyor (Gizlilik kalkanı aktif)...', 'info');
         
         try {
             const file = fileInput.files[0];
             const arrayBuffer = await file.arrayBuffer();
             
-            // 1. Kütüphaneyi güvenli bir şekilde al (index.html'de yüklenmişti)
             const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
-            if (!pdfjsLib) {
-                throw new Error("PDF kütüphanesi HTML içinde bulunamadı. Lütfen sayfayı yenileyin.");
+            if (!pdfjsLib) throw new Error("PDF kütüphanesi bulunamadı.");
+            
+            // 🔥 KURŞUN GEÇİRMEZ ÇÖZÜM: Firebase COOP/CORS Güvenlik Duvarını Aşmak
+            // Dış kütüphaneyi "metin" olarak indirip yerel bir dosya (Blob) yapıyoruz.
+            // Böylece tarayıcı dışarıdan kod çalıştırdığımızı anlamıyor ve engellemiyor!
+            if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+                UI.showToast('Yapay Zeka motoru indiriliyor...', 'info');
+                const workerReq = await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
+                const workerCode = await workerReq.text();
+                const blob = new Blob([workerCode], { type: 'text/javascript' });
+                pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
             }
             
-            // İŞTE BÜTÜN SORUNU ÇÖZEN SATIR (Kütüphanenin istediği işçi linkini veriyoruz)
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-            
-            // 2. PDF OKUMA İŞLEMİ
+            UI.showToast('Belge cihazınızda analiz ediliyor...', 'info');
+
             const typedarray = new Uint8Array(arrayBuffer);
             const pdf = await pdfjsLib.getDocument(typedarray).promise;
             
@@ -358,7 +363,6 @@ export const AUTH = {
                 fullText += textContent.items.map(item => item.str).join(' ') + ' ';
             }
 
-            // 3. E-DEVLET METİN AYRIŞTIRICI MOTORU
             const extract = (text, regex) => {
                 const match = text.match(regex);
                 return match ? match[1].trim() : '';
@@ -366,7 +370,6 @@ export const AUTH = {
 
             const tc = extract(fullText, /Kimlik No\s*\|?\s*:\s*([0-9]{11})/i);
             const maskedTc = tc ? tc.substring(0,3) + '*****' + tc.substring(8) : 'Bulunamadı';
-            
             const adSoyad = extract(fullText, /Adı Soyadı\s*\|?\s*:\s*(.*?)(?=\s*Baba Adı|\s*Ana Adı)/i);
             const babaAdi = extract(fullText, /Baba Adı\s*\|?\s*:\s*(.*?)(?=\s*Anne Adı)/i);
             const anneAdi = extract(fullText, /Anne Adı\s*\|?\s*:\s*(.*?)(?=\s*Doğum Tarihi)/i);
@@ -380,11 +383,9 @@ export const AUTH = {
             
             const diplomaNo = extract(fullText, /Diploma No\s*\|?\s*:\s*(.*?)(?=\s*Diploma Notu|\s*Mezuniyet)/i);
             const mezunTarihi = extract(fullText, /Mezuniyet Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
-            
             const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // LİYAKAT KONTROLÜ (İçmimarlık Geçmiyorsa Reddet)
             const upperBolum = bolum.toUpperCase();
             if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
                  UI.showToast('HATA: Belgede "İçmimarlık" liyakatı doğrulanamadı!', 'error');
@@ -413,7 +414,6 @@ export const AUTH = {
                 durum: durum
             };
 
-            // 4. KARANLIK ODAYA (SUPABASE) GÖNDERİM
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
             STATE.updateUser('authStage', 'pdf_verified');
@@ -426,7 +426,7 @@ export const AUTH = {
 
         } catch (error) {
             console.error("PDF Okuma hatası:", error);
-            UI.showToast('Belge okunamadı. Orijinal E-Devlet barkodlu PDF yükleyin.', 'error');
+            UI.showToast('Belge okunamadı. Lütfen sayfayı yenileyip tekrar deneyin.', 'error');
         } finally {
             stopLoading();
         }
