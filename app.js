@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Oylama ve Kullanıcı Etkileşimleri
+   Çift Turnike Sistemi (Kayıt/Giriş) Entegre Edilmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -23,7 +23,7 @@ export const Me26VotingSystem = {
                 if (STATE.isLoggedIn()) {
                     UI.toggleProfileDrawer(true);
                 } else {
-                    UI.openModal('taahhut-modal');
+                    AUTH.register(); // Burası da kilitli ekrandan geleni kayıt formuna atar
                 }
             });
         }
@@ -144,19 +144,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (el) el.addEventListener(event, fn);
     };
 
-    const handleLoginOrProfile = () => {
-        if (STATE.isLoggedIn()) {
-            UI.toggleProfileDrawer(true);
-        } else {
-            AUTH.login();
-        }
-    };
-
-    // NAVİGASYON VE GİRİŞ BUTONLARI
-    ['btn-login-hero', 'btn-login-sticky', 'btn-desktop-nav-action', 'btn-mobile-nav-action'].forEach(id => {
+    // ---------------------------------------------------------
+    // YENİ ÇİFT GİŞE SİSTEMİ BAĞLANTILARI
+    // ---------------------------------------------------------
+    
+    // KAYIT OL BUTONLARI -> Formu Açar
+    ['btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile'].forEach(id => {
         const btn = document.getElementById(id);
-        if (btn) btn.onclick = handleLoginOrProfile;
+        if (btn) btn.onclick = AUTH.register;
     });
+
+    // GİRİŞ YAP BUTONLARI -> Formu Atlar, Direkt İçeri Alır
+    ['btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.onclick = AUTH.directLogin;
+    });
+
+    // ---------------------------------------------------------
 
     bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
@@ -231,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-logout', 'click', AUTH.logout);
     bind('btn-delete-account', 'click', AUTH.deleteAccount);
 
-    // KUSURSUZ BELGE (PDF) BAĞLANTISI (Çift Çalışmayı Önleyen Klonlama Yöntemi)
+    // KUSURSUZ BELGE (PDF) BAĞLANTISI
     bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
     bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
     
