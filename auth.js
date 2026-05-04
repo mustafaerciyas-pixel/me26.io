@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase Karanlık Oda (RPC) + Görsel Hizalamalı YZ Okuyucu
+   Çift Turnike + Kaçak Yolcu Güvenlik Ağı Eklenmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -31,7 +31,6 @@ let confirmationResult = null;
 
 const getEl = (id) => document.getElementById(id);
 
-// Şehre özel rastgele davet kodu üretici
 const generateInviteCode = (city) => {
     const cityCode = (city || 'TR').substring(0, 3).toUpperCase();
     const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -69,7 +68,10 @@ const getCommitmentData = () => {
 };
 
 export const AUTH = {
-    
+    // KAÇAK YOLCULARI YAKALAMAK İÇİN GEÇİCİ HAFIZA
+    pendingFirebaseUser: null,
+    isCompletingProfile: false,
+
     handleGoogleSuccess: async (user) => {
         try {
             UI.showToast('Güvenli bağlantı kuruluyor...', 'info');
@@ -92,11 +94,28 @@ export const AUTH = {
             };
 
             const dbUser = await DB.sistemeGiris(gizliPaket);
+            if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
+
+            // ========================================================
+            // 🚨 GÜVENLİK AĞI: YANLIŞLIKLA "GİRİŞ YAP" DİYEN YENİLERİ YAKALA
+            // ========================================================
+            if (!dbUser.sehir_tribunu || dbUser.sehir_tribunu === 'Mevcut Üye' || dbUser.mesleki_durum === 'Mevcut Üye') {
+                UI.showToast('Aramıza yeni katılıyorsun. Lütfen profilini tamamla!', 'info');
+                
+                AUTH.pendingFirebaseUser = user;
+                AUTH.isCompletingProfile = true;
+
+                const step1 = getEl('taahhut-step-1');
+                const step2 = getEl('taahhut-step-2');
+                if(step1) step1.classList.remove('hidden');
+                if(step2) step2.classList.add('hidden');
+
+                UI.openModal('taahhut-modal');
+                return; // Giriş işlemini dondur, formu doldurmasını bekle!
+            }
 
             localStorage.removeItem('me26_temp_city');
             localStorage.removeItem('me26_temp_role');
-
-            if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
             let authStage = 'registered';
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
@@ -165,9 +184,6 @@ export const AUTH = {
         });
     },
 
-    // ---------------------------------------------------------
-    // TURNİKE 1: SADECE YENİ KAYITLAR İÇİN (Formu Açar)
-    // ---------------------------------------------------------
     register: async () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
@@ -184,9 +200,6 @@ export const AUTH = {
         UI.openModal('taahhut-modal');
     },
 
-    // ---------------------------------------------------------
-    // TURNİKE 2: ESKİ ÜYELER İÇİN (Formu es geçip direkt içeri alır)
-    // ---------------------------------------------------------
     directLogin: async () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
@@ -196,8 +209,6 @@ export const AUTH = {
 
         UI.showToast('Giriş yapılıyor...', 'info');
 
-        // Form doldurulmadığı için geçici verilere "Mevcut Üye" yazıyoruz. 
-        // Supabase zaten eski veriyi ezmeyecek, adamın eski şehrini koruyacaktır.
         localStorage.setItem('me26_temp_city', 'Mevcut Üye');
         localStorage.setItem('me26_temp_role', 'Mevcut Üye');
 
@@ -220,9 +231,6 @@ export const AUTH = {
         }
     },
 
-    // ---------------------------------------------------------
-    // KAYIT FORMU İÇİNDEKİ GOOGLE BUTONU (Turnike 1'in devamı)
-    // ---------------------------------------------------------
     loginWithGoogle: async () => {
         const formData = getCommitmentData();
         const btn = getEl('btn-google-login');
@@ -368,7 +376,6 @@ export const AUTH = {
         }
     },
 
-    // GÖRSEL HİZALAMALI (İNSAN GÖZÜ) E-DEVLET OKUYUCU
     verifyPdf: async () => {
         if (!STATE.isLoggedIn()) {
             UI.showToast('Lütfen önce sisteme giriş yapın.', 'error');
@@ -415,7 +422,6 @@ export const AUTH = {
                 rawItems = rawItems.concat(textContent.items);
             }
             
-            // X ve Y Piksellerine Göre İnsan Gözüyle Sıralama
             rawItems.sort((a, b) => {
                 if (!a.transform || !b.transform) return 0;
                 const yDiff = b.transform[5] - a.transform[5];
@@ -425,13 +431,11 @@ export const AUTH = {
             
             let cleanText = rawItems.map(item => item.str).join(' ').replace(/\s+/g, ' ');
 
-            // Temizleyici Regex
             const extract = (regex) => {
                 const match = cleanText.match(regex);
                 return match ? match[1].replace(/[:|]+$/, '').trim() : 'Bulunamadı';
             };
 
-            // 1. TC Kimlik No
             let tcMatch = cleanText.match(/Kimlik No[\s:|]*([0-9]{11})/i);
             let tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
             if(tc === 'Bulunamadı') {
@@ -439,13 +443,11 @@ export const AUTH = {
                 tc = fallback ? fallback[0] : 'Bulunamadı';
             }
 
-            // 2. Kişisel Bilgiler
             const adSoyad = extract(/Adı Soyadı[\s:|]*(.*?)(?=Baba Adı|Anne Adı|Doğum Tarihi|Program)/i);
             const babaAdi = extract(/Baba Adı[\s:|]*(.*?)(?=Anne Adı|Doğum Tarihi|Program)/i);
             const anneAdi = extract(/Anne Adı[\s:|]*(.*?)(?=Doğum Tarihi|Program)/i);
             const dogumTarihi = extract(/Doğum Tarihi[\s:|]*(\d{2}\.\d{2}\.\d{4})/i);
 
-            // 3. Okul ve Bölüm (3 sütuna dağıtır)
             const programStr = extract(/Program[\s:|]*(.*?)(?=Diploma No|Diploma Notu|Mezuniyet)/i);
             let uni = 'Bulunamadı', fakulte = 'Bulunamadı', bolum = 'Bulunamadı';
             
@@ -460,7 +462,6 @@ export const AUTH = {
                 }
             }
             
-            // 4. Yeni Eklenen Alanlar (Not ve Durum)
             const diplomaNo = extract(/Diploma No[\s:|]*(.*?)(?=Diploma Notu|Mezuniyet|Durum)/i);
             const diplomaNotu = extract(/Diploma Notu[\s:|]*(.*?)(?=Mezuniyet Tarihi|Durum|İLGİLİ)/i);
             const mezunTarihi = extract(/Mezuniyet Tarihi[\s:|]*(\d{2}\.\d{2}\.\d{4})/i);
@@ -469,11 +470,9 @@ export const AUTH = {
             const barkodMatch = cleanText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // KESİN KURAL: Herkes Manuel Onay Bekler
             const isIcmimar = cleanText.toUpperCase().includes('İÇ MİMAR') || cleanText.toUpperCase().includes('İÇMİMAR');
             const belgeDurumu = 'Onay Bekliyor';
 
-            // ÇIKARTILAN YENİ NESİL GERÇEK VERİLER
             const belgeData = {
                 tc: tc,
                 ad_soyad: adSoyad,
@@ -484,16 +483,14 @@ export const AUTH = {
                 fakulte: fakulte,
                 bolum: bolum,
                 diploma_no: diplomaNo,
-                diploma_notu: diplomaNotu,     // YENİ!
-                mezuniyet_tarihi: mezunTarihi, // YENİ!
-                durum: okunanDurum,            // E-Devlet üzerindeki gerçek durum
-                belge_durumu: belgeDurumu,     // Onay süreci için!
+                diploma_notu: diplomaNotu,     
+                mezuniyet_tarihi: mezunTarihi, 
+                durum: okunanDurum,            
+                belge_durumu: belgeDurumu,     
                 barkod: barkod
             };
 
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
-
-            // Tüm kullanıcıları belge kuyruğuna alıyoruz
             STATE.updateUser('authStage', 'document_pending');
 
             if (isIcmimar) {
