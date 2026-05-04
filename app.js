@@ -1,5 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
+   VIP Kurucu Grid Entegre Edilmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -8,10 +9,10 @@ import { AUTH } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. ÖNCE BEKLE: Google'dan dönen bir kullanıcı var mı?
+    // 1. ÖNCE BEKLE: Google Redirect (Mobilden gelenler) için
     const isRedirectLogin = await AUTH.checkRedirect();
     
-    // 2. Eğer Google'dan dönmediyse standart ekranları çiz
+    // 2. Dönüş yoksa standart ekranları çiz
     if (!isRedirectLogin) {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
@@ -21,11 +22,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         UI.renderProfile();
     }
 
+    // Yardımcı Dinleyici Fonksiyonu
     const bind = (id, event, fn) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, fn);
     };
 
+    // Ana Navigasyon İşlemleri
     const handleLoginOrProfile = () => {
         if (STATE.isLoggedIn()) {
             UI.toggleProfileDrawer(true);
@@ -43,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
     bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
 
+    // Paydaş Detay Açma/Kapama
     const roleSelect = document.getElementById('input-taahhut-rol');
     if (roleSelect) {
         roleSelect.addEventListener('change', (e) => {
@@ -55,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Modal Adım Geçişleri (Form Doğrulama)
+    // Taahhüt Modalı Adım Geçişleri (Form Doğrulama)
     bind('btn-taahhut-next', 'click', () => {
         const cityEl = document.getElementById('input-taahhut-sehir');
         const roleEl = document.getElementById('input-taahhut-rol');
@@ -83,6 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('taahhut-step-2').classList.add('hidden');
     });
 
+    // Kayıt ve Çıkış Butonları
     bind('btn-google-login', 'click', AUTH.loginWithGoogle);
     bind('btn-manuel-login', 'click', AUTH.submitCommitment);
     
@@ -91,6 +96,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         UI.showView('voting');
         UI.toggleProfileDrawer(true); 
     });
+
+    bind('btn-logout', 'click', AUTH.logout);
+    bind('btn-delete-account', 'click', AUTH.deleteAccount);
+
+    // =========================================================
+    // VIP PAYLAŞIM VE NUMARA SEÇİM SİMÜLASYONU
+    // =========================================================
+    
+    const handleShareSimulate = () => {
+        if (!STATE.user) return;
+        let currentCount = STATE.user.inviteCount || 0;
+        
+        if (currentCount < 3) {
+            currentCount++;
+            STATE.updateUser('inviteCount', currentCount);
+            UI.renderProfile();
+            UI.showToast(`${currentCount}/3 Paylaşım yapıldı!`, 'success');
+            
+            if (currentCount === 3) {
+                UI.showToast('VIP Numara Seçimi KİLİDİ AÇILDI! 💎', 'success');
+            }
+        }
+    };
+
+    bind('btn-copy-invite', 'click', handleShareSimulate);
+    bind('btn-whatsapp-share', 'click', handleShareSimulate);
+    bind('btn-vip-copy-invite-locked', 'click', handleShareSimulate);
+
+    bind('btn-open-vip-modal', 'click', () => {
+        UI.updateVipModalState();
+        UI.openModal('vip-modal');
+    });
+    
+    bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
+
+    bind('btn-claim-vip-number', 'click', (e) => {
+        const selectedNum = e.target.dataset.selectedNumber;
+        if (!selectedNum) return;
+
+        STATE.updateUser('isVip', true);
+        STATE.updateUser('userNo', selectedNum);
+        
+        UI.closeModal('vip-modal');
+        UI.renderProfile();
+        UI.showToast(`Tebrikler! ${selectedNum} numaralı VIP Kurucu oldun. 💎`, 'success');
+    });
+
+    // =========================================================
+    // DİĞER MODALLAR (Telefon, PDF, Önerge)
+    // =========================================================
 
     bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
@@ -104,6 +159,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
     bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
 
-    bind('btn-logout', 'click', AUTH.logout);
-    bind('btn-delete-account', 'click', AUTH.deleteAccount);
 });
