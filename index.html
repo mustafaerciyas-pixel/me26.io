@@ -5,35 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ME26 Ağı: İçmimarlık mesleğine değer katan, aidatsız ortak akıl platformu.">
     
-    <!-- ANA MESAJ BAŞLIĞI -->
     <title>ME26 Ağı | 11.000 İçeride, 95.000 Dışarıda. Bu Değişiyor.</title>
 
     <link rel="icon" type="image/png" href="favicon.png">
-
-    <!-- 1. TAILWIND CDN (Önce motor yüklenir) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. ME26 DİNAMİK RENK MOTORU (26 Mayıs 2026'ya kadar rastgele) -->
     <script>
-        // 1. Sistemin Kalıcı Rengi (Oylama Sonrası)
-        const kaliciRenk = '#F6C104'; // Altın Sarısı
-        
-        // 2. Oylama Sürecindeki Rastgele/Rahatsız Edici Renkler
+        const kaliciRenk = '#F6C104'; 
         const kaosRenkleri = ['#FF0055', '#00CCD9', '#9900FF', '#FF4400', '#00FF66', '#FF00CC'];
-        
-        // 3. Tarih Kontrolü
         const bitisTarihi = new Date('2026-05-26T00:00:00'); 
         const suAn = new Date();
         
         let aktifRenk = kaliciRenk;
-        
-        // Eğer henüz 26 Mayıs olmadıysa rastgele renk seç
         if (suAn < bitisTarihi) {
-            const rastgeleIndex = Math.floor(Math.random() * kaosRenkleri.length);
-            aktifRenk = kaosRenkleri[rastgeleIndex];
+            aktifRenk = kaosRenkleri[Math.floor(Math.random() * kaosRenkleri.length)];
         }
 
-        // 4. HEX'ten RGB'ye Çevirici (CSS gölgeleri ve glow efektleri için)
         function hexToRgb(hex) {
             let r = 0, g = 0, b = 0;
             if (hex.length === 7) {
@@ -44,59 +31,44 @@
             return r + ', ' + g + ', ' + b;
         }
 
-        // 5. CSS Değişkenlerini Kök (Root) Seviyesine Enjekte Et
         document.documentElement.style.setProperty('--neon-hex', aktifRenk);
         document.documentElement.style.setProperty('--neon-rgb', hexToRgb(aktifRenk));
 
-        // 6. Tailwind Konfigürasyonunu Dinamik Renkle Başlat
         window.tailwind = window.tailwind || {};
         window.tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        kaos: aktifRenk,
-                        zemin: '#0f172a'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
-                    }
+                    colors: { kaos: aktifRenk, zemin: '#0f172a' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         };
     </script>
     
-    <!-- FONTLAR VE KLASÖRSÜZ CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="ana-body" class="antialiased flex flex-col min-h-screen relative bg-zemin text-white transition-colors duration-1000">
 
-    <!-- EKRAN BİLDİRİMLERİ (TOAST) -->
     <div id="toast-container" class="fixed bottom-6 left-6 z-[90000] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- MOBİL SOL MENÜ -->
     <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 transform -translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 pt-10">
         <button type="button" id="btn-close-mobile-menu" aria-label="Menüyü Kapat" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
-        <!-- Menü linkleri (Manifesto, Kurallar, SSS) ileri bir tarihe kadar kaldırıldı -->
         <button type="button" id="btn-mobile-nav-action" class="bg-kaos text-slate-900 px-8 py-3 rounded-lg text-xl font-black uppercase tracking-widest mt-8 shadow-kaos cursor-pointer">1 TIKLA KATIL</button>
     </div>
 
-    <!-- ÜST MENÜ (NAVİGASYON) -->
     <nav id="ana-nav" class="bg-zemin text-white py-5 shadow-xl relative z-30 border-b border-slate-800 w-full">
         <div class="max-w-6xl mx-auto px-4 flex justify-between items-center relative">
             <a href="index.html" id="btn-logo" class="text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition">
                 <div class="w-1.5 h-6 bg-kaos mr-2"></div><span><span class="text-kaos">ME26</span> AĞI</span>
             </a>
-            
             <div class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide items-center">
-                <!-- Menü linkleri (Manifesto, Kurallar) ileri bir tarihe kadar kaldırıldı -->
                 <button type="button" id="btn-desktop-nav-action" class="bg-kaos text-slate-900 px-5 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer text-center tracking-widest relative z-50">
                     1 TIKLA KATIL
                 </button>
             </div>
-            
             <button type="button" id="btn-open-mobile-menu" aria-label="Mobil Menüyü Aç" class="md:hidden text-white hover:text-kaos outline-none">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
@@ -165,10 +137,8 @@
                 </button>
             </div>
 
-            <!-- Ayarlar & Çıkış -->
             <div class="p-6 text-center flex flex-col gap-4 bg-black/40">
                 <button type="button" id="btn-open-phone-modal" class="w-full bg-slate-800 border border-blue-500/50 text-blue-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📱 Telefonu Doğrula (0.5x Oy Gücü)</button>
-                
                 <button type="button" id="btn-open-pdf-modal" class="hidden w-full bg-slate-800 border border-green-500/50 text-green-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📜 Belge Yükle ve Tam Yetkili Ol</button>
                 
                 <div class="flex justify-between border-t border-slate-700 pt-4">
@@ -179,7 +149,7 @@
         </div>
     </div>
 
-    <!-- ŞEHİR TRİBÜNLERİ (Kayan Bant) -->
+    <!-- ŞEHİR TRİBÜNLERİ BANT -->
     <div class="bg-kaos/10 border-b border-kaos/20 py-2.5 w-full relative z-20">
         <div class="marquee-container text-[11px] font-bold uppercase tracking-widest text-kaos">
             <div class="marquee-content flex gap-12 items-center" id="city-tribune-band">
@@ -210,8 +180,6 @@
         </header>
         
         <main id="manifesto" class="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 w-full mb-20 items-center">
-            
-            <!-- Manifesto Sol Taraf -->
             <div class="flex flex-col justify-center">
                 <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md mb-5 flex items-center gap-3">
                     <span class="text-4xl">🌍</span> AİDATSIZ. BAŞKANSIZ. ORTAK AKIL.
@@ -223,7 +191,6 @@
                 </p>
             </div>
             
-            <!-- Giriş Sağ Taraf -->
             <div class="bg-slate-900/95 border border-kaos p-8 md:p-10 rounded-3xl shadow-kaos-lg w-full max-w-md relative text-center mx-auto">
                 <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-4 py-1.5 rounded-bl-lg uppercase tracking-widest">Sistem Açık</div>
                 <h3 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-8 mt-2">İÇMİMARLARIN ORTAK AKLINA KATIL</h3>
@@ -246,7 +213,6 @@
             </div>
         </main>
         
-        <!-- Mobil Alt Giriş Butonu -->
         <div class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-kaos/30 p-4 z-40" id="sticky-cta">
             <button type="button" id="btn-login-sticky" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-kaos text-sm">
                 1 TIKLA KATIL (SİSTEME GİR)
@@ -256,8 +222,6 @@
 
     <!-- ================= İÇERİSİ (VOTING VIEW) ================= -->
     <div id="voting-view" class="flex-grow w-full max-w-5xl mx-auto flex-col p-4 md:p-8 z-10 mt-6 mb-20 relative hidden">
-        
-        <!-- Oylama Sandığı -->
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl overflow-hidden mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="p-8 md:p-12 text-center border-b border-slate-700 bg-black/40">
                 <h2 class="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest"><span class="text-kaos">ORTAK AKIL</span> SANDIĞI</h2>
@@ -265,7 +229,6 @@
             </div>
             
             <div class="p-6 md:p-10 space-y-10 bg-slate-800/20" id="polls-container">
-                <!-- ÖRNEK OYLAMA -->
                 <div class="poll-card bg-black/50 border border-slate-600 rounded-2xl p-6 md:p-8 shadow-lg relative" data-poll-id="1">
                     <h3 class="text-xl font-black text-white mb-3">🎨 1. Soru: Sitemizin Rengi Ne Olsun?</h3>
                     <p class="text-gray-300 text-sm mb-6">Şu anki rahatsız edici renk değiştirilsin ve hepimizin seveceği ortak bir renge (Altın Sarısı) geçilsin mi?</p>
@@ -287,7 +250,6 @@
             </div>
         </div>
         
-        <!-- Meclis Önergeleri (Fikirler) -->
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl p-8 md:p-12 mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700 pb-6 gap-4">
                 <div>
@@ -298,22 +260,19 @@
                     📝 YENİ SORUN BİLDİR
                 </button>
             </div>
-            
-            <div id="proposals-container" class="flex flex-col gap-4">
-                <!-- Javascript ile dinamik dolacak veya boş ekran gelecek -->
-            </div>
+            <div id="proposals-container" class="flex flex-col gap-4"></div>
         </div>
     </div>
 
     <!-- ================= GİZLİ PENCERELER (MODALLAR) ================= -->
     
-    <!-- 1. Kayıt/Seçim Modalı -->
+    <!-- YENİ AKILLI KAYIT (TAAHHÜT) MODALI -->
     <div id="taahhut-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative overflow-hidden shadow-kaos-lg">
-            <h3 class="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-widest leading-tight">İçmimar mısın,<br>İçmimarlık Öğrencisi misin?</h3>
-            <p class="text-gray-300 text-sm mb-8 font-medium">Ortak Akıl Sandığına girmeden önce şehrini ve mesleğini seç.</p>
+            <h3 class="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-widest leading-tight">Dijital Stadyuma<br>Hoş Geldin</h3>
+            <p class="text-gray-300 text-sm mb-8 font-medium">Ortak Akıl Sandığına girmeden önce seçimlerini yap.</p>
             
-            <div class="mb-6 text-left">
+            <div class="mb-4 text-left">
                 <label for="input-taahhut-sehir" class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>🏟️</span> Şehrini Seç (Tribün)</label>
                 <select id="input-taahhut-sehir" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none font-bold text-sm focus:border-kaos transition h-14 custom-scrollbar">
                     <option value="" disabled selected>Şehrini Seç...</option>
@@ -347,22 +306,36 @@
                     <option value="Yurtdışı">Yurtdışı</option>
                 </select>
             </div>
+
+            <div class="mb-4 text-left">
+                <label for="input-taahhut-rol" class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>👤</span> Mesleki Durumun</label>
+                <select id="input-taahhut-rol" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none font-bold text-sm focus:border-kaos transition h-14">
+                    <option value="" disabled selected>Seçim Yap...</option>
+                    <option value="İçmimar">İçmimarım</option>
+                    <option value="Öğrenci">İçmimarlık Öğrencisiyim</option>
+                    <option value="Paydaş">Sektör Paydaşıyım</option>
+                </select>
+            </div>
+
+            <!-- Paydaş Türü Giriş Alanı (Gizli Başlar) -->
+            <div id="div-paydas-detay" class="mb-6 text-left hidden transition-all duration-300">
+                <label for="input-paydas-detay" class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>✍️</span> Paydaş Türünü Yaz</label>
+                <input type="text" id="input-paydas-detay" placeholder="Örn: Mimar, Mobilya Üreticisi, Usta..." class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
+            </div>
             
             <div class="flex flex-col gap-4 mt-8">
-                <!-- YENİ GOOGLE BUTONU -->
                 <button type="button" id="btn-google-login" class="bg-white hover:bg-gray-200 text-slate-900 border border-gray-300 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md flex items-center justify-center gap-3">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     Google ile Hızlı Katıl
                 </button>
                 
-                <div class="flex items-center my-2">
+                <div class="flex items-center my-1">
                     <div class="flex-grow border-t border-slate-700"></div>
-                    <span class="px-3 text-gray-500 text-[10px] font-bold uppercase tracking-widest">VEYA MANUEL SEÇ</span>
+                    <span class="px-3 text-gray-500 text-[10px] font-bold uppercase tracking-widest">VEYA</span>
                     <div class="flex-grow border-t border-slate-700"></div>
                 </div>
 
-                <button type="button" id="btn-role-icmimar" class="bg-slate-800 hover:bg-kaos hover:text-slate-900 border border-slate-600 hover:border-kaos text-white font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md">Ben Bir İçmimarım</button>
-                <button type="button" id="btn-role-ogrenci" class="bg-slate-800 hover:bg-kaos hover:text-slate-900 border border-slate-600 hover:border-kaos text-white font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md">İçmimarlık Öğrencisiyim</button>
+                <button type="button" id="btn-manuel-login" class="bg-slate-800 hover:bg-kaos hover:text-slate-900 border border-slate-600 hover:border-kaos text-white font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md">Manuel (Anonim) Devam Et</button>
             </div>
         </div>
     </div>
@@ -412,7 +385,6 @@
             <span class="text-5xl block mb-4">🛡️</span>
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Telefon Onayı</h3>
             
-            <!-- Adım 1: Telefon Numarası Girme -->
             <div id="phone-step-1">
                 <p class="text-gray-300 text-sm mb-8 font-medium">Oy gücünü 0.5x yapmak için telefonunu doğrulamalısın.</p>
                 <div class="text-left mb-6">
@@ -425,7 +397,6 @@
                 <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:opacity-90 transition shadow-md">SMS GÖNDER</button>
             </div>
 
-            <!-- Adım 2: SMS Kodu (OTP) Girme -->
             <div id="phone-step-2" class="hidden">
                 <p class="text-gray-300 text-sm mb-8 font-medium">Telefonuna gelen 6 haneli doğrulama kodunu gir.</p>
                 <div class="text-left mb-6">
@@ -439,7 +410,7 @@
         </div>
     </div>
 
-    <!-- 5. PDF Yükleme Modalı (Şeffaf / MVP) -->
+    <!-- 5. PDF Yükleme Modalı -->
     <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-green-500 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_30px_rgba(34,197,94,0.3)]">
             <span class="text-5xl block mb-4">📜</span>
@@ -505,10 +476,7 @@
         </div>
     </footer>
 
-    <!-- Firebase reCAPTCHA Container (Görünmez robot kontrolü için) -->
     <div id="recaptcha-container"></div>
-
-    <!-- KLASÖRSÜZ YAPI: MODÜLER JS MOTORU BURADAN ÇALIŞIR -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
