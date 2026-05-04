@@ -1,5 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
+   Firebase Google Popup + SMS Entegrasyonlu Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -12,8 +13,7 @@ import {
     RecaptchaVerifier,
     signInWithPhoneNumber,
     GoogleAuthProvider,
-    signInWithRedirect,
-    getRedirectResult
+    signInWithPopup
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseApp = initializeApp(ME26_CONFIG.firebaseConfig);
@@ -72,47 +72,6 @@ const getCommitmentData = () => {
 };
 
 export const AUTH = {
-    checkRedirect: async () => {
-        try {
-            const result = await getRedirectResult(firebaseAuth);
-            if (result && result.user) {
-                const user = result.user;
-                
-                const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
-                const savedRole = localStorage.getItem('me26_temp_role') || 'Sistem Üyesi';
-                
-                STATE.setUser({
-                    authStage: 'registered',
-                    userNo: 'BEKLEYEN',
-                    role: savedRole,
-                    city: savedCity,
-                    votePower: '0.0x',
-                    inviteCount: 0,
-                    isVip: false
-                });
-                
-                localStorage.removeItem('me26_temp_city');
-                localStorage.removeItem('me26_temp_role');
-                
-                UI.closeModal('taahhut-modal');
-                UI.renderProfile();
-                
-                const wowNoEl = getEl('ui-wow-uye-no');
-                if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
-                
-                UI.showView('voting');
-                UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
-                UI.openModal('wow-modal');
-                
-                return true; // Başarılı dönüş bildirimi
-            }
-            return false; // Bekleyen bir giriş yok
-        } catch (error) {
-            console.error('Yönlendirme hatası:', error);
-            return false;
-        }
-    },
-
     login: async () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
@@ -132,13 +91,36 @@ export const AUTH = {
     loginWithGoogle: async () => {
         const formData = getCommitmentData();
 
-        const btn = getEl('btn-google-login');
-        setButtonLoading(btn, 'GOOGLE\'A GİDİLİYOR...');
+        try {
+            // Popup engelleyicisine takılmamak için bekleme (loading) efekti koymuyoruz!
+            const result = await signInWithPopup(firebaseAuth, googleProvider);
+            const user = result.user;
 
-        localStorage.setItem('me26_temp_city', formData.city);
-        localStorage.setItem('me26_temp_role', formData.role);
+            STATE.setUser({
+                authStage: 'registered',
+                userNo: 'BEKLEYEN',
+                role: formData.role,
+                city: formData.city,
+                votePower: '0.0x',
+                inviteCount: 0,
+                isVip: false
+            });
 
-        signInWithRedirect(firebaseAuth, googleProvider);
+            UI.closeModal('taahhut-modal');
+            UI.renderProfile();
+            
+            const wowNoEl = getEl('ui-wow-uye-no');
+            if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
+            
+            UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
+            UI.openModal('wow-modal');
+
+        } catch (error) {
+            console.error('Google Giriş Hatası:', error);
+            if (error.code !== 'auth/popup-closed-by-user') {
+                UI.showToast('Google ile giriş başarısız oldu.', 'error');
+            }
+        }
     },
 
     submitCommitment: async () => {
