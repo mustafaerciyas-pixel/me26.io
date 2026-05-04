@@ -1,12 +1,12 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase DB Entegre Sürüm
+   Firebase Auth + Supabase Karanlık Oda (RPC) Entegre Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { ME26_CONFIG } from './config.js';
-import { DB } from './supabase.js'; // <-- YENİ: Supabase Motoru
+import { DB } from './supabase.js'; 
 import { Me26VotingSystem } from './app.js'; 
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
@@ -31,7 +31,7 @@ let confirmationResult = null;
 
 const getEl = (id) => document.getElementById(id);
 
-// Şehre özel rastgele davet kodu üretici (Örn: ME26-ANK-7X9P)
+// Şehre özel rastgele davet kodu üretici (Gizli tutulmasında sakınca olmayan tek veri)
 const generateInviteCode = (city) => {
     const cityCode = (city || 'TR').substring(0, 3).toUpperCase();
     const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -85,37 +85,34 @@ export const AUTH = {
         try {
             UI.showToast('Güvenli bağlantı kuruluyor...', 'info');
             
-            // Supabase'den kullanıcıyı ara
-            let dbUser = await DB.getUser(user.uid);
-            let isNewUser = false;
+            const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
+            const savedRole = localStorage.getItem('me26_temp_role') || 'İçmimar';
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref') || null;
 
-            // KULLANICI YOKSA (SİSTEME İLK DEFA GİRİYORSA)
-            if (!dbUser) {
-                isNewUser = true;
-                const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
-                const savedRole = localStorage.getItem('me26_temp_role') || 'İçmimar';
-                
-                // URL'de referans kodu var mı bak (Davet linkiyle mi gelmiş?)
-                const urlParams = new URLSearchParams(window.location.search);
-                const refCode = urlParams.get('ref') || null;
+            // KOD GİZLİLİĞİ: Sütun isimleri yok! Şifrelenmiş paket.
+            const gizliPaket = {
+                uid: user.uid,
+                g_isim: user.displayName,
+                mail: user.email,
+                foto: user.photoURL,
+                m_durum: savedRole,
+                sehir: savedCity,
+                d_kod: generateInviteCode(savedCity),
+                ref: refCode
+            };
 
-                dbUser = await DB.createUser({
-                    id: user.uid,
-                    google_isim: user.displayName,
-                    email: user.email,
-                    profil_foto: user.photoURL,
-                    mesleki_durum: savedRole,
-                    sehir_tribunu: savedCity,
-                    kendi_davet_kodu: generateInviteCode(savedCity),
-                    referans_kodu: refCode
-                });
-            }
+            // Paketi Supabase RPC (Karanlık Oda) motoruna at
+            const dbUser = await DB.sistemeGiris(gizliPaket);
 
             // Temizlik
             localStorage.removeItem('me26_temp_city');
             localStorage.removeItem('me26_temp_role');
 
-            // SUPABASE VERİSİNİ STATE (HAFIZA) İLE EŞLEŞTİR
+            if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
+
+            // SUPABASE'DEN GELEN YANITI HAFIZAYA (STATE) YAZ
             let authStage = 'registered';
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
             else if (dbUser.oy_gucu === 0.5) authStage = 'phone_verified';
@@ -133,12 +130,11 @@ export const AUTH = {
             });
             
             UI.closeModal('taahhut-modal');
-            UI.renderProfile(); // UI güncellenir, referans kodu yerine yerleşir
-            
+            UI.renderProfile(); 
             UI.showView('voting');
             
-            // Sadece yeni kayıt olanlara karşılama konfetisini (WOW) patlat
-            if (isNewUser) {
+            // Eğer referans/davet sayısı 0 ise yeni kayıttır, WOW patlat
+            if (dbUser.basarili_davet_sayisi === 0 && dbUser.oy_gucu === 0) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
                 UI.openModal('wow-modal');
@@ -228,8 +224,6 @@ export const AUTH = {
         }
     },
 
-    // Manuel Giriş (Anonim) artık kullanılmayacağı için sildik. Sadece Google!
-
     verifyPhone: async () => {
         const phoneInput = getEl('input-phone-number');
         const btnSubmit = getEl('btn-submit-phone');
@@ -302,16 +296,12 @@ export const AUTH = {
         try {
             await confirmationResult.confirm(code);
 
-            // Supabase Veritabanını Güncelle
             const phoneInput = getEl('input-phone-number');
             const phoneVal = normalizeTurkishPhone(phoneInput.value);
             
-            await DB.updateUser(STATE.user.uid, { 
-                telefon_no: `+90${phoneVal}`,
-                oy_gucu: 0.5 
-            });
+            // Gizli fonksiyona gönder
+            await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
-            // Local Hafızayı Güncelle
             STATE.updateUser('authStage', 'phone_verified');
             STATE.updateUser('votePower', '0.5x');
 
@@ -342,11 +332,8 @@ export const AUTH = {
         UI.showToast('Belgeniz güvenli bir şekilde sisteme aktarılıyor...', 'info');
         
         try {
-            // Şimdilik sadece veritabanında durumu 'Bekliyor' yapıyoruz
-            // İlerleyen aşamada burada dosyayı Supabase Storage'a atacağız
-            await DB.updateUser(STATE.user.uid, { 
-                belge_onay_durumu: 'Bekliyor'
-            });
+            // Gizli fonksiyona gönder
+            await DB.belgeyiSirayaAl(STATE.user.uid);
 
             UI.showToast('Belgeniz sıraya alındı! Liyakat kontrolünden sonra onaylanacaktır.', 'success');
             UI.closeModal('pdf-modal');
@@ -374,8 +361,6 @@ export const AUTH = {
         if (!confirm('Tüm verilerin kalıcı olarak yok edilecek. Emin misin?')) return;
         
         try {
-            // İleride Supabase'den de silme komutu eklenebilir
-            // await DB.deleteUser(STATE.user.uid);
             signOut(firebaseAuth).catch(() => {}); 
             STATE.clearAll();
             UI.toggleProfileDrawer(false);
