@@ -31,7 +31,6 @@ let confirmationResult = null;
 
 const getEl = (id) => document.getElementById(id);
 
-// Şehre özel rastgele davet kodu üretici
 const generateInviteCode = (city) => {
     const cityCode = (city || 'TR').substring(0, 3).toUpperCase();
     const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -91,7 +90,6 @@ export const AUTH = {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || null;
 
-            // KOD GİZLİLİĞİ: Sütun isimleri yok! Şifrelenmiş paket.
             const gizliPaket = {
                 uid: user.uid,
                 g_isim: user.displayName,
@@ -103,16 +101,13 @@ export const AUTH = {
                 ref: refCode
             };
 
-            // Paketi Supabase RPC (Karanlık Oda) motoruna at
             const dbUser = await DB.sistemeGiris(gizliPaket);
 
-            // Temizlik
             localStorage.removeItem('me26_temp_city');
             localStorage.removeItem('me26_temp_role');
 
             if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
-            // SUPABASE'DEN GELEN YANITI HAFIZAYA (STATE) YAZ
             let authStage = 'registered';
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
             else if (dbUser.oy_gucu === 0.5) authStage = 'phone_verified';
@@ -133,7 +128,6 @@ export const AUTH = {
             UI.renderProfile(); 
             UI.showView('voting');
             
-            // Eğer referans/davet sayısı 0 ise yeni kayıttır, WOW patlat
             if (dbUser.basarili_davet_sayisi === 0 && dbUser.oy_gucu === 0) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
@@ -299,7 +293,6 @@ export const AUTH = {
             const phoneInput = getEl('input-phone-number');
             const phoneVal = normalizeTurkishPhone(phoneInput.value);
             
-            // Gizli fonksiyona gönder
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
@@ -332,14 +325,14 @@ export const AUTH = {
         }
         
         const stopLoading = setButtonLoading(btnSubmit, 'SİSTEM BELGEYİ OKUYOR...');
-        UI.showToast('Belge cihazınızda analiz ediliyor (Gizlilik kalkanı aktif)...', 'info');
+        UI.showToast('Belge analiz ediliyor (Gizlilik kalkanı aktif)...', 'info');
         
         try {
             const file = fileInput.files[0];
             const arrayBuffer = await file.arrayBuffer();
             
-            // 1. DİNAMİK GÖZLÜK (HTML'den bağımsız olarak kütüphaneyi indirir)
-            if (!window.pdfjsLib && !window['pdfjs-dist/build/pdf']) {
+            // 1. DİNAMİK GÖZLÜK İNDİRİMİ
+            if (!window.pdfjsLib) {
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
@@ -349,18 +342,16 @@ export const AUTH = {
                 });
             }
             
-            const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+            const pdfjsLib = window.pdfjsLib;
             if (!pdfjsLib) throw new Error("PDF Motoru Yüklenemedi.");
             
-            // === İŞTE KURŞUN GEÇİRMEZ KISIM BURASI (BLOB WORKER) ===
-            // Tarayıcının dış linkleri sessizce engellemesini (CORS) önlemek için 
-            // taşeron işçiyi yerel bellekte sahte bir kimlikle yaratıyoruz.
-            const workerCode = `importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');`;
-            const workerBlob = new Blob([workerCode], { type: 'text/javascript' });
-            pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(workerBlob);
+            // ========================================================
+            // KİLİT ÇÖZÜCÜ HAMLE: WORKER'I İPTAL ET
+            // Dış kütüphane bağlantısını koparıp işlemi direkt tarayıcıya yaptırıyoruz.
+            pdfjsLib.GlobalWorkerOptions.disableWorker = true;
             // ========================================================
             
-            // 2. PDF OKUMA İŞLEMİ
+            // 2. PDF OKUMA İŞLEMİ (Artık takılmayacak)
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             let fullText = '';
             for (let i = 1; i <= pdf.numPages; i++) {
@@ -395,7 +386,7 @@ export const AUTH = {
             const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // LİYAKAT KONTROLÜ (İçmimarlık Geçmiyorsa Reddet)
+            // LİYAKAT KONTROLÜ
             const upperBolum = bolum.toUpperCase();
             if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
                  UI.showToast('HATA: Belgede "İçmimarlık" liyakatı doğrulanamadı!', 'error');
