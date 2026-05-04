@@ -1,13 +1,13 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   1 Tıkla Giriş + Kademeli Profilleme (Progressive Onboarding) Sürümü
+   1 Tıkla Giriş + Kademeli Profilleme + SİNYAL MİMARİSİ
    ========================================================================== */
 
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { ME26_CONFIG } from './config.js';
 import { DB } from './supabase.js'; 
-import { Me26VotingSystem } from './app.js'; 
+// DİKKAT: app.js importu (Kısa Devre yaptığı için) kaldırıldı!
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
 import {
@@ -81,7 +81,7 @@ export const AUTH = {
 
             let authStage = 'registered';
             
-            // GÜVENLİK SENSÖRÜ: Veritabanından gelen gücü kesin rakama çevir
+            // GÜVENLİK SENSÖRÜ
             const guc = parseFloat(dbUser.oy_gucu || 0);
             
             if (guc >= 1.0) authStage = 'pdf_verified';
@@ -115,7 +115,8 @@ export const AUTH = {
                 UI.showToast(`Yeniden hoş geldin, ${dbUser.resmi_ad_soyad || dbUser.google_isim}!`, 'success');
             }
             
-            Me26VotingSystem.updateVisibility(); 
+            // HAVAYA SİNYAL FİŞEĞİ AT (app.js bunu duyup ekranı güncelleyecek)
+            window.dispatchEvent(new Event('auth_changed'));
 
         } catch (error) {
             console.error("Veritabanı senkronizasyon hatası:", error);
@@ -432,7 +433,7 @@ export const AUTH = {
         resetPhoneModal();
         UI.showToast('Oturum kapatıldı. Stadyumdan çıkıldı.', 'success');
         
-        Me26VotingSystem.updateVisibility(); 
+        window.dispatchEvent(new Event('auth_changed')); // Sinyal gönder
     },
 
     deleteAccount: async () => {
@@ -447,7 +448,7 @@ export const AUTH = {
             resetPhoneModal();
             UI.showToast('Tüm verilerin sistemden silindi.', 'success');
             
-            Me26VotingSystem.updateVisibility(); 
+            window.dispatchEvent(new Event('auth_changed')); // Sinyal gönder
         } catch(e) {
             UI.showToast('Hesap silinirken bir hata oluştu', 'error');
         }
