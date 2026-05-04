@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase Karanlık Oda (RPC) + Gerçek E-Devlet YZ Okuyucu
+   Firebase Auth + Supabase Karanlık Oda (RPC) + Yeni Nesil E-Devlet Buldozeri
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -323,7 +323,7 @@ export const AUTH = {
         }
     },
 
-    // GERÇEK PDF OKUYUCU (VERİLERİ TABLOYA İŞLER)
+    // BULDOZER E-DEVLET OKUYUCU (Tüm formasyonları ezer geçer)
     verifyPdf: async () => {
         if (!STATE.isLoggedIn()) {
             UI.showToast('Lütfen önce sisteme giriş yapın.', 'error');
@@ -348,7 +348,7 @@ export const AUTH = {
 
         btnSubmit.dataset.loading = 'true';
         const originalText = btnSubmit.innerHTML;
-        btnSubmit.textContent = 'BELGE ANALİZ EDİLİYOR...';
+        btnSubmit.textContent = 'BELGE PARÇALANIYOR...';
         btnSubmit.disabled = true;
 
         try {
@@ -370,57 +370,84 @@ export const AUTH = {
                 fullText += textContent.items.map(item => item.str).join(' ') + ' ';
             }
             
-            // Fazla boşlukları temizle ki arama kolaylaşsın
+            // Metni tek satıra indirge ve çift boşlukları temizle
             fullText = fullText.replace(/\s+/g, ' ');
 
-            // Esnek Metin Cımbızlayıcı
-            const extract = (text, regex) => {
+            // BULDOZER ÇIKARICI FONKSİYON: 
+            // Belirtilen etiketi arar, iki nokta olsa da olmasa da sonrasını alır
+            // Taa ki diğer büyük e-devlet başlıklarından birini görene kadar.
+            const parseField = (text, label) => {
+                const labels = ['T.C. Kimlik No', 'Kimlik No', 'Adı Soyadı', 'Baba Adı', 'Anne Adı', 'Doğum Tarihi', 'Üniversite Adı', 'Program', 'Kayıt Tarihi', 'Mezuniyet Tarihi', 'Diploma No', 'Diploma Notu', 'Not Ortalaması', 'Durum', 'Belge', 'Barkod'];
+                const escapedLabels = labels.map(l => l.replace(/\./g, '\\.')).join('|');
+                const regex = new RegExp(`${label}\\s*[:\\-]?\\s*(.*?)\\s*(?=${escapedLabels}|$)`, 'i');
                 const match = text.match(regex);
                 return match ? match[1].trim() : 'Bulunamadı';
             };
 
-            const tcMatch = extract(fullText, /Kimlik No\s*\|?\s*:\s*([0-9]{11})/i);
-            const maskedTc = tcMatch !== 'Bulunamadı' ? tcMatch.substring(0,3) + '*****' + tcMatch.substring(8) : 'GİZLİ';
+            // 1. TC Kimlik No (Direkt 11 haneli rakamı avlar)
+            const tcMatch = fullText.match(/\b[1-9][0-9]{10}\b/);
+            const tc = tcMatch ? tcMatch[0] : 'Bulunamadı';
+            const maskedTc = tc !== 'Bulunamadı' ? tc.substring(0,3) + '*****' + tc.substring(8) : 'GİZLİ';
             
-            const adSoyad = extract(fullText, /Adı Soyadı\s*\|?\s*:\s*(.*?)(?=\s*Baba Adı|\s*Ana Adı|\s*Doğum)/i);
-            const babaAdi = extract(fullText, /Baba Adı\s*\|?\s*:\s*(.*?)(?=\s*Anne Adı|\s*Doğum)/i);
-            const anneAdi = extract(fullText, /Anne Adı\s*\|?\s*:\s*(.*?)(?=\s*Doğum Tarihi)/i);
-            const dogumTarihi = extract(fullText, /Doğum Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
+            // 2. İsimler
+            const adSoyad = parseField(fullText, 'Adı Soyadı');
+            const babaAdi = parseField(fullText, 'Baba Adı');
+            const anneAdi = parseField(fullText, 'Anne Adı');
             
-            const programRaw = extract(fullText, /Program\s*\|?\s*:\s*(.*?)(?=\s*Kayıt Tarihi|\s*Diploma No|\s*Mezuniyet)/i);
-            let uni = "Bulunamadı", fakulte = "Bulunamadı", bolum = "Bulunamadı";
+            // 3. Tarihler (Direkt gg.aa.yyyy formatını avlar)
+            const dateMatches = fullText.match(/\b\d{2}\.\d{2}\.\d{4}\b/g) || [];
+            let dogumTarihi = parseField(fullText, 'Doğum Tarihi');
+            if (dogumTarihi === 'Bulunamadı' && dateMatches.length > 0) dogumTarihi = dateMatches[0];
+            
+            let mezunTarihi = parseField(fullText, 'Mezuniyet Tarihi');
+            if (mezunTarihi === 'Bulunamadı' && dateMatches.length > 1) mezunTarihi = dateMatches[dateMatches.length - 1];
+            
+            // 4. Okul ve Bölüm (E-Devlet'te genelde slashes / ile ayrılır)
+            const programRaw = parseField(fullText, 'Program');
+            let uni = 'Bulunamadı', fakulte = 'Bulunamadı', bolum = 'Bulunamadı';
+            
             if (programRaw !== 'Bulunamadı') {
                 const parts = programRaw.split('/');
-                uni = parts[0] ? parts[0].trim() : 'Bulunamadı';
-                fakulte = parts[1] ? parts[1].trim() : 'Bulunamadı';
-                bolum = parts[2] ? parts[2].trim() : 'Bulunamadı';
+                if(parts.length >= 3) {
+                    uni = parts[0].trim();
+                    fakulte = parts[1].trim();
+                    bolum = parts[2].trim();
+                } else {
+                    bolum = programRaw; // Slash yoksa tüm satırı bölüme at
+                }
+            } else {
+                // Eğer "Program" diye bir başlık yoksa kelime kelime avlar
+                const uniMatch = fullText.match(/([A-ZÇĞİÖŞÜa-zçğıöşü\s]+ÜNİVERSİTESİ)/i);
+                if(uniMatch) uni = uniMatch[1].trim();
+                
+                const fakMatch = fullText.match(/([A-ZÇĞİÖŞÜa-zçğıöşü\s]+FAKÜLTESİ)/i);
+                if(fakMatch) fakulte = fakMatch[1].trim();
+                
+                const bolumMatch = fullText.match(/([A-ZÇĞİÖŞÜa-zçğıöşü\s]+BÖLÜMÜ|[A-ZÇĞİÖŞÜa-zçğıöşü\s]+PROGRAMI|[A-ZÇĞİÖŞÜa-zçğıöşü\s]+İÇ MİMARLIK|[A-ZÇĞİÖŞÜa-zçğıöşü\s]+İÇMİMARLIK)/i);
+                if(bolumMatch) bolum = bolumMatch[1].trim();
             }
             
-            const diplomaNo = extract(fullText, /Diploma No\s*\|?\s*:\s*(.*?)(?=\s*Diploma Notu|\s*Mezuniyet|\s*Not Ortalaması)/i);
-            const mezunTarihi = extract(fullText, /Mezuniyet Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
-            
+            // 5. Diğer Belgeler
+            const diplomaNo = parseField(fullText, 'Diploma No');
             const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            let durum = 'Öğrenci';
-            if (fullText.toUpperCase().includes('MEZUN') || extract(fullText, /Durum\s*\|?\s*?(.*?)(?=\s|$)/i).toUpperCase().includes('MEZUN')) {
-                durum = 'Mezun';
-            }
-
-            // GÜVENLİ LİYAKAT KONTROLÜ
-            let finalDurum = durum;
+            // 6. LİYAKAT KONTROLÜ (Boşluklu veya Boşluksuz Affetmez)
+            const upperText = fullText.toUpperCase();
+            const finalDurum = upperText.includes('MEZUN') ? 'Mezun' : 'Öğrenci';
+            const isIcmimar = upperText.includes('İÇ MİMAR') || upperText.includes('İÇMİMAR');
+            
+            let gercekDurum = finalDurum;
             let oyGucu = '1.0x';
             let authStage = 'pdf_verified';
 
-            const upperBolum = bolum.toUpperCase();
-            if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
-                // Eğer bölüm İçmimarlık değilse çökmek yerine manuel incelemeye atar
-                finalDurum = 'Reddedildi / Manuel İnceleme Bekliyor';
-                oyGucu = '0.0x'; // Yetki vermiyoruz
+            if (!isIcmimar) {
+                gercekDurum = 'Reddedildi / Manuel İnceleme Bekliyor';
+                oyGucu = '0.0x';
                 authStage = 'document_pending';
             }
 
-            // GERÇEK BİLGİLERİ PAKETLE
+            // ÇIKARTILAN GERÇEK VERİLER
             const belgeData = {
                 tc: maskedTc,
                 ad_soyad: adSoyad,
@@ -433,17 +460,17 @@ export const AUTH = {
                 diploma_no: diplomaNo,
                 mezun_tarihi: mezunTarihi,
                 barkod: barkod,
-                durum: finalDurum
+                durum: gercekDurum
             };
 
-            // SUPABASE'E GERÇEK VERİLERİ GÖNDER
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
             STATE.updateUser('authStage', authStage);
             if(oyGucu !== '0.0x') STATE.updateUser('votePower', oyGucu);
 
+            // GÖRSEL BİLDİRİMLER (Mesleki terminolojiye uygun)
             if(oyGucu === '1.0x'){
-                UI.showToast('Liyakat Onaylandı! Oy gücün 1.0x (Tam Yetki) oldu.', 'success');
+                UI.showToast('İçmimarlık Liyakatı Onaylandı! Oy gücün 1.0x (Tam Yetki) oldu.', 'success');
             } else {
                 UI.showToast('Belgede İçmimarlık tespit edilemedi, incelenmek üzere kuyruğa alındı.', 'info');
             }
