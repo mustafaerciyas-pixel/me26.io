@@ -319,8 +319,8 @@ export const AUTH = {
     },
 
     verifyPdf: async () => {
-        const fileInput = getEl('input-pdf-file');
-        const btnSubmit = getEl('btn-submit-pdf');
+        const fileInput = document.getElementById('input-pdf-file');
+        const btnSubmit = document.getElementById('btn-submit-pdf');
         
         if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             UI.showToast('Lütfen e-devletten aldığınız PDF belgesini seçin.', 'error');
@@ -338,14 +338,23 @@ export const AUTH = {
             const file = fileInput.files[0];
             const arrayBuffer = await file.arrayBuffer();
             
-            // DÜZELTİLEN KISIM: Kütüphaneyi doğru isimle çağırıyoruz
-            const pdfjsLib = window.pdfjsLib; 
-            if (!pdfjsLib) {
-                throw new Error("PDF kütüphanesi HTML içinde bulunamadı.");
+            // 1. DİNAMİK GÖZLÜK (HTML'e muhtaç olmadan kütüphaneyi kendi indirir)
+            if (!window.pdfjsLib) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
             }
+            
+            const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+            if (!pdfjsLib) throw new Error("PDF Motoru Yüklenemedi.");
             
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
             
+            // 2. PDF OKUMA İŞLEMİ
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             let fullText = '';
             for (let i = 1; i <= pdf.numPages; i++) {
@@ -354,13 +363,12 @@ export const AUTH = {
                 fullText += textContent.items.map(item => item.str).join(' ') + ' ';
             }
 
-            // Metin Ayrıştırıcı Motor
+            // 3. E-DEVLET METİN AYRIŞTIRICI
             const extract = (text, regex) => {
                 const match = text.match(regex);
                 return match ? match[1].trim() : '';
             };
 
-            // E-Devlet Formatından Tüm Bilgileri Söküp Çıkarma
             const tc = extract(fullText, /Kimlik No\s*\|?\s*:\s*([0-9]{11})/i);
             const maskedTc = tc ? tc.substring(0,3) + '*****' + tc.substring(8) : 'Bulunamadı';
             
@@ -369,7 +377,6 @@ export const AUTH = {
             const anneAdi = extract(fullText, /Anne Adı\s*\|?\s*:\s*(.*?)(?=\s*Doğum Tarihi)/i);
             const dogumTarihi = extract(fullText, /Doğum Tarihi\s*\|?\s*:\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i);
             
-            // Program Satırını Parçalama (Üniversite / Fakülte / Bölüm)
             const program = extract(fullText, /Program\s*\|?\s*:\s*(.*?)(?=\s*Diploma No|\s*Kayıt Tarihi)/i);
             const progParts = program.split('/');
             const uni = progParts[0] ? progParts[0].trim() : 'Bilinmiyor';
@@ -382,7 +389,7 @@ export const AUTH = {
             const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // LİYAKAT KONTROLÜ (İçmimarlık Geçmiyorsa Reddet)
+            // LİYAKAT KONTROLÜ
             const upperBolum = bolum.toUpperCase();
             if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
                  UI.showToast('HATA: Belgede "İçmimarlık" liyakatı doğrulanamadı!', 'error');
@@ -390,14 +397,12 @@ export const AUTH = {
                  return;
             }
 
-            // Durum (Öğrenci veya Mezun)
             const durumText = extract(fullText, /Durum\s*\|?\s*?(.*?)(?=\s|$)/i).toUpperCase();
             let durum = 'Öğrenci';
             if (durumText.includes('MEZUN') || fullText.toUpperCase().includes('MEZUN BELGESİ')) {
                 durum = 'Mezun';
             }
 
-            // Tüm veriyi Supabase'e gönderilecek şekilde paketle
             const belgeData = {
                 tc: maskedTc,
                 ad_soyad: adSoyad,
@@ -413,10 +418,9 @@ export const AUTH = {
                 durum: durum
             };
 
-            // Paketi RPC kuryesine teslim et
+            // 4. KARANLIK ODAYA (SUPABASE) GÖNDERİM
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
-            // Arayüzü Güncelle
             STATE.updateUser('authStage', 'pdf_verified');
             STATE.updateUser('votePower', '1.0x');
 
