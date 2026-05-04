@@ -9,21 +9,18 @@ import { ME26_CONFIG } from './config.js';
 export const supabase = createClient(ME26_CONFIG.supabaseUrl, ME26_CONFIG.supabaseKey);
 
 export const DB = {
-    // 1. SİSTEME GİRİŞ MOTORU (AKILLANDIRILDI)
+    // 1. SİSTEME GİRİŞ MOTORU (AKILLANDIRILDI - Veri Ezmez)
     sistemeGiris: async (gizliPaket) => {
-        // ÖNCE KONTROL: Bu adam zaten sistemde var mı?
         const { data: mevcutUser } = await supabase
             .from('users')
             .select('*')
             .eq('id', gizliPaket.uid)
             .single();
 
-        // Eğer adam içeride varsa, kendi elle girdiğin "1.0" ve "Şehir" gibi gerçek verilerini ezmeden direkt al!
         if (mevcutUser) {
             return mevcutUser;
         }
 
-        // Eğer adam ilk kez geliyorsa, o zaman karanlık odaya (RPC) yeni kayıt olarak gönder
         const { data, error } = await supabase.rpc('me26_sistem_giris', { p_payload: gizliPaket });
         if (error) console.error('🔥 Giriş Motoru Hatası:', error.message);
         return data;
@@ -59,9 +56,6 @@ export const DB = {
         if (error) {
             console.error('🔥 Şehir Güncelleme Hatası:', error.message);
             throw error;
-        }
-    }
-};            throw error; // UI.js tarafında hata mesajı (Toast) göstermek için fırlatıyoruz
         }
     }
 };
