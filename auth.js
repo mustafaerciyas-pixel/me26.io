@@ -6,6 +6,7 @@
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { ME26_CONFIG } from './config.js';
+import { Me26VotingSystem } from './app.js'; // <-- YENİ EKLENDİ (Motoru İçeri Aldık)
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
 import {
@@ -104,6 +105,8 @@ export const AUTH = {
         UI.showView('voting');
         UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
         UI.openModal('wow-modal');
+        
+        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Kilit Açılır, Manifestolar Sahaya İner)
     },
 
     // Sadece Yönlendirme (Redirect) Sonrası Kontrol Yapan Motor
@@ -202,6 +205,7 @@ export const AUTH = {
         if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
 
         UI.openModal('wow-modal');
+        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Anonim Girişte de Kilit Açılsın)
     },
 
     verifyPhone: async () => {
@@ -315,6 +319,8 @@ export const AUTH = {
         UI.renderProfile();
         resetPhoneModal();
         UI.showToast('Oturum kapatıldı. Stadyumdan çıkıldı.', 'success');
+        
+        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Çıkış Yapınca Manifestolar Gizlenir, Kilit Gelir)
     },
 
     deleteAccount: () => {
@@ -326,5 +332,7 @@ export const AUTH = {
         UI.renderProfile();
         resetPhoneModal();
         UI.showToast('Tüm verilerin sistemden silindi.', 'success');
+        
+        Me26VotingSystem.updateVisibility(); // <-- YENİ EKLENDİ (Hesap Silinince Manifestolar Gizlenir, Kilit Gelir)
     }
 };
