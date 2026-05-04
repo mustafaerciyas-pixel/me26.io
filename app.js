@@ -1,12 +1,11 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Çift Turnike Sistemi + Kaçak Yolcu Dedektörü Entegre Edilmiş Sürüm
+   1 Tıkla Giriş + Kademeli Profilleme Sürümü
    ========================================================================== */
 
 import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { AUTH } from './auth.js';
-import { DB } from './supabase.js';
 
 // =========================================================================
 // CANLI OYLAMA SANDIĞI (YETKİ FİLTRESİ VE SUPABASE BAĞLANTISI)
@@ -23,7 +22,7 @@ export const Me26VotingSystem = {
                 if (STATE.isLoggedIn()) {
                     UI.toggleProfileDrawer(true);
                 } else {
-                    AUTH.register(); // Burası da kilitli ekrandan geleni kayıt formuna atar
+                    AUTH.loginWithGoogle(); // Kilitli ekrandan geleni direkt Google'a atar
                 }
             });
         }
@@ -65,6 +64,7 @@ export const Me26VotingSystem = {
         const container = btnEl.closest('.vote-buttons-container');
         const requiredAuth = container.getAttribute('data-auth'); 
 
+        // Not: Artık rol atamasını belgeye göre yaptığımız için, İçmimarlık tek kelime olarak kontrol edilir.
         if (requiredAuth === 'icmimar' && !userRole.includes('içmimar') && !userRole.includes('mimar')) {
             UI.showToast('Erişim Engellendi: Bu sandığı sadece İçmimarlar oylayabilir.', 'error');
             return;
@@ -76,7 +76,7 @@ export const Me26VotingSystem = {
 
         const currentPower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
         if (currentPower === 0) {
-            UI.showToast('Geçersiz Oy Gücü! Profil panelinden telefonu veya e-devlet belgesini doğrulamalısın.', 'error');
+            UI.showToast('Geçersiz Oy Gücü! Profil panelinden e-devlet belgenizi onaylatmalısınız.', 'error');
             return;
         }
 
@@ -145,71 +145,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // ---------------------------------------------------------
-    // YENİ ÇİFT GİŞE SİSTEMİ BAĞLANTILARI
+    // TÜM TURNİKELER TEK TIKLA GOOGLE'A BAĞLANDI (FORMSUZ GİRİŞ)
     // ---------------------------------------------------------
+    const loginButtons = [
+        'btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile',
+        'btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'
+    ];
     
-    // KAYIT OL BUTONLARI -> Formu Açar
-    ['btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile'].forEach(id => {
+    loginButtons.forEach(id => {
         const btn = document.getElementById(id);
-        if (btn) btn.onclick = AUTH.register;
+        if (btn) btn.onclick = AUTH.loginWithGoogle;
     });
-
-    // GİRİŞ YAP BUTONLARI -> Formu Atlar, Direkt İçeri Alır
-    ['btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = AUTH.directLogin;
-    });
-
     // ---------------------------------------------------------
 
     bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
     bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
-
-    // TAAHHÜT MODALI 
-    bind('btn-close-taahhut-modal', 'click', () => UI.closeModal('taahhut-modal'));
-    
-    bind('btn-taahhut-next', 'click', async () => {
-        const city = document.getElementById('input-taahhut-sehir').value;
-        const role = document.getElementById('input-taahhut-rol').value;
-        if(!city || !role) {
-            UI.showToast('Lütfen şehir ve mesleki durum seçiniz.', 'error');
-            return;
-        }
-
-        // ========================================================
-        // 🚨 KAÇAK YOLCUYU YAKALAYIP VERİTABANINA ZIMBALAMA KISMI
-        // ========================================================
-        if (AUTH.isCompletingProfile && AUTH.pendingFirebaseUser) {
-            let finalRole = role;
-            if (role === 'Öğrenci') finalRole = 'İçmimarlık Öğrencisi';
-
-            localStorage.setItem('me26_temp_city', city);
-            localStorage.setItem('me26_temp_role', finalRole);
-            
-            AUTH.isCompletingProfile = false; // Kilidi kaldır
-            UI.showToast('Bilgiler kaydediliyor...', 'info');
-            
-            // Kullanıcıyı Google'a yollamadan doğrudan kendi fonksiyonumuza veriyoruz!
-            await AUTH.handleGoogleSuccess(AUTH.pendingFirebaseUser);
-            AUTH.pendingFirebaseUser = null;
-        } 
-        // ========================================================
-        // NORMAL YENİ KAYIT AKIŞI
-        // ========================================================
-        else {
-            document.getElementById('taahhut-step-1').classList.add('hidden');
-            document.getElementById('taahhut-step-2').classList.remove('hidden');
-        }
-    });
-
-    bind('btn-taahhut-back', 'click', () => {
-        document.getElementById('taahhut-step-2').classList.add('hidden');
-        document.getElementById('taahhut-step-1').classList.remove('hidden');
-    });
-
-    // KAYIT İŞLEMLERİ
-    bind('btn-google-login', 'click', AUTH.loginWithGoogle);
     
     bind('btn-close-wow', 'click', () => {
         UI.closeModal('wow-modal');
