@@ -21,8 +21,12 @@ export const DB = {
         if (error) console.error('Telefon Motoru Hatası:', error);
     },
 
-    belgeyiSirayaAl: async (uid) => {
-        const { error } = await supabase.rpc('me26_belge_yukle', { p_uid: uid });
+    belgeyiSirayaAl: async (uid, belgeData) => {
+        // Tüm detaylar 'belgeData' isimli tek bir şifreli paket (JSON) olarak gider
+        const { error } = await supabase.rpc('me26_belge_yukle', { 
+            p_uid: uid, 
+            p_data: belgeData 
+        });
         if (error) console.error('Belge Motoru Hatası:', error);
     }
 };
