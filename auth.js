@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Google Popup + SMS Entegrasyonlu Sürüm
+   Firebase Google Popup (Dedektif Ekli) + SMS Entegrasyonlu Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -92,7 +92,7 @@ export const AUTH = {
         const formData = getCommitmentData();
 
         try {
-            // Popup engelleyicisine takılmamak için bekleme (loading) efekti koymuyoruz!
+            // Hiçbir engelleme yapmadan pencereyi açmaya çalış
             const result = await signInWithPopup(firebaseAuth, googleProvider);
             const user = result.user;
 
@@ -117,9 +117,8 @@ export const AUTH = {
 
         } catch (error) {
             console.error('Google Giriş Hatası:', error);
-            if (error.code !== 'auth/popup-closed-by-user') {
-                UI.showToast('Google ile giriş başarısız oldu.', 'error');
-            }
+            // YENİ DEDEKTİF: Ekrana hatanın asıl sebebini büyükçe basacak!
+            alert("GOOGLE ENGELİ YAKALANDI!\n\nHata Kodu: " + error.code + "\n\nEğer bu kod 'auth/unauthorized-domain' ise Google Cloud ayarlarında sorun var demektir. Eğer 'auth/popup-closed-by-user' ise tarayıcın pencereyi engelliyor demektir.");
         }
     },
 
