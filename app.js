@@ -6,13 +6,9 @@ import { STATE } from './state.js';
 import { UI } from './ui.js';
 import { AUTH } from './auth.js';
 
-// DİKKAT: async ekledik ki Google'ı bekleyebilsin
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     
-    // YENİ VE KRİTİK: Ekranı çizmeden önce Google'dan dönüş var mı BEKLE!
-    await AUTH.checkRedirect();
-    
-    // Google'ı bekledikten sonra ekranı çiz:
+    // 1. Başlangıç Durumunu Kontrol Et
     if (STATE.isLoggedIn()) {
         UI.showView('voting');
     } else {
