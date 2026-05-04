@@ -338,8 +338,8 @@ export const AUTH = {
             const file = fileInput.files[0];
             const arrayBuffer = await file.arrayBuffer();
             
-            // 1. DİNAMİK GÖZLÜK (HTML'e muhtaç olmadan kütüphaneyi kendi indirir)
-            if (!window.pdfjsLib) {
+            // 1. DİNAMİK GÖZLÜK (HTML'den bağımsız olarak kütüphaneyi indirir)
+            if (!window.pdfjsLib && !window['pdfjs-dist/build/pdf']) {
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
@@ -352,7 +352,13 @@ export const AUTH = {
             const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
             if (!pdfjsLib) throw new Error("PDF Motoru Yüklenemedi.");
             
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            // === İŞTE KURŞUN GEÇİRMEZ KISIM BURASI (BLOB WORKER) ===
+            // Tarayıcının dış linkleri sessizce engellemesini (CORS) önlemek için 
+            // taşeron işçiyi yerel bellekte sahte bir kimlikle yaratıyoruz.
+            const workerCode = `importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');`;
+            const workerBlob = new Blob([workerCode], { type: 'text/javascript' });
+            pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(workerBlob);
+            // ========================================================
             
             // 2. PDF OKUMA İŞLEMİ
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -363,7 +369,7 @@ export const AUTH = {
                 fullText += textContent.items.map(item => item.str).join(' ') + ' ';
             }
 
-            // 3. E-DEVLET METİN AYRIŞTIRICI
+            // 3. E-DEVLET METİN AYRIŞTIRICI MOTORU
             const extract = (text, regex) => {
                 const match = text.match(regex);
                 return match ? match[1].trim() : '';
@@ -389,7 +395,7 @@ export const AUTH = {
             const barkodMatch = fullText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // LİYAKAT KONTROLÜ
+            // LİYAKAT KONTROLÜ (İçmimarlık Geçmiyorsa Reddet)
             const upperBolum = bolum.toUpperCase();
             if (!upperBolum.includes('İÇ MİMAR') && !upperBolum.includes('İÇMİMAR')) {
                  UI.showToast('HATA: Belgede "İçmimarlık" liyakatı doğrulanamadı!', 'error');
