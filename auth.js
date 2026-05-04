@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Çift Turnike + Kaçak Yolcu Güvenlik Ağı Eklenmiş Sürüm
+   1 Tıkla Giriş + Kademeli Profilleme (Progressive Onboarding) Sürümü
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -31,10 +31,9 @@ let confirmationResult = null;
 
 const getEl = (id) => document.getElementById(id);
 
-const generateInviteCode = (city) => {
-    const cityCode = (city || 'TR').substring(0, 3).toUpperCase();
+const generateInviteCode = () => {
     const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `ME26-${cityCode}-${randomPart}`;
+    return `ME26-TR-${randomPart}`;
 };
 
 const resetPhoneModal = () => {
@@ -57,69 +56,34 @@ const normalizeTurkishPhone = (value) => {
     return phoneVal;
 };
 
-const getCommitmentData = () => {
-    const cityEl = getEl('input-taahhut-sehir');
-    const roleEl = getEl('input-taahhut-rol');
-    
-    let finalRole = roleEl ? roleEl.value : 'Sistem Üyesi';
-    if (finalRole === 'Öğrenci') finalRole = 'İçmimarlık Öğrencisi';
-
-    return { city: cityEl ? cityEl.value : 'Bilinmiyor', role: finalRole };
-};
-
 export const AUTH = {
-    // KAÇAK YOLCULARI YAKALAMAK İÇİN GEÇİCİ HAFIZA
-    pendingFirebaseUser: null,
-    isCompletingProfile: false,
-
+    
     handleGoogleSuccess: async (user) => {
         try {
             UI.showToast('Güvenli bağlantı kuruluyor...', 'info');
             
-            const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
-            const savedRole = localStorage.getItem('me26_temp_role') || 'İçmimar';
-            
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || null;
 
+            // Form olmadığı için başlangıç değerleri "Belirsiz" ve "Seçilmedi" olarak gider.
+            // Supabase'deki 'sistemeGiris' fonksiyonu eğer adam eski üyeyse bu "Belirsiz"leri yoksayacak ve eski verisini koruyacaktır.
             const gizliPaket = {
                 uid: user.uid,
                 g_isim: user.displayName,
                 mail: user.email,
                 foto: user.photoURL,
-                m_durum: savedRole,
-                sehir: savedCity,
-                d_kod: generateInviteCode(savedCity),
+                m_durum: 'Belirsiz', 
+                sehir: 'Seçilmedi',  
+                d_kod: generateInviteCode(),
                 ref: refCode
             };
 
             const dbUser = await DB.sistemeGiris(gizliPaket);
             if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
-            // ========================================================
-            // 🚨 GÜVENLİK AĞI: YANLIŞLIKLA "GİRİŞ YAP" DİYEN YENİLERİ YAKALA
-            // ========================================================
-            if (!dbUser.sehir_tribunu || dbUser.sehir_tribunu === 'Mevcut Üye' || dbUser.mesleki_durum === 'Mevcut Üye') {
-                UI.showToast('Aramıza yeni katılıyorsun. Lütfen profilini tamamla!', 'info');
-                
-                AUTH.pendingFirebaseUser = user;
-                AUTH.isCompletingProfile = true;
-
-                const step1 = getEl('taahhut-step-1');
-                const step2 = getEl('taahhut-step-2');
-                if(step1) step1.classList.remove('hidden');
-                if(step2) step2.classList.add('hidden');
-
-                UI.openModal('taahhut-modal');
-                return; // Giriş işlemini dondur, formu doldurmasını bekle!
-            }
-
-            localStorage.removeItem('me26_temp_city');
-            localStorage.removeItem('me26_temp_role');
-
             let authStage = 'registered';
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
-            else if (dbUser.oy_gucu === 0.5) authStage = 'phone_verified';
+            else if (dbUser.telefon) authStage = 'phone_verified'; // Oy gücü 0 olsa bile telefonu varsa verified sayılır
             
             if (dbUser.belge_durumu === 'Onay Bekliyor' || dbUser.belge_durumu?.includes('Bekliyor')) {
                 authStage = 'document_pending'; 
@@ -137,11 +101,11 @@ export const AUTH = {
                 davetKodu: dbUser.kendi_davet_kodu
             });
             
-            UI.closeModal('taahhut-modal');
             UI.renderProfile(); 
             UI.showView('voting');
             
-            if (dbUser.basarili_davet_sayisi === 0 && dbUser.oy_gucu === 0) {
+            if (dbUser.basarili_davet_sayisi === 0 && dbUser.oy_gucu === 0 && (!dbUser.telefon)) {
+                // Sadece sisteme ilk kez sıfırdan girenleri tebrik et
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
                 UI.openModal('wow-modal');
@@ -184,68 +148,22 @@ export const AUTH = {
         });
     },
 
-    register: async () => {
+    // ---------------------------------------------------------
+    // TURNİKE: FORMSUZ, 1 TIKLA GOOGLE GİRİŞİ (HEM KAYIT HEM GİRİŞ)
+    // ---------------------------------------------------------
+    loginWithGoogle: async () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
             UI.renderProfile();
             UI.showToast('Sisteme zaten giriş yaptınız.', 'info');
             return;
         }
-        
-        const step1 = getEl('taahhut-step-1');
-        const step2 = getEl('taahhut-step-2');
-        if(step1) step1.classList.remove('hidden');
-        if(step2) step2.classList.add('hidden');
 
-        UI.openModal('taahhut-modal');
-    },
-
-    directLogin: async () => {
-        if (STATE.isLoggedIn()) {
-            UI.showView('voting');
-            UI.renderProfile();
-            return;
-        }
-
-        UI.showToast('Giriş yapılıyor...', 'info');
-
-        localStorage.setItem('me26_temp_city', 'Mevcut Üye');
-        localStorage.setItem('me26_temp_role', 'Mevcut Üye');
+        UI.showToast('Google ile bağlantı kuruluyor...', 'info');
 
         const ua = navigator.userAgent || navigator.vendor || window.opera;
         const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
         const isSocialApp = /Instagram|WhatsApp|FBAN|FBAV/i.test(ua);
-
-        if (isMobile || isSocialApp) {
-            signInWithRedirect(firebaseAuth, googleProvider);
-        } else {
-            try {
-                const result = await signInWithPopup(firebaseAuth, googleProvider);
-                await AUTH.handleGoogleSuccess(result.user);
-            } catch (error) {
-                console.error('Google Giriş Hatası:', error);
-                if (error.code !== 'auth/popup-closed-by-user') {
-                    UI.showToast('Giriş başarısız oldu.', 'error');
-                }
-            }
-        }
-    },
-
-    loginWithGoogle: async () => {
-        const formData = getCommitmentData();
-        const btn = getEl('btn-google-login');
-
-        const ua = navigator.userAgent || navigator.vendor || window.opera;
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-        const isSocialApp = /Instagram|WhatsApp|FBAN|FBAV/i.test(ua);
-
-        localStorage.setItem('me26_temp_city', formData.city);
-        localStorage.setItem('me26_temp_role', formData.role);
-
-        if (btn) {
-            btn.innerHTML = 'YÖNLENDİRİLİYOR...';
-            btn.disabled = true;
-        }
 
         if (isMobile || isSocialApp) {
             signInWithRedirect(firebaseAuth, googleProvider);
@@ -257,11 +175,6 @@ export const AUTH = {
                 console.error('Google Giriş Hatası:', error);
                 if (error.code !== 'auth/popup-closed-by-user') {
                     UI.showToast('Google ile giriş başarısız oldu.', 'error');
-                }
-            } finally {
-                if(btn) {
-                    btn.innerHTML = '<i class="fab fa-google text-lg"></i> Google ile Hızlı Katıl';
-                    btn.disabled = false;
                 }
             }
         }
@@ -358,13 +271,13 @@ export const AUTH = {
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
-            STATE.updateUser('votePower', '0.5x');
+            STATE.updateUser('votePower', '0.0x'); // DİKKAT: Artık telefon onayına oy gücü vermiyoruz! Sadece bot kontrolü.
 
             UI.closeModal('phone-modal');
             UI.renderProfile();
             resetPhoneModal();
 
-            UI.showToast('Telefon başarıyla doğrulandı. Oy gücün 0.5x oldu!', 'success');
+            UI.showToast('Telefon doğrulandı (Bot Kontrolü). Şimdi PDF yükleme sırası!', 'success');
         } catch (error) {
             console.error('OTP doğrulama hatası:', error);
             UI.showToast('Kod hatalı veya süresi dolmuş.', 'error');
