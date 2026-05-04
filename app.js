@@ -257,6 +257,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
     bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
 
+    // VIP İSTEMİYORUM (OTOMATİK NUMARA) BUTONU KABLOSU
+    bind('btn-standart-numara', 'click', async () => {
+        if (!confirm('VIP numara seçme hakkından vazgeçip, 100\'den başlayan sıradaki ilk boş numarayı otomatik almak istediğine emin misin?')) return;
+        
+        const btn = document.getElementById('btn-standart-numara');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = 'NUMARAN BASILIYOR...';
+        btn.disabled = true;
+
+        try {
+            const yeniNo = await DB.standartNumaraAl(STATE.user.uid);
+            STATE.updateUser('userNo', yeniNo);
+            STATE.updateUser('isVip', false);
+            
+            UI.renderProfile(); 
+            UI.showToast(`Harika! Numaran atandı: TR-IA-${yeniNo}`, 'success');
+            
+        } catch(e) {
+            UI.showToast('Numara atanırken bir hata oluştu.', 'error');
+        } finally {
+            if(btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    });
+
     bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
     bind('btn-submit-phone', 'click', AUTH.verifyPhone);
