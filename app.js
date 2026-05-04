@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Çift Turnike Sistemi (Kayıt/Giriş) Entegre Edilmiş Sürüm
+   Çift Turnike Sistemi + Kaçak Yolcu Dedektörü Entegre Edilmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -169,15 +169,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     // TAAHHÜT MODALI 
     bind('btn-close-taahhut-modal', 'click', () => UI.closeModal('taahhut-modal'));
     
-    bind('btn-taahhut-next', 'click', () => {
+    bind('btn-taahhut-next', 'click', async () => {
         const city = document.getElementById('input-taahhut-sehir').value;
         const role = document.getElementById('input-taahhut-rol').value;
         if(!city || !role) {
             UI.showToast('Lütfen şehir ve mesleki durum seçiniz.', 'error');
             return;
         }
-        document.getElementById('taahhut-step-1').classList.add('hidden');
-        document.getElementById('taahhut-step-2').classList.remove('hidden');
+
+        // ========================================================
+        // 🚨 KAÇAK YOLCUYU YAKALAYIP VERİTABANINA ZIMBALAMA KISMI
+        // ========================================================
+        if (AUTH.isCompletingProfile && AUTH.pendingFirebaseUser) {
+            let finalRole = role;
+            if (role === 'Öğrenci') finalRole = 'İçmimarlık Öğrencisi';
+
+            localStorage.setItem('me26_temp_city', city);
+            localStorage.setItem('me26_temp_role', finalRole);
+            
+            AUTH.isCompletingProfile = false; // Kilidi kaldır
+            UI.showToast('Bilgiler kaydediliyor...', 'info');
+            
+            // Kullanıcıyı Google'a yollamadan doğrudan kendi fonksiyonumuza veriyoruz!
+            await AUTH.handleGoogleSuccess(AUTH.pendingFirebaseUser);
+            AUTH.pendingFirebaseUser = null;
+        } 
+        // ========================================================
+        // NORMAL YENİ KAYIT AKIŞI
+        // ========================================================
+        else {
+            document.getElementById('taahhut-step-1').classList.add('hidden');
+            document.getElementById('taahhut-step-2').classList.remove('hidden');
+        }
     });
 
     bind('btn-taahhut-back', 'click', () => {
