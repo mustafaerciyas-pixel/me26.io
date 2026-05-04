@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase Karanlık Oda (RPC) Entegre Sürüm
+   Firebase Auth + Supabase Karanlık Oda (RPC) + E-Devlet YZ Okuyucu Sürümü
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -338,7 +338,12 @@ export const AUTH = {
             const file = fileInput.files[0];
             const arrayBuffer = await file.arrayBuffer();
             
-            const pdfjsLib = window['pdfjs-dist/build/pdf'];
+            // DÜZELTİLEN KISIM: Kütüphaneyi doğru isimle çağırıyoruz
+            const pdfjsLib = window.pdfjsLib; 
+            if (!pdfjsLib) {
+                throw new Error("PDF kütüphanesi HTML içinde bulunamadı.");
+            }
+            
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
             
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
