@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   VIP Kurucu Grid Sistemi Entegre Edilmiş Sürüm
+   VIP Kurucu Grid + Yönetici Onayı Bekleme Sistemi Entegre Edilmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -69,11 +69,17 @@ export const UI = {
 
         const toast = document.createElement('div');
         const isSuccess = type === 'success';
-        toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-xs font-bold uppercase tracking-widest transform transition-all duration-500 translate-y-10 opacity-0 ${
-            isSuccess ? 'bg-green-900/90 text-green-400 border border-green-700' : 'bg-red-900/90 text-red-400 border border-red-700'
-        }`;
+        const isInfo = type === 'info';
         
-        toast.innerHTML = `<span>${isSuccess ? '✅' : '❌'}</span><span>${message}</span>`;
+        let bgColor = isSuccess ? 'bg-green-900/90 text-green-400 border-green-700' : 
+                      isInfo ? 'bg-blue-900/90 text-blue-400 border-blue-700' : 
+                      'bg-red-900/90 text-red-400 border-red-700';
+                      
+        let icon = isSuccess ? '✅' : isInfo ? 'ℹ️' : '❌';
+
+        toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-xs font-bold uppercase tracking-widest transform transition-all duration-500 translate-y-10 opacity-0 border ${bgColor}`;
+        
+        toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
         container.appendChild(toast);
 
         setTimeout(() => {
@@ -143,20 +149,44 @@ export const UI = {
             }
         }
 
-        // Yetki Butonlarını Gizle/Göster
+        // =========================================================
+        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI (DÜZELTİLEN KISIM)
+        // =========================================================
         const btnPhone = document.getElementById('btn-open-phone-modal');
         const btnPdf = document.getElementById('btn-open-pdf-modal');
 
-        if (user.authStage === 'phone_verified' || user.authStage === 'pdf_verified') {
+        // Önce ekranda kalmış olabilecek eski "Bekliyor" uyarılarını temizleyelim
+        const existingAlert = document.getElementById('ui-pending-alert');
+        if (existingAlert) existingAlert.remove();
+
+        // 1. DURUM: Belge yüklendi, Yönetici onayı bekliyor
+        if (user.authStage === 'document_pending') {
             if (btnPhone) btnPhone.classList.add('hidden');
-            if (btnPdf) btnPdf.classList.remove('hidden'); // Telefon onaylandıysa PDF açılır
-        } else {
+            if (btnPdf) btnPdf.classList.add('hidden');
+            
+            // Butonların olduğu alana dinamik bir "Bekliyor" tabelası asıyoruz
+            if (btnPhone && btnPhone.parentElement) {
+                const alertDiv = document.createElement('div');
+                alertDiv.id = 'ui-pending-alert';
+                alertDiv.className = 'w-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[10px] md:text-xs text-center py-3 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mt-2';
+                alertDiv.innerHTML = '<span>⏳</span> BELGENİZ YÖNETİCİ ONAYINDA BEKLİYOR';
+                btnPhone.parentElement.insertBefore(alertDiv, btnPhone);
+            }
+        } 
+        // 2. DURUM: Her şey tam, VIP veya PDF onaylandı
+        else if (user.authStage === 'pdf_verified') {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            if (btnPdf) btnPdf.classList.add('hidden');
+        } 
+        // 3. DURUM: Sadece telefon onaylı, PDF yüklemesi bekleniyor
+        else if (user.authStage === 'phone_verified') {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            if (btnPdf) btnPdf.classList.remove('hidden');
+        } 
+        // 4. DURUM: Sadece kayıt oldu, telefon onayı bekleniyor
+        else {
             if (btnPhone) btnPhone.classList.remove('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
-        }
-
-        if (user.authStage === 'pdf_verified' && btnPdf) {
-            btnPdf.classList.add('hidden'); // PDF de yüklendiyse butonu sakla
         }
     },
 
