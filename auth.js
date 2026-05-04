@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Auth + Supabase Karanlık Oda (RPC) + Nokta Atışı E-Devlet Okuyucu
+   Firebase Auth + Supabase Karanlık Oda (RPC) + Görsel Hizalamalı YZ Okuyucu
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -326,7 +326,7 @@ export const AUTH = {
         }
     },
 
-    // KESKİN NİŞANCI E-DEVLET OKUYUCU (Tam Metin ve Sütun Parçalayıcı)
+    // GÖRSEL HİZALAMALI (İNSAN GÖZÜ) E-DEVLET OKUYUCU
     verifyPdf: async () => {
         if (!STATE.isLoggedIn()) {
             UI.showToast('Lütfen önce sisteme giriş yapın.', 'error');
@@ -351,7 +351,7 @@ export const AUTH = {
 
         btnSubmit.dataset.loading = 'true';
         const originalText = btnSubmit.innerHTML;
-        btnSubmit.textContent = 'BELGE PARÇALANIYOR...';
+        btnSubmit.textContent = 'BELGE DEŞİFRE EDİLİYOR...';
         btnSubmit.disabled = true;
 
         try {
@@ -366,50 +366,73 @@ export const AUTH = {
             
             const pdf = await pdfjsLib.getDocument(typedarray).promise;
             
-            let fullText = '';
+            let rawItems = [];
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                fullText += textContent.items.map(item => item.str).join(' ') + ' ';
+                rawItems = rawItems.concat(textContent.items);
             }
             
-            // PDF.js'in eklediği gereksiz " | " işaretlerini ve fazla boşlukları temizleyelim
-            const cleanText = fullText.replace(/\|\s*/g, '').replace(/\s+/g, ' ');
+            // 🔥 KRİTİK ÇÖZÜM: Koordinat Bazlı İnsan Okuması
+            // Metinleri yatay (X) ve dikey (Y) koordinatlarına göre dizeceğiz.
+            rawItems.sort((a, b) => {
+                if (!a.transform || !b.transform) return 0;
+                const yDiff = b.transform[5] - a.transform[5];
+                // Aynı satırdaki yazılar (5 piksellik sapma payı) soldan sağa dizilir
+                if (Math.abs(yDiff) > 5) return yDiff; 
+                return a.transform[4] - b.transform[4]; 
+            });
+            
+            let cleanText = rawItems.map(item => item.str).join(' ').replace(/\s+/g, ' ');
 
-            // KESKİN NİŞANCI AYRIŞTIRICI FONKSİYON
+            // Temizleyici Regex
             const extract = (regex) => {
                 const match = cleanText.match(regex);
-                return match ? match[1].trim() : 'Bulunamadı';
+                return match ? match[1].replace(/[:|]+$/, '').trim() : 'Bulunamadı';
             };
 
-            // 1. TC Kimlik No (Tam, Maskesiz)
-            const tc = extract(/Kimlik No\s*[:]\s*([0-9]{11})/i);
-            
+            // 1. TC Kimlik No (Tam ve Maskesiz)
+            let tcMatch = cleanText.match(/Kimlik No[\s:|]*([0-9]{11})/i);
+            let tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
+            if(tc === 'Bulunamadı') {
+                const fallback = cleanText.match(/\b[1-9][0-9]{10}\b/);
+                tc = fallback ? fallback[0] : 'Bulunamadı';
+            }
+
             // 2. Kişisel Bilgiler
-            const adSoyad = extract(/Adı Soyadı\s*[:]\s*(.*?)(?=\s*Baba Adı)/i);
-            const babaAdi = extract(/Baba Adı\s*[:]\s*(.*?)(?=\s*Anne Adı)/i);
-            const anneAdi = extract(/Anne Adı\s*[:]\s*(.*?)(?=\s*Doğum Tarihi)/i);
-            const dogumTarihi = extract(/Doğum Tarihi\s*[:]\s*([0-9\.]+)/i);
-            
-            // 3. Okul ve Bölüm Sütun Dağıtımı (Slash işaretinden böler)
-            const programStr = extract(/Program\s*[:]\s*(.*?)(?=\s*Diploma No)/i);
+            const adSoyad = extract(/Adı Soyadı[\s:|]*(.*?)(?=Baba Adı|Anne Adı|Doğum Tarihi|Program)/i);
+            const babaAdi = extract(/Baba Adı[\s:|]*(.*?)(?=Anne Adı|Doğum Tarihi|Program)/i);
+            const anneAdi = extract(/Anne Adı[\s:|]*(.*?)(?=Doğum Tarihi|Program)/i);
+            const dogumTarihi = extract(/Doğum Tarihi[\s:|]*(\d{2}\.\d{2}\.\d{4})/i);
+
+            // 3. Okul ve Bölüm (Tam senin istediğin gibi 3 sütuna dağıtır)
+            const programStr = extract(/Program[\s:|]*(.*?)(?=Diploma No|Diploma Notu|Mezuniyet)/i);
             let uni = 'Bulunamadı', fakulte = 'Bulunamadı', bolum = 'Bulunamadı';
             
             if (programStr !== 'Bulunamadı') {
                 const parts = programStr.split('/');
-                uni = parts[0] ? parts[0].trim() : 'Bulunamadı';
-                fakulte = parts[1] ? parts[1].trim() : 'Bulunamadı';
-                bolum = parts[2] ? parts[2].trim() : programStr; 
+                if(parts.length >= 3) {
+                    uni = parts[0].trim();
+                    fakulte = parts[1].trim();
+                    // Eğer bölüm adında da fazladan slash varsa birleştirip koruyoruz
+                    bolum = parts.slice(2).join('/').trim(); 
+                } else {
+                    bolum = programStr;
+                }
             }
             
             // 4. Diğer Belgeler
-            const diplomaNo = extract(/Diploma No\s*[:]\s*(.*?)(?=\s*Diploma Notu)/i);
-            const mezunTarihi = extract(/Mezuniyet Tarihi\s*[:]\s*([0-9\.]+)/i);
+            const diplomaNo = extract(/Diploma No[\s:|]*(.*?)(?=Diploma Notu|Mezuniyet|Durum)/i);
+            const mezunTarihi = extract(/Mezuniyet Tarihi[\s:|]*(\d{2}\.\d{2}\.\d{4})/i);
 
             const barkodMatch = cleanText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // ÇIKARTILAN GERÇEK VERİLER (Herkes İncelemeye Alınır)
+            // KESİN KURAL: Herkes Manuel İncelemeye Girer
+            const isIcmimar = cleanText.toUpperCase().includes('İÇ MİMAR') || cleanText.toUpperCase().includes('İÇMİMAR');
+            const gercekDurum = 'İncelemeye Alındı';
+
+            // ÇIKARTILAN GERÇEK VERİLER
             const belgeData = {
                 tc: tc,
                 ad_soyad: adSoyad,
@@ -422,15 +445,18 @@ export const AUTH = {
                 diploma_no: diplomaNo,
                 mezun_tarihi: mezunTarihi,
                 barkod: barkod,
-                durum: 'İncelemeye Alındı'
+                durum: gercekDurum
             };
 
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
-            // Kullanıcıyı "belge bekleme" aşamasına alıyoruz, yetkiyi sen panelden vereceksin
             STATE.updateUser('authStage', 'document_pending');
 
-            UI.showToast('Belgeniz başarıyla okundu ve Yönetici Onayına (Manuel İnceleme) gönderildi.', 'success');
+            if (isIcmimar) {
+                UI.showToast('Belgeniz başarıyla okundu ve Yönetici Onayına gönderildi.', 'success');
+            } else {
+                UI.showToast('Belgeniz incelenmek üzere kuyruğa eklendi.', 'info');
+            }
             
             UI.closeModal('pdf-modal');
             UI.renderProfile();
