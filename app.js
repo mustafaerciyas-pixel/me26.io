@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   VIP Kurucu Grid Entegre Edilmiş Sürüm
+   Görsel Zıplama (Flash) Engellendi
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -9,26 +9,37 @@ import { AUTH } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. ÖNCE BEKLE: Google Redirect (Mobilden gelenler) için
-    const isRedirectLogin = await AUTH.checkRedirect();
+    // 1. ZILPAMAYI ÖNLE (FLASH FIX): Tarayıcı sormadan önce tüm ana ekranları gizle
+    document.getElementById('landing-view')?.classList.add('hidden');
+    document.getElementById('manifesto')?.classList.add('hidden');
+    document.getElementById('sticky-cta')?.classList.add('hidden');
+    document.getElementById('ana-footer')?.classList.add('hidden');
     
-    // 2. Dönüş yoksa standart ekranları çiz
-    if (!isRedirectLogin) {
-        if (STATE.isLoggedIn()) {
-            UI.showView('voting');
-        } else {
-            UI.showView('landing');
-        }
+    // 2. HIZLI GİRİŞ (Lokal Hafıza Kontrolü)
+    // Eğer daha önce giriş yaptıysa, Firebase'i bile beklemeden anında Sandığı aç
+    if (STATE.isLoggedIn()) {
+        UI.showView('voting');
         UI.renderProfile();
     }
 
-    // Yardımcı Dinleyici Fonksiyonu
+    // 3. FIREBASE KONTROLÜ: Yeni mi giriş yapıyor veya mobilden mi döndü? (Arka planda bekler)
+    const isRedirectLogin = await AUTH.checkRedirect();
+    
+    // 4. EKRAN KARARI: Eğer Google'dan yeni dönmediyse ve lokalde de girişi yoksa Ana Sayfayı aç
+    if (!isRedirectLogin && !STATE.isLoggedIn()) {
+        UI.showView('landing');
+        UI.renderProfile();
+    }
+
+    // =========================================================
+    // DİNLEYİCİLER VE BUTON KONTROLLERİ
+    // =========================================================
+
     const bind = (id, event, fn) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, fn);
     };
 
-    // Ana Navigasyon İşlemleri
     const handleLoginOrProfile = () => {
         if (STATE.isLoggedIn()) {
             UI.toggleProfileDrawer(true);
@@ -46,7 +57,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
     bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
 
-    // Paydaş Detay Açma/Kapama
     const roleSelect = document.getElementById('input-taahhut-rol');
     if (roleSelect) {
         roleSelect.addEventListener('change', (e) => {
@@ -59,7 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Taahhüt Modalı Adım Geçişleri (Form Doğrulama)
     bind('btn-taahhut-next', 'click', () => {
         const cityEl = document.getElementById('input-taahhut-sehir');
         const roleEl = document.getElementById('input-taahhut-rol');
@@ -87,7 +96,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('taahhut-step-2').classList.add('hidden');
     });
 
-    // Kayıt ve Çıkış Butonları
     bind('btn-google-login', 'click', AUTH.loginWithGoogle);
     bind('btn-manuel-login', 'click', AUTH.submitCommitment);
     
