@@ -26,8 +26,7 @@ export const ME26_CONFIG = {
         appId: "1:87570616950:web:50c97a3de14a69efb4c557"
     },
 
-    // 6. SUPABASE VERİTABANI BAĞLANTISI
-    // Az önce attığın token'ın içinden URL ve API anahtarın çıkarılıp işlendi.
-    supabaseUrl: "https://ukmkojfntsmeikjcrvz.supabase.co", 
+    // 6. SUPABASE VERİTABANI BAĞLANTISI (URL'deki eksik "u" harfi düzeltildi!)
+    supabaseUrl: "https://ukmkojfntsmueikjcrvz.supabase.co", 
     supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw" 
 };
