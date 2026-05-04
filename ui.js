@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   VIP Kurucu Grid + Yönetici Onayı Bekleme Sistemi Entegre Edilmiş Sürüm
+   VIP Kurucu Grid + Tam Yetki Madalyaları Entegre Edilmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -158,8 +158,9 @@ export const UI = {
         // Önce ekranda kalmış olabilecek dinamik uyarıları temizleyelim
         document.getElementById('ui-pending-alert')?.remove();
         document.getElementById('ui-phone-success-alert')?.remove();
+        document.getElementById('ui-pdf-success-alert')?.remove();
 
-        // 1. Yeşil "Telefon Doğrulandı" uyarı kutusunu üreten fonksiyon
+        // 1. Yeşil "Telefon Doğrulandı" uyarı kutusu
         const insertPhoneSuccessAlert = (referenceElement) => {
             const alertDiv = document.createElement('div');
             alertDiv.id = 'ui-phone-success-alert';
@@ -168,7 +169,16 @@ export const UI = {
             referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
         };
 
-        // 2. Sarı "Belge Bekliyor" uyarı kutusunu üreten fonksiyon
+        // 2. Özel "Belge Onaylandı" uyarı kutusu (Mavi/Mor premium renk)
+        const insertPdfSuccessAlert = (referenceElement) => {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'ui-pdf-success-alert';
+            alertDiv.className = 'w-full bg-indigo-900/20 border border-indigo-700/50 text-indigo-400 text-[10px] md:text-xs text-center py-2 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2';
+            alertDiv.innerHTML = '<span>🎓</span> E-DEVLET BELGESİ ONAYLANDI';
+            referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
+        };
+
+        // 3. Sarı "Belge Bekliyor" uyarı kutusu
         const insertPendingAlert = (referenceElement) => {
             const alertDiv = document.createElement('div');
             alertDiv.id = 'ui-pending-alert';
@@ -182,23 +192,27 @@ export const UI = {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
             
-            // Butonların olduğu alana önce yeşil sonra sarı tabelayı asıyoruz
             if (btnPhone && btnPhone.parentElement) {
                 insertPhoneSuccessAlert(btnPhone);
                 insertPendingAlert(btnPhone);
             }
         } 
-        // DURUM 2: Her şey tam, VIP veya PDF onaylandı (Butonlara gerek yok)
+        // DURUM 2: Her şey tam, VIP veya PDF onaylandı! (MADALYALAR BURADA ASILIYOR)
         else if (user.authStage === 'pdf_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
+            
+            if (btnPhone && btnPhone.parentElement) {
+                insertPhoneSuccessAlert(btnPhone);
+                insertPdfSuccessAlert(btnPhone); // Şık belge onay yazısı!
+            }
         } 
         // DURUM 3: Sadece telefon onaylı, PDF yüklemesi bekleniyor
         else if (user.authStage === 'phone_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) {
                 btnPdf.classList.remove('hidden');
-                insertPhoneSuccessAlert(btnPdf); // PDF butonunun hemen üstüne yeşil tik gelsin
+                insertPhoneSuccessAlert(btnPdf);
             }
         } 
         // DURUM 4: Sadece kayıt oldu, telefon onayı bekleniyor
