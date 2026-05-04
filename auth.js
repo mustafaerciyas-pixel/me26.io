@@ -102,7 +102,7 @@ export const AUTH = {
             if (dbUser.oy_gucu === 1.0) authStage = 'pdf_verified';
             else if (dbUser.oy_gucu === 0.5) authStage = 'phone_verified';
             
-            if (dbUser.belge_durumu === 'pending' || dbUser.belge_durumu?.includes('İnceleme')) {
+            if (dbUser.belge_durumu === 'Onay Bekliyor' || dbUser.belge_durumu?.includes('Bekliyor')) {
                 authStage = 'document_pending'; 
             }
 
@@ -373,12 +373,10 @@ export const AUTH = {
                 rawItems = rawItems.concat(textContent.items);
             }
             
-            // 🔥 KRİTİK ÇÖZÜM: Koordinat Bazlı İnsan Okuması
-            // Metinleri yatay (X) ve dikey (Y) koordinatlarına göre dizeceğiz.
+            // X ve Y Piksellerine Göre İnsan Gözüyle Sıralama
             rawItems.sort((a, b) => {
                 if (!a.transform || !b.transform) return 0;
                 const yDiff = b.transform[5] - a.transform[5];
-                // Aynı satırdaki yazılar (5 piksellik sapma payı) soldan sağa dizilir
                 if (Math.abs(yDiff) > 5) return yDiff; 
                 return a.transform[4] - b.transform[4]; 
             });
@@ -391,7 +389,7 @@ export const AUTH = {
                 return match ? match[1].replace(/[:|]+$/, '').trim() : 'Bulunamadı';
             };
 
-            // 1. TC Kimlik No (Tam ve Maskesiz)
+            // 1. TC Kimlik No
             let tcMatch = cleanText.match(/Kimlik No[\s:|]*([0-9]{11})/i);
             let tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
             if(tc === 'Bulunamadı') {
@@ -405,7 +403,7 @@ export const AUTH = {
             const anneAdi = extract(/Anne Adı[\s:|]*(.*?)(?=Doğum Tarihi|Program)/i);
             const dogumTarihi = extract(/Doğum Tarihi[\s:|]*(\d{2}\.\d{2}\.\d{4})/i);
 
-            // 3. Okul ve Bölüm (Tam senin istediğin gibi 3 sütuna dağıtır)
+            // 3. Okul ve Bölüm (3 sütuna dağıtır)
             const programStr = extract(/Program[\s:|]*(.*?)(?=Diploma No|Diploma Notu|Mezuniyet)/i);
             let uni = 'Bulunamadı', fakulte = 'Bulunamadı', bolum = 'Bulunamadı';
             
@@ -414,25 +412,26 @@ export const AUTH = {
                 if(parts.length >= 3) {
                     uni = parts[0].trim();
                     fakulte = parts[1].trim();
-                    // Eğer bölüm adında da fazladan slash varsa birleştirip koruyoruz
                     bolum = parts.slice(2).join('/').trim(); 
                 } else {
                     bolum = programStr;
                 }
             }
             
-            // 4. Diğer Belgeler
+            // 4. Yeni Eklenen Alanlar (Not ve Durum)
             const diplomaNo = extract(/Diploma No[\s:|]*(.*?)(?=Diploma Notu|Mezuniyet|Durum)/i);
+            const diplomaNotu = extract(/Diploma Notu[\s:|]*(.*?)(?=Mezuniyet Tarihi|Durum|İLGİLİ)/i);
             const mezunTarihi = extract(/Mezuniyet Tarihi[\s:|]*(\d{2}\.\d{2}\.\d{4})/i);
+            const okunanDurum = extract(/Durum[\s:|]*(.*?)(?=İLGİLİ MAKAMA|Çankaya|Bu belgenin|$)/i);
 
             const barkodMatch = cleanText.match(/YOK[A-Z0-9]+/i);
             const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
 
-            // KESİN KURAL: Herkes Manuel İncelemeye Girer
+            // KESİN KURAL: Herkes Manuel Onay Bekler
             const isIcmimar = cleanText.toUpperCase().includes('İÇ MİMAR') || cleanText.toUpperCase().includes('İÇMİMAR');
-            const gercekDurum = 'İncelemeye Alındı';
+            const belgeDurumu = 'Onay Bekliyor';
 
-            // ÇIKARTILAN GERÇEK VERİLER
+            // ÇIKARTILAN YENİ NESİL GERÇEK VERİLER
             const belgeData = {
                 tc: tc,
                 ad_soyad: adSoyad,
@@ -443,19 +442,22 @@ export const AUTH = {
                 fakulte: fakulte,
                 bolum: bolum,
                 diploma_no: diplomaNo,
-                mezun_tarihi: mezunTarihi,
-                barkod: barkod,
-                durum: gercekDurum
+                diploma_notu: diplomaNotu,     // YENİ!
+                mezuniyet_tarihi: mezunTarihi, // YENİ!
+                durum: okunanDurum,            // E-Devlet üzerindeki gerçek durum
+                belge_durumu: belgeDurumu,     // Onay süreci için!
+                barkod: barkod
             };
 
             await DB.belgeyiSirayaAl(STATE.user.uid, belgeData);
 
+            // Tüm kullanıcıları belge kuyruğuna alıyoruz
             STATE.updateUser('authStage', 'document_pending');
 
             if (isIcmimar) {
                 UI.showToast('Belgeniz başarıyla okundu ve Yönetici Onayına gönderildi.', 'success');
             } else {
-                UI.showToast('Belgeniz incelenmek üzere kuyruğa eklendi.', 'info');
+                UI.showToast('Belgeniz incelenmek üzere onay kuyruğuna eklendi.', 'info');
             }
             
             UI.closeModal('pdf-modal');
