@@ -15,9 +15,8 @@ export const ME26_CONFIG = {
 
     // 4. KURUCU KONTENJANI
     founderLimit: 2000,
-    initialCount: 0,
 
-    // 5. FIREBASE SMS & AUTH BAĞLANTI AYARLARI
+    // 5. FIREBASE SMS & AUTH BAĞLANTI AYARLARI (Senin mevcut ayarların)
     firebaseConfig: {
         apiKey: "AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA",
         authDomain: "me26-io.firebaseapp.com",
@@ -25,5 +24,10 @@ export const ME26_CONFIG = {
         storageBucket: "me26-io.firebasestorage.app",
         messagingSenderId: "87570616950",
         appId: "1:87570616950:web:50c97a3de14a69efb4c557"
-    }
+    },
+
+    // 6. SUPABASE VERİTABANI BAĞLANTISI
+    // Buraya Supabase panelinden aldığın Project URL ve API Key gelecek
+    supabaseUrl: "BURAYA_SUPABASE_URL_YAZILACAK",
+    supabaseKey: "BURAYA_SUPABASE_ANON_KEY_YAZILACAK"
 };
