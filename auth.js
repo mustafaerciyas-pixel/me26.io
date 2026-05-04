@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   Firebase Google Redirect (Sosyal Medya Uyumlu) + SMS
+   Akıllı Giriş Motoru (Smart Auth) - Instagram ve Masaüstü Uyumlu
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -14,7 +14,10 @@ import {
     signInWithPhoneNumber,
     GoogleAuthProvider,
     signInWithRedirect,
-    getRedirectResult
+    getRedirectResult,
+    signInWithPopup,
+    onAuthStateChanged,
+    signOut
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseApp = initializeApp(ME26_CONFIG.firebaseConfig);
@@ -73,49 +76,64 @@ const getCommitmentData = () => {
 };
 
 export const AUTH = {
-    // Google'dan geri dönüşü yakalayan dinleyici
-    checkRedirect: async () => {
-        try {
-            const result = await getRedirectResult(firebaseAuth);
-            if (result && result.user) {
-                const user = result.user;
+    
+    // Google Girişi Başarılı Olduğunda Çalışacak Ortak Fonksiyon
+    handleGoogleSuccess: (user) => {
+        const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
+        const savedRole = localStorage.getItem('me26_temp_role') || 'Sistem Üyesi';
+        
+        STATE.setUser({
+            authStage: 'registered',
+            userNo: 'BEKLEYEN',
+            role: savedRole,
+            city: savedCity,
+            votePower: '0.0x',
+            inviteCount: 0,
+            isVip: false
+        });
+        
+        localStorage.removeItem('me26_temp_city');
+        localStorage.removeItem('me26_temp_role');
+        
+        UI.closeModal('taahhut-modal');
+        UI.renderProfile();
+        
+        const wowNoEl = getEl('ui-wow-uye-no');
+        if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
+        
+        UI.showView('voting');
+        UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
+        UI.openModal('wow-modal');
+    },
+
+    // Sadece Yönlendirme (Redirect) Sonrası Kontrol Yapan Motor
+    checkRedirect: () => {
+        return new Promise(async (resolve) => {
+            try {
+                // 1. Redirect ile mi gelmiş kontrol et
+                const result = await getRedirectResult(firebaseAuth);
+                if (result && result.user) {
+                    AUTH.handleGoogleSuccess(result.user);
+                    resolve(true);
+                    return;
+                }
                 
-                // Google'a gitmeden önce hafızaya aldığımız verileri geri çekiyoruz
-                const savedCity = localStorage.getItem('me26_temp_city') || 'Bilinmiyor';
-                const savedRole = localStorage.getItem('me26_temp_role') || 'Sistem Üyesi';
-                
-                STATE.setUser({
-                    authStage: 'registered',
-                    userNo: 'BEKLEYEN',
-                    role: savedRole,
-                    city: savedCity,
-                    votePower: '0.0x',
-                    inviteCount: 0,
-                    isVip: false
+                // 2. Çerez düşmesi ihtimaline karşı Firebase hafızasını kontrol et
+                const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+                    unsubscribe(); 
+                    // Kullanıcı var ama sistemimizde "giriş yapmadı" görünüyorsa yeni gelmiştir
+                    if (user && !STATE.isLoggedIn()) {
+                        AUTH.handleGoogleSuccess(user);
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
                 });
-                
-                // İşlem bitti, hafızayı temizle
-                localStorage.removeItem('me26_temp_city');
-                localStorage.removeItem('me26_temp_role');
-                
-                UI.closeModal('taahhut-modal');
-                UI.renderProfile();
-                
-                const wowNoEl = getEl('ui-wow-uye-no');
-                if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
-                
-                UI.showView('voting');
-                UI.showToast(`Hoş geldin, ${user.displayName}!`, 'success');
-                UI.openModal('wow-modal');
-                
-                return true; // Dönüş başarılı
+            } catch (error) {
+                console.error('Yönlendirme hatası:', error);
+                resolve(false);
             }
-            return false; // Bekleyen bir dönüş yok
-        } catch (error) {
-            console.error('Yönlendirme hatası:', error);
-            // Hata olsa bile ana ekranda kalmasını sağla
-            return false; 
-        }
+        });
     },
 
     login: async () => {
@@ -136,16 +154,32 @@ export const AUTH = {
 
     loginWithGoogle: async () => {
         const formData = getCommitmentData();
-
         const btn = getEl('btn-google-login');
-        setButtonLoading(btn, 'GÜVENLİ GİRİŞE YÖNLENDİRİLİYOR...');
 
-        // Sayfa değişeceği için seçimleri tarayıcı hafızasına al
+        // AKILLI CİHAZ ALGILAMA (Smart Auth Motoru)
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+        const isSocialApp = /Instagram|WhatsApp|FBAN|FBAV/i.test(ua);
+
         localStorage.setItem('me26_temp_city', formData.city);
         localStorage.setItem('me26_temp_role', formData.role);
 
-        // Sayfayı Google'a yönlendir (Popup yerine)
-        signInWithRedirect(firebaseAuth, googleProvider);
+        if (isMobile || isSocialApp) {
+            // TELEFON & INSTAGRAM: Yönlendirme Kullan (Popup engelini aşar)
+            setButtonLoading(btn, 'GÜVENLİ GİRİŞE YÖNLENDİRİLİYOR...');
+            signInWithRedirect(firebaseAuth, googleProvider);
+        } else {
+            // MASAÜSTÜ & BİLGİSAYAR: Popup Kullan (Çerez sorununu aşar)
+            try {
+                const result = await signInWithPopup(firebaseAuth, googleProvider);
+                AUTH.handleGoogleSuccess(result.user);
+            } catch (error) {
+                console.error('Google Giriş Hatası:', error);
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    UI.showToast('Google ile giriş başarısız oldu.', 'error');
+                }
+            }
+        }
     },
 
     submitCommitment: async () => {
@@ -274,6 +308,7 @@ export const AUTH = {
     },
 
     logout: () => {
+        signOut(firebaseAuth).catch(() => {}); // Firebase'den de çıkış yap
         STATE.clearSession();
         UI.toggleProfileDrawer(false);
         UI.showView('landing');
@@ -284,6 +319,7 @@ export const AUTH = {
 
     deleteAccount: () => {
         if (!confirm('Tüm verilerin yok edilecek. Emin misin?')) return;
+        signOut(firebaseAuth).catch(() => {}); // Firebase'den de çıkış yap
         STATE.clearAll();
         UI.toggleProfileDrawer(false);
         UI.showView('landing');
