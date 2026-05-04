@@ -165,7 +165,10 @@ export const AUTH = {
         });
     },
 
-    login: async () => {
+    // ---------------------------------------------------------
+    // TURNİKE 1: SADECE YENİ KAYITLAR İÇİN (Formu Açar)
+    // ---------------------------------------------------------
+    register: async () => {
         if (STATE.isLoggedIn()) {
             UI.showView('voting');
             UI.renderProfile();
@@ -181,6 +184,45 @@ export const AUTH = {
         UI.openModal('taahhut-modal');
     },
 
+    // ---------------------------------------------------------
+    // TURNİKE 2: ESKİ ÜYELER İÇİN (Formu es geçip direkt içeri alır)
+    // ---------------------------------------------------------
+    directLogin: async () => {
+        if (STATE.isLoggedIn()) {
+            UI.showView('voting');
+            UI.renderProfile();
+            return;
+        }
+
+        UI.showToast('Giriş yapılıyor...', 'info');
+
+        // Form doldurulmadığı için geçici verilere "Mevcut Üye" yazıyoruz. 
+        // Supabase zaten eski veriyi ezmeyecek, adamın eski şehrini koruyacaktır.
+        localStorage.setItem('me26_temp_city', 'Mevcut Üye');
+        localStorage.setItem('me26_temp_role', 'Mevcut Üye');
+
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+        const isSocialApp = /Instagram|WhatsApp|FBAN|FBAV/i.test(ua);
+
+        if (isMobile || isSocialApp) {
+            signInWithRedirect(firebaseAuth, googleProvider);
+        } else {
+            try {
+                const result = await signInWithPopup(firebaseAuth, googleProvider);
+                await AUTH.handleGoogleSuccess(result.user);
+            } catch (error) {
+                console.error('Google Giriş Hatası:', error);
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    UI.showToast('Giriş başarısız oldu.', 'error');
+                }
+            }
+        }
+    },
+
+    // ---------------------------------------------------------
+    // KAYIT FORMU İÇİNDEKİ GOOGLE BUTONU (Turnike 1'in devamı)
+    // ---------------------------------------------------------
     loginWithGoogle: async () => {
         const formData = getCommitmentData();
         const btn = getEl('btn-google-login');
