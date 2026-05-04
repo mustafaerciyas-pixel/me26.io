@@ -112,8 +112,8 @@
                     </div>
                     <div class="flex justify-between items-end">
                         <div>
-                            <div class="text-[11px] text-kaos font-black uppercase tracking-widest mb-1" id="ui-user-role">Sistem Üyesi</div>
-                            <div class="text-[10px] text-gray-300 font-bold uppercase flex items-center gap-1"><span class="text-lg">🏟️</span> <span id="ui-user-city">Bilinmiyor</span> Tribünü</div>
+                            <div class="text-[11px] text-kaos font-black uppercase tracking-widest mb-1" id="ui-user-role">Kimlik Bekleniyor</div>
+                            <div class="text-[10px] text-gray-300 font-bold uppercase flex items-center gap-1"><span class="text-lg">🏟️</span> <span id="ui-user-city">Seçilmedi</span> Tribünü</div>
                         </div>
                         <div class="text-right">
                             <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Oy Gücü</div>
@@ -149,8 +149,21 @@
                 </button>
             </div>
 
+            <!-- YENİ: GÖREV 1 ŞEHİR SEÇİMİ (ui.js Tarafından Gösterilip/Gizlenecek) -->
+            <div id="ui-city-selector-container" class="p-6 border-b border-slate-700 bg-yellow-500/5 hidden">
+                <div class="text-[11px] text-yellow-500 font-black uppercase tracking-widest mb-3 flex items-center gap-2"><span>📌</span> GÖREV 1: TRİBÜNÜNÜ SEÇ</div>
+                <p class="text-[10px] text-gray-400 mb-4 leading-relaxed font-medium">Sandıkları görmek ve mesleki gücünü aktifleştirmek için bulunduğun şehri seçmelisin.</p>
+                <div class="flex gap-2 items-stretch">
+                    <select id="input-profile-city" class="flex-grow bg-slate-900 border border-slate-600 text-white px-3 py-3 rounded-lg outline-none text-xs font-bold focus:border-kaos transition custom-scrollbar">
+                        <option value="" disabled selected>Şehrini Seç...</option>
+                        <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option><option value="Ağrı">Ağrı</option><option value="Amasya">Amasya</option><option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Artvin">Artvin</option><option value="Aydın">Aydın</option><option value="Balıkesir">Balıkesir</option><option value="Bilecik">Bilecik</option><option value="Bingöl">Bingöl</option><option value="Bitlis">Bitlis</option><option value="Bolu">Bolu</option><option value="Burdur">Burdur</option><option value="Bursa">Bursa</option><option value="Çanakkale">Çanakkale</option><option value="Çankırı">Çankırı</option><option value="Çorum">Çorum</option><option value="Denizli">Denizli</option><option value="Diyarbakır">Diyarbakır</option><option value="Edirne">Edirne</option><option value="Elazığ">Elazığ</option><option value="Erzincan">Erzincan</option><option value="Erzurum">Erzurum</option><option value="Eskişehir">Eskişehir</option><option value="Gaziantep">Gaziantep</option><option value="Giresun">Giresun</option><option value="Gümüşhane">Gümüşhane</option><option value="Hakkari">Hakkari</option><option value="Hatay">Hatay</option><option value="Isparta">Isparta</option><option value="Mersin">Mersin</option><option value="İstanbul">İstanbul</option><option value="İzmir">İzmir</option><option value="Kars">Kars</option><option value="Kastamonu">Kastamonu</option><option value="Kayseri">Kayseri</option><option value="Kırklareli">Kırklareli</option><option value="Kırşehir">Kırşehir</option><option value="Kocaeli">Kocaeli</option><option value="Konya">Konya</option><option value="Kütahya">Kütahya</option><option value="Malatya">Malatya</option><option value="Manisa">Manisa</option><option value="Kahramanmaraş">Kahramanmaraş</option><option value="Mardin">Mardin</option><option value="Muğla">Muğla</option><option value="Muş">Muş</option><option value="Nevşehir">Nevşehir</option><option value="Niğde">Niğde</option><option value="Ordu">Ordu</option><option value="Rize">Rize</option><option value="Sakarya">Sakarya</option><option value="Samsun">Samsun</option><option value="Siirt">Siirt</option><option value="Sinop">Sinop</option><option value="Sivas">Sivas</option><option value="Tekirdağ">Tekirdağ</option><option value="Tokat">Tokat</option><option value="Trabzon">Trabzon</option><option value="Tunceli">Tunceli</option><option value="Şanlıurfa">Şanlıurfa</option><option value="Uşak">Uşak</option><option value="Van">Van</option><option value="Yozgat">Yozgat</option><option value="Zonguldak">Zonguldak</option><option value="Aksaray">Aksaray</option><option value="Bayburt">Bayburt</option><option value="Karaman">Karaman</option><option value="Kırıkkale">Kırıkkale</option><option value="Batman">Batman</option><option value="Şırnak">Şırnak</option><option value="Bartın">Bartın</option><option value="Ardahan">Ardahan</option><option value="Iğdır">Iğdır</option><option value="Yalova">Yalova</option><option value="Karabük">Karabük</option><option value="Kilis">Kilis</option><option value="Osmaniye">Osmaniye</option><option value="Düzce">Düzce</option><option value="Yurtdışı">Yurtdışı</option>
+                    </select>
+                    <button type="button" id="btn-save-profile-city" class="bg-kaos text-slate-900 font-black px-5 py-3 rounded-lg text-[10px] uppercase tracking-widest hover:scale-105 transition shadow-md">KAYDET</button>
+                </div>
+            </div>
+
             <div class="p-6 text-center flex flex-col gap-4 bg-black/40">
-                <button type="button" id="btn-open-phone-modal" class="w-full bg-slate-800 border border-blue-500/50 text-blue-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📱 Telefonu Doğrula (0.5x Oy Gücü)</button>
+                <button type="button" id="btn-open-phone-modal" class="w-full bg-slate-800 border border-blue-500/50 text-blue-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📱 Telefonu Doğrula (Bot Kontrolü)</button>
                 <button type="button" id="btn-open-pdf-modal" class="w-full bg-slate-800 border border-green-500/50 text-green-400 text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📜 E-Devlet Yükle (1.0x Tam Yetki)</button>
                 
                 <div class="flex justify-between border-t border-slate-700 pt-4">
@@ -221,7 +234,7 @@
                     </div>
                 </div>
                 
-                <!-- BURASI DEĞİŞTİ: ANA KUTU ÇİFT BUTON -->
+                <!-- ANA KUTU ÇİFT BUTON -->
                 <div class="w-full flex flex-col sm:flex-row gap-3 mb-3">
                     <button type="button" id="btn-register-hero" class="flex-1 bg-white text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-gray-200 transition hover:scale-[1.02] flex items-center justify-center text-sm gap-2">
                         <i class="fas fa-user-plus text-lg"></i> KAYIT OL
@@ -237,7 +250,7 @@
             </div>
         </main>
         
-        <!-- BURASI DEĞİŞTİ: MOBİL YAPIŞKAN BAR -->
+        <!-- MOBİL YAPIŞKAN BAR -->
         <div class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-kaos/30 p-4 z-40 flex gap-3" id="sticky-cta">
             <button type="button" id="btn-register-sticky" class="flex-1 bg-kaos text-slate-900 font-black tracking-widest uppercase py-3.5 rounded-xl shadow-kaos text-xs">
                 KAYIT OL
@@ -284,10 +297,10 @@
                     </div>
                     <h2 class="text-2xl md:text-3xl font-black text-white mb-3 z-10 tracking-widest uppercase">Sandıklar Kilitli</h2>
                     <p class="text-gray-400 text-sm md:text-base max-w-lg mx-auto mb-8 z-10 font-medium leading-relaxed">
-                        Me26 Ortak Akıl Sandığı'ndaki canlı oylamaları görmek ve mesleğin geleceğini belirleyecek kararlara katılmak için kayıt işlemini tamamlamalısınız.
+                        Me26 Ortak Akıl Sandığı'ndaki canlı oylamaları görmek ve mesleğin geleceğini belirleyecek kararlara katılmak için profilinden şehrini seçmelisin.
                     </p>
                     <button type="button" id="btn-unlock-manifesto" class="bg-kaos text-slate-900 hover:opacity-90 font-black py-4 px-8 rounded-xl transition-all z-10 uppercase tracking-widest text-sm shadow-kaos">
-                        Kimliğini Doğrula ve Sandıkları Aç
+                        Profilini Tamamla ve Sandıkları Aç
                     </button>
                 </div>
 
@@ -395,68 +408,7 @@
     </div>
 
     <!-- ================= GİZLİ PENCERELER (MODALLAR) ================= -->
-    
-    <!-- 1. YENİ 2 ADIMLI KAYIT (TAAHHÜT) MODALI -->
-    <div id="taahhut-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative overflow-hidden shadow-kaos-lg min-h-[400px] flex flex-col justify-center">
-            
-            <!-- ADIM 1: Seçimler -->
-            <div id="taahhut-step-1" class="w-full transition-opacity duration-300">
-                <h3 class="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-widest leading-tight">Dijital Stadyuma<br>Hoş Geldin</h3>
-                <p class="text-gray-300 text-sm mb-8 font-medium">Ortak Akıl Sandığına girmeden önce seçimlerini yap.</p>
-                
-                <div class="mb-4 text-left">
-                    <label for="input-taahhut-sehir" class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>🏟️</span> Şehrini Seç (Tribün)</label>
-                    <select id="input-taahhut-sehir" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none font-bold text-sm focus:border-kaos transition h-14 custom-scrollbar">
-                        <option value="" disabled selected>Şehrini Seç...</option>
-                        <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option><option value="Ağrı">Ağrı</option><option value="Amasya">Amasya</option><option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Artvin">Artvin</option><option value="Aydın">Aydın</option><option value="Balıkesir">Balıkesir</option><option value="Bilecik">Bilecik</option><option value="Bingöl">Bingöl</option><option value="Bitlis">Bitlis</option><option value="Bolu">Bolu</option><option value="Burdur">Burdur</option><option value="Bursa">Bursa</option><option value="Çanakkale">Çanakkale</option><option value="Çankırı">Çankırı</option><option value="Çorum">Çorum</option><option value="Denizli">Denizli</option><option value="Diyarbakır">Diyarbakır</option><option value="Edirne">Edirne</option><option value="Elazığ">Elazığ</option><option value="Erzincan">Erzincan</option><option value="Erzurum">Erzurum</option><option value="Eskişehir">Eskişehir</option><option value="Gaziantep">Gaziantep</option><option value="Giresun">Giresun</option><option value="Gümüşhane">Gümüşhane</option><option value="Hakkari">Hakkari</option><option value="Hatay">Hatay</option><option value="Isparta">Isparta</option><option value="Mersin">Mersin</option><option value="İstanbul">İstanbul</option><option value="İzmir">İzmir</option><option value="Kars">Kars</option><option value="Kastamonu">Kastamonu</option><option value="Kayseri">Kayseri</option><option value="Kırklareli">Kırklareli</option><option value="Kırşehir">Kırşehir</option><option value="Kocaeli">Kocaeli</option><option value="Konya">Konya</option><option value="Kütahya">Kütahya</option><option value="Malatya">Malatya</option><option value="Manisa">Manisa</option><option value="Kahramanmaraş">Kahramanmaraş</option><option value="Mardin">Mardin</option><option value="Muğla">Muğla</option><option value="Muş">Muş</option><option value="Nevşehir">Nevşehir</option><option value="Niğde">Niğde</option><option value="Ordu">Ordu</option><option value="Rize">Rize</option><option value="Sakarya">Sakarya</option><option value="Samsun">Samsun</option><option value="Siirt">Siirt</option><option value="Sinop">Sinop</option><option value="Sivas">Sivas</option><option value="Tekirdağ">Tekirdağ</option><option value="Tokat">Tokat</option><option value="Trabzon">Trabzon</option><option value="Tunceli">Tunceli</option><option value="Şanlıurfa">Şanlıurfa</option><option value="Uşak">Uşak</option><option value="Van">Van</option><option value="Yozgat">Yozgat</option><option value="Zonguldak">Zonguldak</option><option value="Aksaray">Aksaray</option><option value="Bayburt">Bayburt</option><option value="Karaman">Karaman</option><option value="Kırıkkale">Kırıkkale</option><option value="Batman">Batman</option><option value="Şırnak">Şırnak</option><option value="Bartın">Bartın</option><option value="Ardahan">Ardahan</option><option value="Iğdır">Iğdır</option><option value="Yalova">Yalova</option><option value="Karabük">Karabük</option><option value="Kilis">Kilis</option><option value="Osmaniye">Osmaniye</option><option value="Düzce">Düzce</option><option value="Yurtdışı">Yurtdışı</option>
-                    </select>
-                </div>
-
-                <div class="mb-4 text-left">
-                    <label for="input-taahhut-rol" class="block text-[11px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><span>👤</span> Mesleki Durumun</label>
-                    <select id="input-taahhut-rol" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none font-bold text-sm focus:border-kaos transition h-14">
-                        <option value="" disabled selected>Seçim Yap...</option>
-                        <option value="İçmimar">İçmimarım</option>
-                        <option value="Öğrenci">İçmimarlık Öğrencisiyim</option>
-                    </select>
-                </div>
-                
-                <button type="button" id="btn-taahhut-next" class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md mt-6 hover:scale-[1.02]">
-                    DEVAM ET
-                </button>
-            </div>
-
-            <!-- ADIM 2: Giriş Yöntemi -->
-            <div id="taahhut-step-2" class="w-full hidden transition-opacity duration-300">
-                <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Nasıl Girmek İstersin?</h3>
-                <p class="text-gray-300 text-sm mb-8 font-medium">Seçimlerin kaydedildi. Sisteme güvenli giriş yap.</p>
-                
-                <div class="flex flex-col gap-4">
-                    <button type="button" id="btn-google-login" class="w-full bg-white hover:bg-gray-200 text-slate-900 border border-gray-300 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md flex items-center justify-center gap-3">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                        Google ile Hızlı Katıl
-                    </button>
-                    
-                    <div class="flex items-center my-1 hidden">
-                        <div class="flex-grow border-t border-slate-700"></div>
-                        <span class="px-3 text-gray-500 text-[10px] font-bold uppercase tracking-widest">VEYA</span>
-                        <div class="flex-grow border-t border-slate-700"></div>
-                    </div>
-
-                    <button type="button" id="btn-manuel-login" class="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 font-black py-4 rounded-xl transition uppercase tracking-widest text-sm shadow-md hidden">
-                        Manuel (Anonim) Devam Et
-                    </button>
-                </div>
-
-                <button type="button" id="btn-taahhut-back" class="mt-6 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700 transition">
-                    ← Seçimlere Geri Dön
-                </button>
-            </div>
-            
-            <button type="button" id="btn-close-taahhut-modal" class="absolute top-6 right-6 text-gray-500 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-slate-800/50">✕</button>
-        </div>
-    </div>
+    <!-- (Taahhüt Modalı Tamamen Silinmiştir) -->
 
     <!-- 2. Tebrikler Modalı (İlk Giriş) -->
     <div id="wow-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4 hidden">
@@ -504,7 +456,7 @@
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Telefon Onayı</h3>
             
             <div id="phone-step-1">
-                <p class="text-gray-300 text-sm mb-8 font-medium">Oy gücünü 0.5x yapmak için telefonunu doğrulamalısın.</p>
+                <p class="text-gray-300 text-sm mb-8 font-medium">Sistemde bot olmadığını kanıtlamak için telefonunu doğrulamalısın.</p>
                 <div class="text-left mb-6">
                     <label for="input-phone-number" class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">Telefon Numaran</label>
                     <div class="flex items-stretch border border-slate-700 rounded-xl overflow-hidden bg-black focus-within:border-kaos transition shadow-inner">
