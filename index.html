@@ -279,7 +279,7 @@
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl overflow-hidden mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="p-8 md:p-12 text-center border-b border-slate-700 bg-black/40">
                 <h2 class="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest"><span class="text-kaos">KURUCU BAŞLANGIÇ</span> OYLAMALARI</h2>
-                <p class="text-gray-400 text-sm mt-4 tracking-wide max-w-4xl mx-auto leading-relaxed">Aşağıdaki ilk oylamalar, ME26’nin çalışma mantığını göstermek ve mesleki gündemi başlatmak amacıyla hazırlanmıştır. Sistem açıldıktan sonra gündem tek merkezden belirlenmez. Doğrulanmış üyeler yeni önergeler oluşturabilir; <strong class="text-white">50 destek alan önergeler</strong> Ortak Akıl Sandığı’na taşınarak yetkili üyelerin oyuna açılır. Hakaret, iftira, kişisel hedef gösterme veya hukuka aykırı içerikler oylama sürecine alınmaz.</p>
+                <p class="text-gray-400 text-sm mt-4 tracking-wide max-w-4xl mx-auto leading-relaxed">Aşağıdaki ilk oylamalar, ME26’nin çalışma mantığını göstermek ve mesleki gündemi başlatmak amacıyla hazırlanmıştır. Sistem açıldıktan sonra gündem tek merkezden belirlenmez. Doğrulanmış üyeler yeni önergeler oluşturabilir; <strong class="text-white">50 destek alan önergeler</strong> Otonom Ortak Akıl Sandığı’na taşınarak yetkili üyelerin oyuna açılır. Hakaret, iftira, kişisel hedef gösterme veya hukuka aykırı içerikler oylama sürecine alınmaz.</p>
             </div>
             
             <div class="p-6 md:p-10 space-y-10 bg-slate-800/20" id="polls-container">
@@ -292,7 +292,7 @@
                         <span class="text-[10px] bg-kaos/20 text-kaos px-3 py-1.5 rounded border border-kaos/40 font-black uppercase tracking-widest">Hedef: 1.000 Öğrenci + 1.000 Mezun</span>
                     </div>
                     <p class="text-sm text-gray-300 mb-2 font-medium leading-relaxed">
-                        2.000 doğrulanmış üyeye ulaşıldığında ilk Kurucu Meclis süreci başlar. Denge kuralı gereği bu eşik 1.000 içmimarlık öğrencisi ve 1.000 içmimarlık mezunundan oluşur. Temsil; isim, makam veya çevreyle değil, ME26 ID’si, şehir katılımı ve liyakat puanıyla belirlenir.
+                        2.000 doğrulanmış üyeye ulaşıldığında ilk Kurucu Meclis süreci başlar. Denge kuralı gereği bu eşik 1.000 İçmimarlık Öğrencisi ve 1.000 İçmimarlık Mezunundan oluşur. Temsil; isim, makam veya çevreyle değil, ME26 ID’si, şehir katılımı ve liyakat puanıyla belirlenir.
                     </p>
                     <p class="text-[10px] text-kaos font-bold uppercase tracking-widest mb-5">1.000 öğrenci. 1.000 mezun. Eşit başlangıç. Liyakatli temsil.</p>
                     <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700 shadow-inner">
@@ -310,26 +310,28 @@
                     </div>
                     <h2 class="text-2xl md:text-3xl font-black text-white mb-3 z-10 tracking-widest uppercase">Sandıklar Kilitli</h2>
                     <p class="text-gray-400 text-sm md:text-base max-w-lg mx-auto mb-8 z-10 font-medium leading-relaxed">
-                        Me26 Ortak Akıl Sandığı'ndaki canlı oylamaları görmek ve mesleğin geleceğini belirleyecek kararlara katılmak için profilinden şehrini seçmelisin.
+                        ME26 Otonom Ortak Akıl Sandığı'ndaki canlı oylamaları görmek ve mesleğin geleceğini belirleyecek kararlara katılmak için profilinden şehrini seçmelisin.
                     </p>
                     <button type="button" id="btn-unlock-manifesto" class="bg-kaos text-slate-900 hover:opacity-90 font-black py-4 px-8 rounded-xl transition-all z-10 uppercase tracking-widest text-sm shadow-kaos">
                         Profilini Tamamla ve Sandıkları Aç
                     </button>
                 </div>
 
-                <!-- 3 GERÇEK CANLI OYLAMA (SADECE GİRİŞ YAPANLAR GÖRÜR) -->
+                <!-- 3 GERÇEK CANLI OYLAMA -->
                 <div id="manifesto-grid" class="hidden grid-cols-1 gap-8">
                     
                     <!-- Canlı Oylama 1 (GENEL) -->
                     <div class="bg-black/50 border border-blue-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-blue-400 transition-colors shadow-lg">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
-                            <span class="text-xs font-black text-blue-900 bg-blue-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-900 animate-pulse"></span> CANLI OYLAMA #1</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider"><i class="fas fa-globe mr-1"></i>Genel Oylama (Öğrenci + İçmimar)</span>
+                        <div class="absolute top-0 right-0 bg-kaos text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">
+                            ⏳ Kapanışa: 3 Gün 14 Saat
+                        </div>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3 pt-4 md:pt-0">
+                            <span class="text-xs font-black text-blue-900 bg-blue-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2 w-max"><span class="w-2 h-2 rounded-full bg-blue-900 animate-pulse"></span> CANLI OYLAMA #1</span>
+                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider md:mr-32"><i class="fas fa-globe mr-1"></i>Genel Oylama (İçmimarlık Öğrencisi + Mezun)</span>
                         </div>
                         <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Zorunlu Meslek Odası Aidatları Kaldırılsın Mı?</h3>
                         <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">İçmimarlar Odası'nın her yıl zorunlu olarak tahsil ettiği ve icraya kadar giden yıllık aidat sisteminin iptal edilmesi ve odanın sadece gönüllü bağış/hizmet bedeli ile işlemesi yönünde yasal kampanya başlatılsın mı?</p>
                         
-                        <!-- YETKİ: all -->
                         <div class="flex gap-3 vote-buttons-container" data-auth="all">
                             <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">EVET, KALDIRILSIN</button>
                             <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition shadow-md">HAYIR, KALSIN</button>
@@ -344,18 +346,23 @@
                                 <div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#ef4444]"></div>
                             </div>
                         </div>
+                        <div class="mt-4 pt-3 border-t border-slate-700/50 text-center">
+                            <span class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 1.453 doğrulanmış üye oy kullandı</span>
+                        </div>
                     </div>
 
-                    <!-- Canlı Oylama 2 (SADECE İÇMİMARLAR) -->
+                    <!-- Canlı Oylama 2 (SADECE MEZUNLAR) -->
                     <div class="bg-black/50 border border-red-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-red-400 transition-colors shadow-lg">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
-                            <span class="text-xs font-black text-red-900 bg-red-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-900 animate-pulse"></span> CANLI OYLAMA #2</span>
-                            <span class="text-[10px] bg-red-900/50 text-red-400 border border-red-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlar (Öğrenci Oylayamaz)</span>
+                        <div class="absolute top-0 right-0 bg-kaos text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">
+                            ⏳ Kapanışa: 3 Gün 14 Saat
+                        </div>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3 pt-4 md:pt-0">
+                            <span class="text-xs font-black text-red-900 bg-red-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2 w-max"><span class="w-2 h-2 rounded-full bg-red-900 animate-pulse"></span> CANLI OYLAMA #2</span>
+                            <span class="text-[10px] bg-red-900/50 text-red-400 border border-red-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider md:mr-32"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlık Mezunları</span>
                         </div>
                         <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Proje Asgari Bedelleri Enflasyona Endekslensin Mi?</h3>
                         <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Sektördeki fiyat kırma (damping) sorununu çözmek için; tasarım ve metrekare bazlı asgari proje bedellerinin her ay otomatik olarak TÜİK/ENAG enflasyon oranına bağlanarak dijital bir algoritmayla belirlenmesini onaylıyor musunuz?</p>
                         
-                        <!-- YETKİ: icmimar -->
                         <div class="flex gap-3 vote-buttons-container" data-auth="icmimar">
                             <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">ONAYLIYORUM</button>
                             <button data-vote="abstain" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-yellow-500 hover:text-yellow-400 hover:bg-slate-700 transition shadow-md">KARARSIZIM</button>
@@ -373,18 +380,23 @@
                                 <div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#ef4444]"></div>
                             </div>
                         </div>
+                        <div class="mt-4 pt-3 border-t border-slate-700/50 text-center">
+                            <span class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 982 doğrulanmış üye oy kullandı</span>
+                        </div>
                     </div>
 
                     <!-- Canlı Oylama 3 (SADECE ÖĞRENCİLER) -->
                     <div class="bg-black/50 border border-green-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-green-400 transition-colors shadow-lg">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
-                            <span class="text-xs font-black text-green-900 bg-green-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-900 animate-pulse"></span> CANLI OYLAMA #3</span>
-                            <span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider"><i class="fas fa-lock mr-1"></i>Sadece Öğrenciler (İçmimarlar Oylayamaz)</span>
+                        <div class="absolute top-0 right-0 bg-kaos text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">
+                            ⏳ Kapanışa: 3 Gün 14 Saat
+                        </div>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3 pt-4 md:pt-0">
+                            <span class="text-xs font-black text-green-900 bg-green-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2 w-max"><span class="w-2 h-2 rounded-full bg-green-900 animate-pulse"></span> CANLI OYLAMA #3</span>
+                            <span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider md:mr-32"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlık Öğrencileri</span>
                         </div>
                         <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Zorunlu Şantiye Stajı Süresi Uzatılsın Mı?</h3>
                         <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Öğrencilerin mezun olduktan sonra sahada sudan çıkmış balığa dönmemesi için, üniversitelerdeki mevcut zorunlu "Şantiye Stajı" süresinin (genelde 20-30 gün) en az 60 iş gününe çıkarılmasını ve sigortanın devlet tarafından ödenmesini talep ediyor musunuz?</p>
                         
-                        <!-- YETKİ: ogrenci -->
                         <div class="flex gap-3 vote-buttons-container" data-auth="ogrenci">
                             <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">EVET, UZATILSIN</button>
                             <button data-vote="no" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-red-500 hover:text-red-400 hover:bg-slate-700 transition shadow-md">HAYIR, GEREK YOK</button>
@@ -399,8 +411,42 @@
                                 <div class="vote-bar-no bg-red-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#ef4444]"></div>
                             </div>
                         </div>
+                        <div class="mt-4 pt-3 border-t border-slate-700/50 text-center">
+                            <span class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 471 doğrulanmış üye oy kullandı</span>
+                        </div>
                     </div>
 
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= YENİ EKLENEN: SALI 20:26 GÜNDEM SIRASI (BEKLEME SALONU) ================= -->
+        <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl p-8 md:p-12 mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-700 pb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest"><span class="text-kaos">SALI 20:26</span> GÜNDEM SIRASI</h2>
+                    <p class="text-gray-400 text-xs mt-2 font-medium max-w-xl leading-relaxed">50 desteğe ulaşıp oylama yeterliliği kazanan önergeler burada bekler. Her <strong class="text-white">Salı saat 20:26'da</strong> otomatik olarak Otonom Ortak Akıl Sandığı'na taşınır.</p>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-600 px-4 py-3 rounded-xl text-center shadow-inner">
+                    <div class="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-1">SIRADAKİ AÇILIŞA</div>
+                    <div class="text-kaos font-mono font-black text-lg">3G 14S 24D</div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-4">
+                <!-- Örnek Bekleyen Önerge -->
+                <div class="bg-black/40 border border-slate-600 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-500 transition opacity-80">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded border border-slate-600 font-bold uppercase tracking-widest"><i class="fas fa-lock text-gray-400 mr-1"></i> İçmimarlık Mezunları</span>
+                            <span class="text-[10px] text-kaos font-bold uppercase tracking-widest">Süre: 2 Hafta</span>
+                        </div>
+                        <h4 class="text-base md:text-lg font-black text-white">Kamu İhalelerinde İçmimar Zorunluluğu Getirilmesi</h4>
+                    </div>
+                    <div class="text-left md:text-right whitespace-nowrap bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-700">
+                        <div class="text-xs font-black text-green-400 mb-1">✅ 58/50 Destek</div>
+                        <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Salı 20:26'yı Bekliyor</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -410,13 +456,15 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700 pb-6 gap-4">
                 <div>
                     <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest"><span class="text-kaos">MECLİS</span> ÖNERGELERİ</h2>
-                    <p class="text-gray-400 text-xs mt-2 font-medium max-w-xl leading-relaxed">Doğrulanmış üyeler, mesleğin sorunlarına dair yeni önerge oluşturabilir. Bir önerge 50 destek aldığında Ortak Akıl Sandığı’na taşınır ve tüm yetkili üyelerin oyuna açılır.</p>
+                    <p class="text-gray-400 text-xs mt-2 font-medium max-w-xl leading-relaxed">Doğrulanmış üyeler, mesleğin sorunlarına dair yeni önerge oluşturabilir. Bir önerge <strong class="text-white">50 destek</strong> aldığında Gündem Sırası'na taşınır.</p>
                 </div>
-                <button type="button" id="btn-open-proposal-modal" class="bg-slate-800 hover:bg-slate-700 hover:border-white text-white border border-slate-600 px-6 py-3 rounded-lg text-[11px] font-bold uppercase tracking-widest transition shadow-md whitespace-nowrap">
-                    📝 YENİ ÖNERGE OLUŞTUR
+                <button type="button" id="btn-open-proposal-modal" class="bg-slate-800 hover:bg-slate-700 hover:border-white text-white border border-slate-600 px-6 py-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition shadow-md whitespace-nowrap flex items-center gap-2">
+                    <i class="fas fa-plus"></i> YENİ ÖNERGE OLUŞTUR
                 </button>
             </div>
-            <div id="proposals-container" class="flex flex-col gap-4"></div>
+            <div id="proposals-container" class="flex flex-col gap-4">
+                <p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Henüz oylama yeterliliği (50 destek) için bekleyen bir önerge yok.</p>
+            </div>
         </div>
     </div>
 
@@ -507,20 +555,44 @@
         </div>
     </div>
 
-    <!-- 6. Sorun Bildir Modalı (GÜNCELLENDİ) -->
+    <!-- 6. Sorun Bildir Modalı (TAMAMEN YENİLENDİ) -->
     <div id="onerge-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+        <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-lg w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)] max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>📝</span> Yeni Önerge Oluştur</h3>
-            <p class="text-gray-400 text-xs mb-6 font-medium leading-relaxed">Kural: Her doğrulanmış üye önerge oluşturabilir. <strong class="text-white">50 destek alan</strong> önergeler ana oylamaya taşınır. ME26, hakaret, iftira, kişisel hedef gösterme veya hukuka aykırı içerikleri oylamaya açmaz.</p>
-            <div class="text-left space-y-4 mb-6">
-                <!-- Dropdown (Açılır Menü) Kısım İptal Edildi -->
+            <p class="text-gray-400 text-[11px] mb-6 font-medium leading-relaxed">Kural: Her doğrulanmış üye önerge oluşturabilir. <strong class="text-white">50 destek alan</strong> önergeler Salı 20:26'da oylamaya açılır. Hakaret veya kişisel hedef gösterme içerenler meclise alınmaz.</p>
+            
+            <div class="text-left space-y-5 mb-8">
                 <div>
-                    <label for="input-proposal-title" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Başlık</label>
-                    <input type="text" id="input-proposal-title" placeholder="Örn: X Belediyesindeki İmar Sorunu" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
+                    <label for="input-proposal-title" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Önerge Başlığı</label>
+                    <input type="text" id="input-proposal-title" placeholder="Kısa ve net bir başlık..." class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
                 </div>
                 <div>
-                    <label for="input-proposal-desc" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Önerge Detayı ve Çözüm Önerisi</label>
-                    <textarea id="input-proposal-desc" placeholder="İstediğin çözümü detaylıca yaz..." class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium h-28 resize-none custom-scrollbar focus:border-kaos transition"></textarea>
+                    <label for="input-proposal-problem" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Sorun / Gerekçe</label>
+                    <textarea id="input-proposal-problem" placeholder="Mevcut sorun nedir? Neden değişmeli?" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium h-24 resize-none custom-scrollbar focus:border-kaos transition"></textarea>
+                </div>
+                <div>
+                    <label for="input-proposal-solution" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Çözüm Önerisi</label>
+                    <textarea id="input-proposal-solution" placeholder="Somut çözüm öneriniz nedir?" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium h-24 resize-none custom-scrollbar focus:border-kaos transition"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="input-proposal-audience" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hedef Kitle</label>
+                        <select id="input-proposal-audience" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-xs font-bold focus:border-kaos transition">
+                            <option value="all">🌍 Herkes (Öğrenci + Mezun)</option>
+                            <option value="icmimar">🔒 Sadece İçmimarlık Mezunları</option>
+                            <option value="ogrenci">🔒 Sadece İçmimarlık Öğrencileri</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="input-proposal-duration" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Önerilen Oylama Süresi</label>
+                        <select id="input-proposal-duration" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-xs font-bold focus:border-kaos transition">
+                            <option value="1">1 Hafta</option>
+                            <option value="2">2 Hafta</option>
+                            <option value="3">3 Hafta</option>
+                            <option value="4">4 Hafta</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <button type="button" id="btn-submit-proposal" class="w-full bg-slate-800 text-white hover:text-kaos hover:border-kaos border border-slate-600 font-black py-4 rounded-xl uppercase tracking-widest transition shadow-md">SİSTEME GÖNDER</button>
