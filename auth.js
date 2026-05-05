@@ -82,10 +82,24 @@ export async function eDevletBelgesiOku(file, userUid) {
                 const tcMatch = cleanText.match(/(?:T\.C\.|Kimlik)[\s\S]*?(?:Numarası|No)\s*[:\s]*(\d{11})/i) || cleanText.match(/(\d{11})/);
                 const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
 
-                const regexDuvar = "(?=Baba Adı|Anne Adı|Doğum Tarihi|Kimlik|T\\.C\\.|Program|Fakülte)";
+                const regexDuvar = "(?=Baba Adı|Anne Adı|Doğum Tarihi|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu)";
                 const ad_soyad = (cleanText.match(new RegExp(`Adı\\s*Soyadı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
-                const baba_adi = (cleanText.match(new RegExp(`Baba\\s*Adı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
-                const anne_adi = (cleanText.match(new RegExp(`Anne\\s*Adı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
+                
+                let baba_adi = 'Bulunamadı';
+                let anne_adi = 'Bulunamadı';
+
+                // YENİ: E-Devlet özel tablo formatı yakalayıcısı ("COŞKUN / GÜLER" gibi aradaki slash'ı bulur)
+                const birlesikAnneBaba = cleanText.match(/(?:Baba|Anne)[^\/]*\/[^\/]*(?:Adı)[\s:]*([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)\s*\/\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)(?=Doğum|Kimlik|T\.C\.|Program|Fakülte|Uyruğu)/i);
+                
+                if (birlesikAnneBaba) {
+                    baba_adi = birlesikAnneBaba[1].trim();
+                    anne_adi = birlesikAnneBaba[2].trim();
+                } else {
+                    // Normal ayrı yazılmışsa klasik yöntemle bul
+                    baba_adi = (cleanText.match(new RegExp(`Baba\\s*Adı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
+                    anne_adi = (cleanText.match(new RegExp(`Anne\\s*Adı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
+                }
+
                 const dogum_tarihi = (cleanText.match(/Doğum\s*Tarihi\s*[:\s]*(\d{2}\.\d{2}\.\d{4})/i) || [])[1] || 'Bulunamadı';
                 
                 const uni_program = (cleanText.match(/Program\s*[:\s]*([^\n\r]+?)(?=Diploma No|Kayıt Tarihi|Genel Not)/i) || [])[1] || '';
