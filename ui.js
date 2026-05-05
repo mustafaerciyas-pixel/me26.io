@@ -105,6 +105,7 @@ export const UI = {
 
         // GÖREV 1 KONTROLÜ: Şehir seçilmiş mi?
         const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
+        const hasAssignedId = user.userNo && user.userNo !== 'BEKLEYEN'; // ID ALINMIŞ MI KONTROLÜ
         
         setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
         
@@ -122,6 +123,12 @@ export const UI = {
             if (idBadge) {
                 idBadge.textContent = 'VIP KURUCU';
                 idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
+            }
+            if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
+        } else if (hasAssignedId) {
+            if (idBadge) {
+                idBadge.textContent = 'STANDART';
+                idBadge.className = 'bg-slate-700 text-white border border-slate-500 px-1.5 py-0.5 rounded text-[8px] font-bold';
             }
             if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
         } else {
@@ -160,7 +167,7 @@ export const UI = {
         // =========================================================
         const btnPhone = document.getElementById('btn-open-phone-modal');
         const btnPdf = document.getElementById('btn-open-pdf-modal');
-        const citySelector = document.getElementById('ui-city-selector-container'); // Yeni eklenecek HTML
+        const citySelector = document.getElementById('ui-city-selector-container'); 
 
         // Şehir seçimi UI Kontrolü
         if (citySelector) {
@@ -223,8 +230,12 @@ export const UI = {
         else if (user.authStage === 'phone_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) {
-                btnPdf.classList.remove('hidden');
-                insertPhoneSuccessAlert(btnPdf);
+                if (hasAssignedId) {
+                    btnPdf.classList.add('hidden'); // ID ALDIYSA KESİN GİZLE
+                } else {
+                    btnPdf.classList.remove('hidden');
+                    insertPhoneSuccessAlert(btnPdf);
+                }
             }
         } 
         // DURUM 4: Sadece kayıt oldu, telefon onayı bekleniyor
