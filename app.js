@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Gerçek SMS + Sniper Arayüz Geçişi + Boşluk Temizleyici
+   Gerçek SMS + Sniper Arayüz Geçişi + Boşluk Temizleyici (SMS GÖNDER DÜZELTMESİ)
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -43,8 +43,9 @@ export const AUTH = {
             return; 
         }
 
-        const btn = document.getElementById('btn-submit-phone') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('BAĞLAN'));
-        const originalText = btn ? btn.innerHTML : 'BAĞLAN';
+        // DÜZELTME: Butonu bulurken "SMS GÖNDER" yazısına odaklan
+        const btn = document.getElementById('btn-submit-phone') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('SMS GÖNDER'));
+        const originalText = btn ? btn.innerHTML : 'SMS GÖNDER';
         if(btn) { btn.innerHTML = 'BAĞLANIYOR...'; btn.disabled = true; }
 
         try {
@@ -52,18 +53,14 @@ export const AUTH = {
             await gercekSmsGonder(phoneValue);
             UI.showToast('Kod gönderildi! Lütfen ekrana girin.', 'success');
 
-            // ======================================================
-            // 2. SNIPER MODU: TELEFON EKRANINI GÖZÜNDEN VURUP GİZLE
-            // ======================================================
+            // 2. SNIPER MODU: TELEFON EKRANINI GİZLE
             if (phoneInput) {
-                // TR+90 yazan siyah kılıfı bul ve gizle
                 const wrapper = phoneInput.closest('.flex') || phoneInput.parentElement;
                 if(wrapper) wrapper.style.display = 'none';
                 phoneInput.style.display = 'none';
             }
             if (btn) btn.style.display = 'none';
 
-            // Ekrandaki "TELEFON NUMARAN" yazısını bul ve yokederek ekranı temizle
             document.querySelectorAll('label, span, div, p').forEach(el => {
                 if (el.textContent.trim() === 'TELEFON NUMARAN') el.style.display = 'none';
             });
@@ -75,11 +72,11 @@ export const AUTH = {
                 otpInput.style.display = 'block'; 
                 if (otpInput.parentElement) {
                     otpInput.parentElement.classList.remove('hidden');
-                    otpInput.parentElement.style.display = 'flex'; // Kutu kılıfını düzelt
+                    otpInput.parentElement.style.display = 'flex'; 
                 }
             }
 
-            const otpBtn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('KODU ONAYLA'));
+            const otpBtn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('KODU ONAYLA'));
             if (otpBtn) {
                 otpBtn.classList.remove('hidden');
                 otpBtn.style.display = 'block'; 
@@ -91,17 +88,13 @@ export const AUTH = {
         } 
     },
     verifyOtp: async () => {
-        // Kodu bul
         const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]') || document.querySelector('input[type="text"][class*="tracking"]');
-        
-        // BOŞLUK TEMİZLEYİCİ: Adam araya boşluk koysa bile biz kodu bitişik ('111111') hale getiriyoruz!
         const rawValue = otpInput ? otpInput.value : '';
-        const otpValue = rawValue.replace(/\s+/g, ''); 
+        const otpValue = rawValue.replace(/\s+/g, ''); // Boşlukları siler
 
         if(!otpValue || otpValue.length < 6) { UI.showToast('6 haneli kodu eksiksiz girin.', 'error'); return; }
 
-        // KODU ONAYLA butonunu HTML ID'sine bakmadan bul!
-        const btn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('KODU ONAYLA') || b.textContent.includes('DOĞRULANIYOR'));
+        const btn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('KODU ONAYLA') || b.textContent.includes('DOĞRULANIYOR'));
         if(btn) { btn.innerHTML = 'DOĞRULANIYOR...'; btn.disabled = true; }
 
         try {
@@ -388,19 +381,8 @@ function şantiyeyiBaslat() {
         finally { if(btn) { btn.innerHTML = originalText; btn.disabled = false; } }
     });
 
-    // BAĞLANTILARI ZORLA KUR
     bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
-    
-    document.querySelectorAll('button').forEach(btn => {
-        if (btn.textContent.includes('BAĞLAN') && !btn.textContent.includes('BAĞLANIYOR')) {
-            btn.onclick = AUTH.verifyPhone;
-        }
-        if (btn.textContent.includes('KODU ONAYLA')) {
-            btn.onclick = AUTH.verifyOtp;
-        }
-    });
-
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
     bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
     bind('btn-logout', 'click', AUTH.logout);
@@ -414,6 +396,23 @@ function şantiyeyiBaslat() {
         btnSubmitPdf.parentNode.replaceChild(newBtn, btnSubmitPdf);
         newBtn.addEventListener('click', AUTH.verifyPdf);
     }
+
+    // =========================================================================
+    // DÜZELTME: TIKLAMALARI (EVENT DELEGATION) İLE YAKALA Kİ ASLA KAÇIRMASIN!
+    // =========================================================================
+    document.body.addEventListener('click', (e) => {
+        const text = (e.target.textContent || '').trim();
+        const id = e.target.id;
+        
+        if (id === 'btn-submit-phone' || text === 'SMS GÖNDER') {
+            e.preventDefault(); // Sayfanın yenilenmesini engeller
+            AUTH.verifyPhone();
+        }
+        else if (id === 'btn-verify-otp' || text === 'KODU ONAYLA') {
+            e.preventDefault(); // Sayfanın yenilenmesini engeller
+            AUTH.verifyOtp();
+        }
+    });
 
     onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser) {
