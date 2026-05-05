@@ -3,9 +3,12 @@
 // ============================================================================
 
 import { auth } from './config.js';
+import { supabase } from './supabase.js'; // İŞTE EKSİK OLAN VE EKLENEN ANA BORU!
 import { signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-// Google ile Giriş Fonksiyonu
+// ============================================================================
+// 1. GOOGLE İLE GİRİŞ MOTORU
+// ============================================================================
 export async function googleIleGiris() {
     try {
         const provider = new GoogleAuthProvider();
@@ -34,7 +37,7 @@ export async function googleIleGiris() {
         }
 
         console.log("Sisteme Başarıyla Girildi:", data);
-        return data; // Kullanıcı verilerini döndürüyoruz (ui.js kullanacak)
+        return data; // Kullanıcı verilerini döndürüyoruz (app.js/ui.js kullanacak)
 
     } catch (error) {
         console.error("Google Giriş Hatası:", error);
@@ -43,7 +46,9 @@ export async function googleIleGiris() {
     }
 }
 
-// Güvenli Çıkış Fonksiyonu
+// ============================================================================
+// 2. GÜVENLİ ÇIKIŞ MOTORU
+// ============================================================================
 export async function sistemdenCikis() {
     try {
         await signOut(auth);
@@ -55,7 +60,7 @@ export async function sistemdenCikis() {
 }
 
 // ============================================================================
-// E-DEVLET PDF DEŞİFRE VE PARÇALAMA MOTORU
+// 3. E-DEVLET PDF DEŞİFRE VE PARÇALAMA MOTORU
 // ============================================================================
 export async function eDevletBelgesiOku(file, userUid) {
     return new Promise((resolve, reject) => {
@@ -103,7 +108,7 @@ export async function eDevletBelgesiOku(file, userUid) {
                 const mezuniyet_tarihi = (cleanText.match(/Mezuniyet Tarihi\s*[:\s]*([\d\.]+)/i) || [])[1] || 'Bulunamadı';
                 const durum = (cleanText.match(/Durum\s*[:\s]*([a-zA-ZÇĞİÖŞÜçğıöşü]+)/i) || [])[1] || 'Bulunamadı';
                 
-                // 3. Güvenlik ve Belge Doğrulama Verileri (YENİ EKLENEN TARİH KISMI)
+                // 3. Güvenlik ve Belge Doğrulama Verileri
                 const barkodMatch = cleanText.match(/YOK[A-Z0-9]+/i);
                 const barkod = barkodMatch ? barkodMatch[0] : 'Bulunamadı';
                 
@@ -126,7 +131,7 @@ export async function eDevletBelgesiOku(file, userUid) {
                     mezuniyet_tarihi: mezuniyet_tarihi,
                     durum: durum,
                     barkod: barkod,
-                    belge_tarihi: belgeTarihi, // İşte eklendi!
+                    belge_tarihi: belgeTarihi, 
                     belge_durumu: "Onay Bekliyor"
                 };
 
