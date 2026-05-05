@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Gerçek SMS + Sniper Arayüz Geçişi + RESET MOTORU
+   Gerçek SMS + Nokta Atışı Adım Geçişleri (Step 1 -> Step 2)
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -18,49 +18,27 @@ export const AUTH = {
     logout: sistemdenCikis,
     
     // ======================================================
-    // YENİ: EKRANI FABRİKA AYARLARINA DÖNDÜREN MOTOR
+    // SIFIRLAMA MOTORU (MODAL AÇILINCA STEP 1'E DÖNDÜR)
     // ======================================================
     resetPhoneModal: () => {
-        // 1. "TELEFON NUMARAN" yazısını zorla geri getir
-        document.querySelectorAll('label, span, div, p').forEach(el => {
-            if (el.textContent.trim() === 'TELEFON NUMARAN') {
-                el.style.display = 'block';
-                el.classList.remove('hidden');
-            }
-        });
+        const step1 = document.getElementById('phone-step-1');
+        const step2 = document.getElementById('phone-step-2');
+        const phoneInput = document.getElementById('input-phone-number');
+        const otpInput = document.getElementById('input-otp-code');
+        const btnPhone = document.getElementById('btn-submit-phone');
+        const btnOtp = document.getElementById('btn-verify-otp');
 
-        // 2. Telefon Inputunu ve Kılıfını zorla geri getir
-        const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
-        if (phoneInput) {
-            const wrapper = phoneInput.closest('.flex') || phoneInput.parentElement;
-            if(wrapper) { 
-                wrapper.style.display = 'flex'; 
-                wrapper.classList.remove('hidden'); 
-            }
-            phoneInput.style.display = 'block';
-            phoneInput.classList.remove('hidden');
-            phoneInput.value = ''; // İçini temizle
-        }
-
-        // 3. SMS GÖNDER Butonunu zorla geri getir
-        const btn = document.getElementById('btn-submit-phone') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('SMS GÖNDER') || b.textContent.includes('BAĞLAN'));
-        if (btn) {
-            btn.style.display = 'block';
-            btn.classList.remove('hidden');
-            btn.innerHTML = 'SMS GÖNDER';
-            btn.disabled = false;
-        }
-
-        // 4. Şifre (OTP) kutularını GİZLE
-        const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]') || document.querySelector('input[type="text"][class*="tracking"]');
-        if (otpInput) {
-            otpInput.style.display = 'none';
-            otpInput.value = '';
-            if (otpInput.parentElement) otpInput.parentElement.style.display = 'none';
-        }
+        // Adım 1 görünür, Adım 2 gizli olsun
+        if (step1) { step1.style.display = 'block'; step1.classList.remove('hidden'); }
+        if (step2) { step2.style.display = 'none'; step2.classList.add('hidden'); }
         
-        const otpBtn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('KODU ONAYLA'));
-        if (otpBtn) otpBtn.style.display = 'none';
+        // Kutuların içini temizle
+        if (phoneInput) phoneInput.value = '';
+        if (otpInput) otpInput.value = '';
+        
+        // Butonları resetle
+        if (btnPhone) { btnPhone.innerHTML = 'SMS GÖNDER'; btnPhone.disabled = false; }
+        if (btnOtp) { btnOtp.innerHTML = 'KODU ONAYLA'; btnOtp.disabled = false; }
     },
 
     verifyPdf: async () => {
@@ -77,64 +55,55 @@ export const AUTH = {
         finally { if(btn) { btn.innerHTML = 'E-DEVLET YÜKLE'; btn.disabled = false; } }
     },
 
+    // ======================================================
+    // 1. ADIM: TELEFONU AL, SMS AT VE STEP 2'YE GEÇ
+    // ======================================================
     verifyPhone: async () => {
-        const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
+        const phoneInput = document.getElementById('input-phone-number');
         const phoneValue = phoneInput ? phoneInput.value : '';
+        
         if(!phoneValue || phoneValue.length < 10) { UI.showToast('Geçerli numara girin.', 'error'); return; }
 
-        const btn = document.getElementById('btn-submit-phone') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('SMS GÖNDER'));
+        const btn = document.getElementById('btn-submit-phone');
         const originalText = btn ? btn.innerHTML : 'SMS GÖNDER';
         if(btn) { btn.innerHTML = 'BAĞLANIYOR...'; btn.disabled = true; }
 
         try {
+            // SMS Motorunu Ateşle
             await gercekSmsGonder(phoneValue);
             UI.showToast('Kod gönderildi! Lütfen ekrana girin.', 'success');
 
-            // Sniper: Telefonu Gizle
-            if (phoneInput) {
-                const wrapper = phoneInput.closest('.flex') || phoneInput.parentElement;
-                if(wrapper) wrapper.style.display = 'none';
-                phoneInput.style.display = 'none';
-            }
-            if (btn) btn.style.display = 'none';
-            document.querySelectorAll('label, span, div, p').forEach(el => {
-                if (el.textContent.trim() === 'TELEFON NUMARAN') el.style.display = 'none';
-            });
+            // TEMİZ GEÇİŞ: Adım 1'i kapat, Adım 2'yi aç!
+            const step1 = document.getElementById('phone-step-1');
+            const step2 = document.getElementById('phone-step-2');
+            
+            if (step1) { step1.style.display = 'none'; step1.classList.add('hidden'); }
+            if (step2) { step2.style.display = 'block'; step2.classList.remove('hidden'); }
 
-            // Şifreyi Göster
-            const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]') || document.querySelector('input[type="text"][class*="tracking"]');
-            if (otpInput) {
-                otpInput.classList.remove('hidden');
-                otpInput.style.display = 'block'; 
-                if (otpInput.parentElement) {
-                    otpInput.parentElement.classList.remove('hidden');
-                    otpInput.parentElement.style.display = 'flex'; 
-                }
-            }
-            const otpBtn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('KODU ONAYLA'));
-            if (otpBtn) {
-                otpBtn.classList.remove('hidden');
-                otpBtn.style.display = 'block'; 
-            }
         } catch (error) {
             UI.showToast('Hata! Lütfen konsolu kontrol edin.', 'error');
             if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
         } 
     },
 
+    // ======================================================
+    // 2. ADIM: KODU AL, BOŞLUKLARI SİL, ONAYLA
+    // ======================================================
     verifyOtp: async () => {
-        const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]') || document.querySelector('input[type="text"][class*="tracking"]');
+        const otpInput = document.getElementById('input-otp-code');
         const rawValue = otpInput ? otpInput.value : '';
-        const otpValue = rawValue.replace(/\s+/g, ''); 
+        const otpValue = rawValue.replace(/\s+/g, ''); // Kopyala/yapıştır boşluklarını temizler
 
         if(!otpValue || otpValue.length < 6) { UI.showToast('6 haneli kodu eksiksiz girin.', 'error'); return; }
 
-        const btn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button, a, div')).find(b => b.textContent.includes('KODU ONAYLA') || b.textContent.includes('DOĞRULANIYOR'));
+        const btn = document.getElementById('btn-verify-otp');
         if(btn) { btn.innerHTML = 'DOĞRULANIYOR...'; btn.disabled = true; }
 
         try {
-            const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
-            await gercekSmsDogrula(otpValue, STATE.user.uid, phoneInput.value);
+            const phoneInput = document.getElementById('input-phone-number');
+            const phoneValue = phoneInput ? phoneInput.value : '';
+            
+            await gercekSmsDogrula(otpValue, STATE.user.uid, phoneValue);
             
             UI.showToast('Telefon başarıyla onaylandı!', 'success');
             STATE.updateUser('hasPhone', true);
@@ -352,9 +321,6 @@ function şantiyeyiBaslat() {
         finally { if(btn) { btn.innerHTML = originalText; btn.disabled = false; } }
     });
 
-    // ==========================================================
-    // MODALI AÇARKEN KUTULARI ZORLA GERİ GETİR
-    // ==========================================================
     bind('btn-open-phone-modal', 'click', () => {
         AUTH.resetPhoneModal();
         UI.openModal('phone-modal');
@@ -362,11 +328,21 @@ function şantiyeyiBaslat() {
 
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
     
+    // BUTONLARA KÖPRÜYÜ AT (Artık ID'lerden direkt vuruyoruz!)
     document.body.addEventListener('click', (e) => {
         const text = (e.target.textContent || '').trim();
         const id = e.target.id;
-        if (id === 'btn-submit-phone' || text === 'SMS GÖNDER') { e.preventDefault(); AUTH.verifyPhone(); }
-        else if (id === 'btn-verify-otp' || text === 'KODU ONAYLA') { e.preventDefault(); AUTH.verifyOtp(); }
+        
+        // SMS GÖNDER Butonuna tıklanınca
+        if (id === 'btn-submit-phone' || text === 'SMS GÖNDER') { 
+            e.preventDefault(); 
+            AUTH.verifyPhone(); 
+        }
+        // KODU ONAYLA Butonuna tıklanınca
+        else if (id === 'btn-verify-otp' || text === 'KODU ONAYLA') { 
+            e.preventDefault(); 
+            AUTH.verifyOtp(); 
+        }
     });
 
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
