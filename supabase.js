@@ -9,18 +9,21 @@ import { ME26_CONFIG } from './config.js';
 export const supabase = createClient(ME26_CONFIG.supabaseUrl, ME26_CONFIG.supabaseKey);
 
 export const DB = {
-    // 1. SİSTEME GİRİŞ MOTORU (AKILLANDIRILDI - Veri Ezmez)
+    // 1. SİSTEME GİRİŞ MOTORU (AKILLANDIRILDI - maybeSingle Eklendi)
     sistemeGiris: async (gizliPaket) => {
+        // ÖNCE KONTROL: Bu adam zaten sistemde var mı?
         const { data: mevcutUser } = await supabase
             .from('users')
             .select('*')
             .eq('id', gizliPaket.uid)
-            .single();
+            .maybeSingle(); // <--- KRİTİK DÜZELTME BURADA (single yerine maybeSingle)
 
+        // Adam içeride varsa, gerçek verilerini (Onay, Güç vb.) ezmeden al
         if (mevcutUser) {
             return mevcutUser;
         }
 
+        // İlk kez geliyorsa ve bulamadıysa karanlık odaya (RPC) yeni kayıt için gönder
         const { data, error } = await supabase.rpc('me26_sistem_giris', { p_payload: gizliPaket });
         if (error) console.error('🔥 Giriş Motoru Hatası:', error.message);
         return data;
@@ -57,5 +60,16 @@ export const DB = {
             console.error('🔥 Şehir Güncelleme Hatası:', error.message);
             throw error;
         }
+    },
+
+    // 5. VIP İSTEMEYENLERE STANDART NUMARA ATAMA MOTORU
+    standartNumaraAl: async (uid) => {
+        const { data, error } = await supabase.rpc('me26_standart_numara_al', { p_uid: uid });
+        
+        if (error) {
+            console.error('🔥 Standart Numara Hatası:', error.message);
+            throw error;
+        }
+        return data; 
     }
 };
