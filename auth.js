@@ -77,11 +77,14 @@ export const AUTH = {
             if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
             let authStage = 'registered';
-            
             const guc = parseFloat(dbUser.oy_gucu || 0);
             
+            // VERİTABANINDAN TELEFONU YAKALA (Geniş Sensör)
+            const dbTelefon = dbUser.telefon || dbUser.telefon_no || dbUser.tel_no || dbUser.phone;
+            const gercektenTelefonuVarMi = !!dbTelefon;
+            
             if (guc >= 1.0) authStage = 'pdf_verified';
-            else if (dbUser.telefon) authStage = 'phone_verified';
+            else if (gercektenTelefonuVarMi) authStage = 'phone_verified';
             
             if (dbUser.belge_durumu === 'Onay Bekliyor' || dbUser.belge_durumu?.includes('Bekliyor')) {
                 authStage = 'document_pending'; 
@@ -97,13 +100,13 @@ export const AUTH = {
                 inviteCount: dbUser.basarili_davet_sayisi || 0,
                 isVip: !!dbUser.vip_kurucu_no,
                 davetKodu: dbUser.kendi_davet_kodu,
-                hasPhone: !!dbUser.telefon // KESİN ÇÖZÜM KABLOSU BURADA
+                hasPhone: gercektenTelefonuVarMi // ARTIK ASLA HAYALET OLMAYACAK
             });
             
             UI.renderProfile(); 
             UI.showView('voting');
             
-            if (dbUser.basarili_davet_sayisi === 0 && guc === 0 && (!dbUser.telefon)) {
+            if (dbUser.basarili_davet_sayisi === 0 && guc === 0 && !gercektenTelefonuVarMi) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
                 UI.openModal('wow-modal');
@@ -164,7 +167,7 @@ export const AUTH = {
                 const result = await signInWithPopup(firebaseAuth, googleProvider);
                 await AUTH.handleGoogleSuccess(result.user);
             } catch (error) {
-                console.error('Google Giri Hatası:', error);
+                console.error('Google Giriş Hatası:', error);
                 if (error.code !== 'auth/popup-closed-by-user') {
                     UI.showToast('Google ile giriş başarısız oldu.', 'error');
                 }
@@ -260,15 +263,16 @@ export const AUTH = {
             const phoneInput = getEl('input-phone-number');
             const phoneVal = normalizeTurkishPhone(phoneInput.value);
             
+            // VERİTABANINA GERÇEKTEN YAZIYOR
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
-            STATE.updateUser('hasPhone', true); // NUMARASI VAR MÜHRÜ
+            STATE.updateUser('hasPhone', true);
 
             UI.closeModal('phone-modal');
             UI.renderProfile();
             resetPhoneModal();
-            window.dispatchEvent(new Event('auth_changed')); // SİNYALİ ATEŞLE GİZLESİN
+            window.dispatchEvent(new Event('auth_changed')); 
 
             UI.showToast('Telefon doğrulandı (Bot Kontrolü). Şimdi PDF yükleme sırası!', 'success');
         } catch (error) {
@@ -407,7 +411,7 @@ export const AUTH = {
             
             UI.closeModal('pdf-modal');
             UI.renderProfile();
-            window.dispatchEvent(new Event('auth_changed')); // Sinyal gönder
+            window.dispatchEvent(new Event('auth_changed')); 
             fileInput.value = '';
 
         } catch (error) {
