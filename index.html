@@ -134,7 +134,7 @@
                 </button>
             </div>
 
-            <!-- VIP Kurucu No & Paylaşım Bölümü (BU KISMA ID EKLENDİ) -->
+            <!-- VIP Kurucu No & Paylaşım Bölümü -->
             <div id="ui-vip-section" class="p-6 border-b border-slate-700 bg-slate-800/30 relative">
                 <div class="flex justify-between items-center mb-3">
                     <div class="flex items-center gap-2"><span class="text-xl">💎</span><span class="text-[12px] text-white font-black uppercase tracking-widest">VIP Kurucu No</span></div>
@@ -156,7 +156,6 @@
                     🔒 <span class="group-hover:text-kaos transition">SEÇİM EKRANINI AÇ</span>
                 </button>
                 
-                <!-- YENİ EKLENEN OTOMATİK NUMARA BUTONU -->
                 <button type="button" id="btn-standart-numara" class="w-full mt-2 bg-transparent border border-slate-600 text-gray-400 hover:text-white hover:border-slate-500 text-[9px] font-bold py-2 rounded-lg transition uppercase tracking-widest">
                     VİP İSTEMİYORUM (SIRADAKİ NUMARAYI AL)
                 </button>
@@ -285,16 +284,17 @@
             
             <div class="p-6 md:p-10 space-y-10 bg-slate-800/20" id="polls-container">
                 
-                <!-- 2000 ÜYE HEDEFİ VE LİDERLİK KİLİDİ SAYACI -->
+                <!-- KURUCU MECLİSİ VE LİDERLİK KİLİDİ SAYACI -->
                 <div class="bg-black/50 border border-kaos/50 p-6 rounded-2xl shadow-lg relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-kaos"></div>
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-                        <h2 class="text-lg font-black text-white tracking-widest uppercase flex items-center gap-2"><i class="fas fa-users-cog text-kaos"></i> Me26 Senatosu Kurulumu</h2>
-                        <span class="text-[10px] bg-kaos/20 text-kaos px-3 py-1.5 rounded border border-kaos/40 font-black uppercase tracking-widest">Hedef: 2000 Kişi</span>
+                        <h2 class="text-lg font-black text-white tracking-widest uppercase flex items-center gap-2"><i class="fas fa-users-cog text-kaos"></i> ME26 Kurucu Meclisi</h2>
+                        <span class="text-[10px] bg-kaos/20 text-kaos px-3 py-1.5 rounded border border-kaos/40 font-black uppercase tracking-widest">Hedef: 1.000 Öğrenci + 1.000 Mezun</span>
                     </div>
-                    <p class="text-sm text-gray-300 mb-5 font-medium leading-relaxed">
-                        Sistemde 2000 İçmimar ve Öğrenciye ulaşıldığında Büyük Seçimlerin kilidi açılacaktır. İsimsiz ve sadece liyakata dayalı ID'ler ile <span class="text-kaos font-bold">11 Profesyonel ve 11 Öğrenci Lider</span> seçilecektir.
+                    <p class="text-sm text-gray-300 mb-2 font-medium leading-relaxed">
+                        2.000 doğrulanmış üyeye ulaşıldığında ilk Kurucu Meclis süreci başlar. Denge kuralı gereği bu eşik 1.000 içmimarlık öğrencisi ve 1.000 içmimarlık mezunundan oluşur. Temsil; isim, makam veya çevreyle değil, ME26 ID’si, şehir katılımı ve liyakat puanıyla belirlenir.
                     </p>
+                    <p class="text-[10px] text-kaos font-bold uppercase tracking-widest mb-5">1.000 öğrenci. 1.000 mezun. Eşit başlangıç. Liyakatli temsil.</p>
                     <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700 shadow-inner">
                         <div class="h-full bg-kaos w-[22%] relative transition-all duration-1000 shadow-[0_0_10px_currentColor]">
                             <span class="absolute right-2 top-0 text-[9px] text-black font-black leading-3">450</span>
@@ -507,26 +507,13 @@
         </div>
     </div>
 
-    <!-- 6. Sorun Bildir Modalı -->
+    <!-- 6. Sorun Bildir Modalı (GÜNCELLENDİ) -->
     <div id="onerge-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)]">
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>📝</span> Yeni Önerge Oluştur</h3>
             <p class="text-gray-400 text-xs mb-6 font-medium leading-relaxed">Kural: Her doğrulanmış üye önerge oluşturabilir. <strong class="text-white">50 destek alan</strong> önergeler ana oylamaya taşınır. ME26, hakaret, iftira, kişisel hedef gösterme veya hukuka aykırı içerikleri oylamaya açmaz.</p>
             <div class="text-left space-y-4 mb-6">
-                <div>
-                    <label for="input-proposal-category" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Konu Ne İle İlgili?</label>
-                    <select id="input-proposal-category" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
-                        <option value="" disabled selected>Seçim Yap...</option>
-                        <option value="İmza Yetkisi">İmza Yetkisi</option>
-                        <option value="Sahte İçmimarlar">Sahte İçmimarlar</option>
-                        <option value="Staj / Yeni Mezun">Staj / Yeni Mezun</option>
-                        <option value="Düşük Ücret / Sömürü">Düşük Ücret / Sömürü</option>
-                        <option value="Mevzuat / Belediye">Mevzuat / Belediye</option>
-                        <option value="Eğitim / Akademik">Eğitim / Akademik</option>
-                        <option value="Oda / Dernek Sorunları">Oda / Dernek Sorunları</option>
-                        <option value="Müşteri / Tahsilat">Müşteri / Tahsilat</option>
-                    </select>
-                </div>
+                <!-- Dropdown (Açılır Menü) Kısım İptal Edildi -->
                 <div>
                     <label for="input-proposal-title" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Başlık</label>
                     <input type="text" id="input-proposal-title" placeholder="Örn: X Belediyesindeki İmar Sorunu" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
