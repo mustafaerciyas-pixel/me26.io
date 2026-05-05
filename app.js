@@ -224,7 +224,9 @@ export const Me26VotingSystem = {
         else if (choice === 'abstain') btnEl.classList.add('bg-yellow-900/60', 'border-yellow-500', 'text-yellow-400');
         else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
         this.animateResults(container.parentElement, choice, currentPower);
-        UI.showToast(`Oyunuz blokzincire başarıyla işlendi! (Güç: ${currentPower}x)`, 'success');
+        
+        // YENİ EKLENEN KISIM: Bildirim metni değişti
+        UI.showToast(`Oyunuz Otonom Ortak Akıl Sandığı'na kaydedildi. (Güç: ${currentPower}x)`, 'success');
     },
     animateResults: function(cardEl, userChoice, votePower) {
         let baseYes = Math.floor(Math.random() * 40) + 20; 
@@ -328,7 +330,7 @@ function şantiyeyiBaslat() {
 
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
     
-    // BUTONLARA KÖPRÜYÜ AT (Artık ID'lerden direkt vuruyoruz!)
+    // BUTONLARA KÖPRÜYÜ AT
     document.body.addEventListener('click', (e) => {
         const text = (e.target.textContent || '').trim();
         const id = e.target.id;
