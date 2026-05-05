@@ -5,7 +5,9 @@
 
 import { STATE } from './state.js';
 import { UI } from './ui.js';
-import { DB } from './supabase.js';
+import { DB, supabase } from './supabase.js';
+import { auth } from './config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { googleIleGiris, sistemdenCikis, eDevletBelgesiOku } from './auth.js';
 
 // ==========================================================================
@@ -31,7 +33,7 @@ export const AUTH = {
         if(btn) { btn.innerHTML = 'PDF DEŞİFRE EDİLİYOR...'; btn.disabled = true; }
 
         try {
-            await eDevletBelgesiOku(fileInput.files[0], STATE.user.uid);
+            await eDevletBelgesiOku(fileInput.files[0], STATE.user?.uid);
             UI.showToast('Belgeniz başarıyla okundu ve onaya gönderildi!', 'success');
             UI.closeModal('pdf-modal');
             setTimeout(() => window.location.reload(), 1500); // Yeni yetkileri çekmek için yenile
@@ -49,8 +51,7 @@ export const AUTH = {
         Me26VotingSystem.updateVisibility();
     },
     verifyOtp: () => {},
-    deleteAccount: () => {},
-    checkRedirect: async () => false
+    deleteAccount: () => {}
 };
 
 // ==========================================================================
@@ -412,15 +413,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         newBtn.addEventListener('click', AUTH.verifyPdf);
     }
 
-    const isRedirect = await AUTH.checkRedirect();
-    
-    if (!isRedirect) {
-        if (STATE.isLoggedIn()) {
-            UI.showView('voting');
+    // ==========================================================================
+    // ŞANTİYE HAFIZASI: Sayfa yenilenince hesabın açık kalmasını sağlar
+    // ==========================================================================
+    onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+            // 1. Firebase'de adam varsa, Supabase'den tüm verilerini çek!
+            const { data: dbUser, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', firebaseUser.uid)
+                .single();
+
+            if (dbUser) {
+                // 2. Veritabanındaki jilet gibi veriyi arayüzün (app.js) anlayacağı dile çevir
+                STATE.user = {
+                    uid: dbUser.id,
+                    name: dbUser.isim,
+                    email: dbUser.email,
+                    photo: dbUser.foto,
+                    city: dbUser.sehir || 'Belirsiz',
+                    role: dbUser.mesleki_durum || 'Belirsiz',
+                    votePower: dbUser.oy_gucu + "x",
+                    userNo: dbUser.vip_kurucu_no || 'BEKLEYEN',
+                    davetKodu: dbUser.kendi_davet_kodu,
+                    hasPhone: dbUser.telefon ? true : false,
+                    authStage: dbUser.belge_durumu === 'Onaylandı' ? 'pdf_verified' : 
+                              (dbUser.belge_durumu === 'Onay Bekliyor' ? 'document_pending' : 'registered')
+                };
+                
+                // 3. Kapıları aç ve adamı Stadyuma (Voting) al!
+                UI.showView('voting');
+            }
         } else {
+            // Kimse yoksa misafir sayfasında (Landing) bırak
+            STATE.user = null;
             UI.showView('landing');
         }
+
+        // Değişiklikleri ekrana yansıt ve butonları gizle/aç
         UI.renderProfile();
         Me26VotingSystem.updateVisibility();
-    }
+    });
 });
