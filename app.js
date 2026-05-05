@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Sıkı Hunileme (Strict Funneling) ve Çökme Korumalı Sürüm
+   Sıkı Yönetici Onayı (Manual Verify) Kuralı
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -73,15 +73,20 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // 2. VIP KUTUSUNU YÖNET (ASKERİ HUNİLEME)
+            // =====================================================================
+            // 2. VIP KUTUSUNU YÖNET (YÖNETİCİ ONAYI OLMADAN ASLA AÇILMAZ!)
+            // =====================================================================
             if (vipSection) {
                 if (hasAssignedId) {
+                    // Numarayı çoktan aldıysa gizle
                     vipSection.classList.add('hidden'); 
                 } 
-                else if (authStage !== 'document_pending' && authStage !== 'pdf_verified') {
+                else if (authStage !== 'pdf_verified') {
+                    // YÖNETİCİ ONAYLAMADIYSA (1.0x GÜÇ ALMADIYSA) KESİNLİKLE GİZLE!
                     vipSection.classList.add('hidden');
                 } 
                 else {
+                    // ONAYLANDIYSA (Güç 1.0 olduysa) ARTIK NUMARASINI SEÇEBİLİR
                     vipSection.classList.remove('hidden');
                 }
             }
@@ -239,7 +244,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // GİRİŞ BUTONLARINI ZIRHLI BAĞLAMA (addEventListener kullanıldı)
         const loginButtons = [
             'btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile',
             'btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'
