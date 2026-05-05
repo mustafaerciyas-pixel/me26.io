@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Gerçek SMS + Manuel Onaylı PDF + Kusursuz Zamanlama
+   Gerçek SMS + Arayüz Perde Geçişi + Manuel Onaylı PDF + Zamanlama
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -41,20 +41,40 @@ export const AUTH = {
         const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
         const phoneValue = phoneInput ? phoneInput.value : '';
         
-        if(!phoneValue || phoneValue.length < 10) { UI.showToast('Geçerli numara girin.', 'error'); return; }
+        if(!phoneValue || phoneValue.length < 10) { 
+            UI.showToast('Geçerli numara girin.', 'error'); 
+            return; 
+        }
 
         const btn = document.getElementById('btn-submit-phone');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = 'SMS GÖNDERİLİYOR...'; btn.disabled = true;
+        const originalText = btn ? btn.innerHTML : 'BAĞLAN';
+        if(btn) { btn.innerHTML = 'BAĞLANIYOR...'; btn.disabled = true; }
 
         try {
-            await gercekSmsGonder(phoneValue, 'btn-submit-phone');
-            UI.showToast('SMS gönderildi! Lütfen kodu girin.', 'success');
+            // 1. SMS VEYA TEST KODUNU ATEŞLE
+            await gercekSmsGonder(phoneValue);
+            UI.showToast('Kod gönderildi! Lütfen ekrana girin.', 'success');
+
+            // 2. ARAYÜZ PERDESİNİ AÇ (Telefonu gizle, Şifre Kutusunu göster)
+            if (phoneInput) phoneInput.style.display = 'none';
+            if (btn) btn.style.display = 'none';
+            
+            const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]');
+            const otpBtn = document.getElementById('btn-verify-otp');
+            
+            if (otpInput) {
+                otpInput.classList.remove('hidden');
+                otpInput.style.display = 'block'; 
+            }
+            if (otpBtn) {
+                otpBtn.classList.remove('hidden');
+                otpBtn.style.display = 'block'; 
+            }
+
         } catch (error) {
-            UI.showToast('SMS Gönderilemedi. Numaranın başına 0 koymadan veya +90 ekleyerek deneyin.', 'error');
-        } finally {
-            btn.innerHTML = originalText; btn.disabled = false;
-        }
+            UI.showToast('Hata! Numaranın başına +90 ekleyerek deneyin.', 'error');
+            if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
+        } 
     },
     verifyOtp: async () => {
         const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]');
@@ -69,7 +89,7 @@ export const AUTH = {
             const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
             await gercekSmsDogrula(otpValue, STATE.user.uid, phoneInput.value);
             
-            UI.showToast('Telefon onaylandı!', 'success');
+            UI.showToast('Telefon onaylandı ve tabloya işlendi!', 'success');
             STATE.updateUser('hasPhone', true);
             UI.closeModal('phone-modal');
             Me26VotingSystem.updateVisibility();
