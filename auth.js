@@ -76,83 +76,76 @@ export async function eDevletBelgesiOku(file, userUid) {
                     const textContent = await page.getTextContent();
                     fullText += textContent.items.map(item => item.str).join(' ') + ' \n';
                 }
-                
-                // 1. ADIM: Tüm metni tek satıra indirgeyip fazla boşlukları sil
                 const cleanText = fullText.replace(/\s+/g, ' ');
 
                 // =================================================================
-                // ETİKET DURDURUCU MOTOR (Lookahead Regex)
+                // YENİ MOTOR: YANINDAKİNİ AL (Kullanıcı Mantığı)
+                // Sistemi: "Etiketi bul. Sıradaki etiketlerden birini görene kadar aradaki metni çek al."
                 // =================================================================
                 
-                // Belgedeki olası tüm ana başlıklar (Durdurucu Duvarlar)
-                const duraklar = [
-                    "T\\.C\\.", "Kimlik", "Adı\\s*Soyadı", "Baba\\s*Ad[ıi]", "Anne\\s*Ad[ıi]", 
-                    "Doğum\\s*Tarihi", "Program", "Fakülte", "Diploma\\s*No", "Diploma\\s*Notu", 
-                    "Mezuniyet\\s*Tarihi", "Durum", "İLGİLİ\\s*MAKAMA", "YOK", "Barkod", "Adayın"
-                ];
+                function yanindakiniAl(metin, aranacakBaslik, siradakiBasliklar) {
+                    const baslikRegex = new RegExp(aranacakBaslik + "[\\s|:.-]*", "i");
+                    const match = metin.match(baslikRegex);
+                    if (!match) return "Bulunamadı";
 
-                function veriyiCek(metin, aranacakEtiket) {
-                    // Kendi etiketimizi durdurucu listesinden çıkaralım ki kendisinde durmasın
-                    const aktifDuraklar = duraklar.filter(d => d !== aranacakEtiket);
-                    const durdurucuKural = aktifDuraklar.join("|");
+                    // Başlığın bittiği yerden sonrasını alıyoruz
+                    const kalanMetin = metin.substring(match.index + match[0].length);
                     
-                    // Regex: Aranacak etiket + aradaki işaretler + (istenilen veri) + (durdurucu etiket veya metin sonu)
-                    const kural = new RegExp(aranacakEtiket + "\\s*[:|/.-]*\\s*(.*?)(?=" + durdurucuKural + "|$)", "i");
-                    const eslesme = metin.match(kural);
+                    // Sıradaki etiketleri duvara çeviriyoruz
+                    const durdurucuDuvar = new RegExp("(?=" + siradakiBasliklar.join("|") + ")", "i");
                     
-                    if (eslesme && eslesme[1]) {
-                        let sonuc = eslesme[1].trim();
-                        // Kalan sızıntı ayraçları temizle
-                        sonuc = sonuc.replace(/^[|:.-]+|[|:.-]+$/g, '').trim();
-                        if (sonuc.length > 0 && sonuc.length < 50) {
-                            return sonuc;
-                        }
-                    }
-                    return "Bulunamadı";
+                    // Metni duvara kadar kesiyoruz
+                    const alinacakKisim = kalanMetin.split(durdurucuDuvar)[0];
+
+                    // Başındaki/sonundaki ayraç ve boşlukları silip gönderiyoruz
+                    return alinacakKisim.replace(/^[|:.-]+|[|:.-]+$/g, '').trim() || "Bulunamadı";
                 }
 
-                // 2. ADIM: Verileri Etiket-Durdurucu Motoruyla Cımbızla
                 const tcMatch = cleanText.match(/(\d{11})/);
                 const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
 
-                const ad_soyad = veriyiCek(cleanText, "Adı\\s*Soyadı");
-                let baba_adi = veriyiCek(cleanText, "Baba\\s*Ad[ıi]");
-                let anne_adi = veriyiCek(cleanText, "Anne\\s*Ad[ıi]");
-                const dogum_tarihi = veriyiCek(cleanText, "Doğum\\s*Tarihi");
+                const ad_soyad = yanindakiniAl(cleanText, "Adı\\s*Soyadı", ["Baba", "Anne", "Doğum", "T\\.C\\.", "Kimlik"]);
+                
+                let baba_adi = "Bulunamadı";
+                let anne_adi = "Bulunamadı";
 
-                // 3. ADIM: Eski Tip E-Devlet (Baba / Anne Adı : COŞKUN / GÜLER) Kurtarıcısı
-                if (baba_adi === "Bulunamadı" && anne_adi === "Bulunamadı") {
-                    const ortakRegex = new RegExp("(Baba[\\s/]*Anne|Anne[\\s/]*Baba)\\s*Ad[ıi]\\s*[:|.-]*\\s*(.*?)(?=" + duraklar.filter(d => !d.includes("Ad")).join("|") + "|$)", "i");
-                    const ortakEslesme = cleanText.match(ortakRegex);
-                    if (ortakEslesme) {
-                        const etiketTuru = ortakEslesme[1].toLowerCase();
-                        const degerler = ortakEslesme[2].split("/");
-                        if (degerler.length >= 2) {
-                            if (etiketTuru.startsWith("anne")) {
-                                anne_adi = degerler[0].trim();
-                                baba_adi = degerler[1].trim();
-                            } else {
-                                baba_adi = degerler[0].trim();
-                                anne_adi = degerler[1].trim();
-                            }
+                // Eğer belge eski formatta gelirse (Baba / Anne Adı : COŞKUN / GÜLER)
+                const ortakFormat = yanindakiniAl(cleanText, "(?:Baba[\\s/]*Anne|Anne[\\s/]*Baba)\\s*Ad[ıi]", ["Doğum", "Program", "Kimlik"]);
+                
+                if (ortakFormat !== "Bulunamadı") {
+                    const isAnneFirst = /Anne[\s/]*Baba/i.test(cleanText);
+                    const parts = ortakFormat.split('/');
+                    if (parts.length >= 2) {
+                        if (isAnneFirst) {
+                            anne_adi = parts[0].trim();
+                            baba_adi = parts[1].trim();
+                        } else {
+                            baba_adi = parts[0].trim();
+                            anne_adi = parts[1].trim();
                         }
                     }
+                } else {
+                    // Senin söylediğin o basit mantık devrede:
+                    baba_adi = yanindakiniAl(cleanText, "Baba\\s*Ad[ıi]", ["Anne", "Doğum", "Program", "Kimlik"]);
+                    anne_adi = yanindakiniAl(cleanText, "Anne\\s*Ad[ıi]", ["Baba", "Doğum", "Program", "Kimlik"]);
                 }
 
-                const uni_program = veriyiCek(cleanText, "Program");
+                const dogum_tarihi = yanindakiniAl(cleanText, "Doğum\\s*Tarihi", ["Program", "Diploma", "Kimlik", "Baba", "Anne"]);
+                
+                const uni_program = yanindakiniAl(cleanText, "Program", ["Diploma", "Mezuniyet", "Kayıt", "Durum"]);
                 const uni_parts = uni_program.split('/');
                 const uni = uni_parts[0]?.trim() || 'Bulunamadı';
                 const fakulte = uni_parts[1]?.trim() || 'Bulunamadı';
                 const bolum = (uni_parts[2]?.trim() || 'Bulunamadı').split(/:|tarafından/i)[0].trim(); 
                 
-                const diploma_no = veriyiCek(cleanText, "Diploma\\s*No");
-                const diploma_notu = veriyiCek(cleanText, "Diploma\\s*Notu");
-                const mezuniyet_tarihi = veriyiCek(cleanText, "Mezuniyet\\s*Tarihi");
-                const durum = veriyiCek(cleanText, "Durum");
+                const diploma_no = yanindakiniAl(cleanText, "Diploma\\s*No", ["Diploma\\s*Notu", "Mezuniyet", "Durum"]);
+                const diploma_notu = yanindakiniAl(cleanText, "Diploma\\s*Notu", ["Mezuniyet", "Durum"]);
+                const mezuniyet_tarihi = yanindakiniAl(cleanText, "Mezuniyet\\s*Tarihi", ["Durum", "Diploma", "İLGİLİ"]);
+                const durum = yanindakiniAl(cleanText, "Durum", ["İLGİLİ", "AÇIKLAMALAR", "YOK", "Barkod"]);
                 
                 const barkod = (cleanText.match(/YOK[A-Z0-9]{10,}/i) || cleanText.match(/[A-Z0-9]{12,}/i) || ['Bulunamadı'])[0];
                 const tumTarihler = cleanText.match(/\d{2}\.\d{2}\.\d{4}/g) || [];
-                const belge_tarihi = tumTarihler.length > 0 ? tumTarihler[tumTarihler.length - 1] : 'Bulunamadı';
+                const belge_tarihi = tumTarihler.length > 0 ? tumTarihler[0] : 'Bulunamadı'; // Belgenin asıl tarihi genelde ilk tarihtir
 
                 const belgeData = { tc, ad_soyad, baba_adi, anne_adi, dogum_tarihi, uni, fakulte, bolum, diploma_no, diploma_notu, mezuniyet_tarihi, durum, barkod, belge_tarihi, belge_durumu: "Onay Bekliyor" };
 
