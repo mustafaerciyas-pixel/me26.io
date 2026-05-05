@@ -31,14 +31,28 @@ export async function sistemdenCikis() {
 
 export async function gercekSmsGonder(phoneNumber, buttonId) {
     try {
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, buttonId, { 'size': 'invisible' });
+        // Eski takılı kalan reCAPTCHA varsa önce onu söküp atıyoruz (Kilitlenmeyi çözer)
+        if (window.recaptchaVerifier) {
+            window.recaptchaVerifier.clear();
+            window.recaptchaVerifier = null;
         }
+
+        // Tertemiz sıfırdan kuruyoruz
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, buttonId, { 
+            'size': 'invisible' 
+        });
+
         let formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+90' + phoneNumber.replace(/^0/, '');
         confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, window.recaptchaVerifier);
         return true;
     } catch (error) {
-        console.error("SMS Hatası:", error); throw error;
+        console.error("SMS Hatası Detayı:", error);
+        // Hata verirse bir sonraki denemede donmasın diye motoru temizle
+        if (window.recaptchaVerifier) {
+            window.recaptchaVerifier.clear();
+            window.recaptchaVerifier = null;
+        }
+        throw error;
     }
 }
 
