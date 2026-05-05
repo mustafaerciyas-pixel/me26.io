@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   1 Tıkla Giriş + Kademeli Profilleme + Sinyal Alıcısı Aktif
+   1 Tıkla Giriş + Akıllı Arayüz + Sinyal Alıcısı Aktif
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -38,12 +38,27 @@ export const Me26VotingSystem = {
         const mobLog = document.getElementById('btn-login-mobile');
         const mobProf = document.getElementById('btn-profile-mobile');
 
-        // YENİ: VIP KUTUSUNU YAKALA
+        // KONTROL EDİLECEK ARAYÜZ ELEMANLARI
         const vipSection = document.getElementById('ui-vip-section');
+        const citySection = document.getElementById('ui-city-selector-container');
+        const phoneBtn = document.getElementById('btn-open-phone-modal');
+        const pdfBtn = document.getElementById('btn-open-pdf-modal');
 
         if (STATE.isLoggedIn()) {
             const isCitySelected = STATE.user.city && STATE.user.city !== 'Seçilmedi' && STATE.user.city !== 'Belirsiz';
+            const authStage = STATE.user.authStage || 'registered';
+            const votePower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
 
+            // 1. ŞEHİR KUTUSUNU GİZLE/GÖSTER
+            if (citySection) {
+                if (isCitySelected) {
+                    citySection.classList.add('hidden'); // Seçildiyse Yok Et
+                } else {
+                    citySection.classList.remove('hidden'); // Seçilmediyse Göster
+                }
+            }
+
+            // SANDIKLARI GİZLE/GÖSTER
             if (isCitySelected) {
                 if(lockedState) lockedState.style.display = 'none';
                 if(manifestoGrid) {
@@ -58,12 +73,43 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // NUMARASI OLAN ADAMDA VIP KUTUSUNU TAMAMEN YOK ET!
+            // 2. VIP KUTUSUNU GİZLE/GÖSTER
             if (vipSection) {
                 if (STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN') {
-                    vipSection.style.display = 'none'; // Numara alındıysa gizle
+                    vipSection.classList.add('hidden'); // Numara alındıysa Yok Et
                 } else {
-                    vipSection.style.display = 'block'; // Bekliyorsa göster
+                    vipSection.classList.remove('hidden');
+                }
+            }
+
+            // 3. TELEFON BUTONUNU GİZLE/GÖSTER
+            if (phoneBtn) {
+                if (authStage === 'phone_verified' || authStage === 'document_pending' || authStage === 'pdf_verified' || votePower >= 1.0) {
+                    phoneBtn.classList.add('hidden'); // Onaylıysa Yok Et
+                } else {
+                    phoneBtn.classList.remove('hidden');
+                }
+            }
+
+            // 4. PDF (E-DEVLET) BUTONUNU YÖNET
+            if (pdfBtn) {
+                if (authStage === 'pdf_verified' || votePower >= 1.0) {
+                    // Tam yetkiliyse komple Yok Et
+                    pdfBtn.classList.add('hidden'); 
+                } else if (authStage === 'document_pending') {
+                    // Beklemedeyse dondur ve metni değiştir
+                    pdfBtn.classList.remove('hidden');
+                    pdfBtn.innerHTML = '⏳ BELGE ONAY BEKLİYOR...';
+                    pdfBtn.disabled = true;
+                    pdfBtn.classList.add('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
+                    pdfBtn.classList.remove('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
+                } else {
+                    // Hiç yüklemediyse normal göster
+                    pdfBtn.classList.remove('hidden');
+                    pdfBtn.innerHTML = '📜 E-Devlet Yükle (1.0x Tam Yetki)';
+                    pdfBtn.disabled = false;
+                    pdfBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
+                    pdfBtn.classList.add('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
                 }
             }
             
@@ -226,7 +272,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
             STATE.updateUser('city', selectedCity); 
             UI.renderProfile(); 
-            Me26VotingSystem.updateVisibility(); 
+            Me26VotingSystem.updateVisibility(); // KUTUYU ANINDA GİZLER!
             
             UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
         } catch (error) {
