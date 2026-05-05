@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Gerçek SMS + Nokta Atışı Adım Geçişleri (Step 1 -> Step 2)
+   Gerçek SMS + Nokta Atışı Adım Geçişleri + Önerge Listeleme
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -131,7 +131,21 @@ export const Me26VotingSystem = {
                 if (STATE.isLoggedIn()) { UI.toggleProfileDrawer(true); } else { AUTH.loginWithGoogle(); }
             });
         }
+        
+        // YENİ EKLENDİ: Sayfa açıldığında önergeleri veritabanından çek ve ekrana çiz
+        this.loadProposals();
     },
+    
+    // VERİTABANINDAN ÇEKME FONKSİYONU
+    loadProposals: async function() {
+        try {
+            const onergeler = await DB.onergeleriGetir();
+            UI.renderProposals(onergeler);
+        } catch (error) {
+            console.error("Önergeler yüklenemedi", error);
+        }
+    },
+
     updateVisibility: function() {
         const lockedState = document.getElementById('locked-state');
         const manifestoGrid = document.getElementById('manifesto-grid');
@@ -225,7 +239,7 @@ export const Me26VotingSystem = {
         else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
         this.animateResults(container.parentElement, choice, currentPower);
         
-        // YENİ EKLENEN KISIM: Bildirim metni değişti
+        // Bildirim metni
         UI.showToast(`Oyunuz Otonom Ortak Akıl Sandığı'na kaydedildi. (Güç: ${currentPower}x)`, 'success');
     },
     animateResults: function(cardEl, userChoice, votePower) {
@@ -382,6 +396,9 @@ function şantiyeyiBaslat() {
             document.getElementById('input-proposal-problem').value = '';
             document.getElementById('input-proposal-solution').value = '';
             UI.closeModal('onerge-modal');
+            
+            // Başarıyla yolladıktan sonra listeyi yenile
+            Me26VotingSystem.loadProposals();
             
         } catch (error) { 
             UI.showToast('Önerge gönderilemedi. Lütfen tekrar deneyin.', 'error'); 
