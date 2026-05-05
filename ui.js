@@ -125,20 +125,17 @@ export const UI = {
             if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
             
             if (user.isVip) {
-                // Numara VIP ise
                 if (idBadge) {
                     idBadge.textContent = 'VIP KURUCU';
                     idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
                 }
             } else {
-                // Standart Numara aldıysa
                 if (idBadge) {
                     idBadge.textContent = 'ASİL KURUCU';
                     idBadge.className = 'bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
                 }
             }
         } else {
-            // Numarası hiç yoksa (Daha seçmediyse)
             if (idBadge) {
                 idBadge.textContent = 'Aday Kurucu';
                 idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
@@ -170,13 +167,12 @@ export const UI = {
         }
 
         // =========================================================
-        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI (GÖREVLER)
+        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI
         // =========================================================
         const btnPhone = document.getElementById('btn-open-phone-modal');
         const btnPdf = document.getElementById('btn-open-pdf-modal');
         const citySelector = document.getElementById('ui-city-selector-container'); 
 
-        // Şehir seçimi UI Kontrolü
         if (citySelector) {
             if (!isCitySelected) {
                 citySelector.classList.remove('hidden');
@@ -213,27 +209,22 @@ export const UI = {
             referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
         };
 
-        // DURUM 1: Belge yüklendi, Yönetici onayı bekliyor
         if (user.authStage === 'document_pending') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
-            
             if (btnPhone && btnPhone.parentElement) {
                 insertPhoneSuccessAlert(btnPhone);
                 insertPendingAlert(btnPhone);
             }
         } 
-        // DURUM 2: Her şey tam, VIP veya PDF onaylandı
         else if (user.authStage === 'pdf_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
-            
             if (btnPhone && btnPhone.parentElement) {
                 insertPhoneSuccessAlert(btnPhone);
                 insertPdfSuccessAlert(btnPhone); 
             }
         } 
-        // DURUM 3: Sadece telefon onaylı, PDF yüklemesi bekleniyor
         else if (user.authStage === 'phone_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) {
@@ -241,17 +232,12 @@ export const UI = {
                 insertPhoneSuccessAlert(btnPdf);
             }
         } 
-        // DURUM 4: Sadece kayıt oldu, telefon onayı bekleniyor
         else {
             if (btnPhone) btnPhone.classList.remove('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
         }
     },
 
-    // =========================================================
-    // VIP KURUCU NUMARA MOTORU
-    // =========================================================
-    
     updateVipModalState: () => {
         const lockedState = document.getElementById('vip-locked-state');
         const unlockedState = document.getElementById('vip-unlocked-state');
@@ -305,63 +291,102 @@ export const UI = {
     },
 
     // =========================================================
-    // YENİDEN TASARLANAN ÖNERGE KARTLARI (KOTA DOLDU EKRANI)
+    // İKİLİ EKRAN MOTORU (MECLİS VE GÜNDEM SIRASI)
     // =========================================================
     renderProposals: (onergeler) => {
-        const container = document.getElementById('proposals-container');
-        if (!container) return;
+        // İki farklı kasayı bul (Meclis ve Gündem Sırası)
+        const meclisContainer = document.getElementById('proposals-container');
+        const gundemContainer = document.getElementById('gundem-container'); 
+
+        if (meclisContainer) meclisContainer.innerHTML = ''; 
+        if (gundemContainer) gundemContainer.innerHTML = '';
+
+        let meclisBos = true;
+        let gundemBos = true;
 
         if (!onergeler || onergeler.length === 0) {
-            container.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Henüz oylama yeterliliği (50 destek) için bekleyen bir önerge yok.</p>';
+            if (meclisContainer) meclisContainer.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Henüz oylama yeterliliği (50 destek) için bekleyen bir önerge yok.</p>';
+            if (gundemContainer) gundemContainer.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Gündem sırasında bekleyen önerge bulunmuyor.</p>';
             return;
         }
 
-        container.innerHTML = ''; 
-        
         onergeler.forEach(onerge => {
-            // Hedef kitle etiketini belirle
             let kitleMetni = 'Herkes (Öğrenci + Mezun)';
             let kitleIkon = 'fa-globe';
             if (onerge.hedef_kitle === 'icmimar') { kitleMetni = 'Sadece İçmimarlık Mezunları'; kitleIkon = 'fa-lock'; }
             if (onerge.hedef_kitle === 'ogrenci') { kitleMetni = 'Sadece İçmimarlık Öğrencileri'; kitleIkon = 'fa-lock'; }
 
             const destekSayisi = onerge.destek_sayisi || 0;
-            // Bar %100'ü geçmesin diye sınır koyduk
-            const yuzde = Math.min((destekSayisi / 50) * 100, 100);
-
-            // Kotayı geçtiğinde değişecek yazılar
             const isKotaDoldu = destekSayisi >= 50;
-            const kotaMetni = isKotaDoldu ? `✅ KOTA DOLDU (${destekSayisi}/50)` : `✅ ${destekSayisi} / 50 Destek`;
-            const altMetin = isKotaDoldu ? 'SALI 20:26 BEKLENİYOR' : 'Hedef Kotası';
-            const kotaRenk = isKotaDoldu ? 'text-kaos' : 'text-green-400';
 
-            const div = document.createElement('div');
-            div.className = 'bg-black/40 border border-slate-600 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-500 transition relative overflow-hidden';
-            
-            div.innerHTML = `
-                <!-- Arka plan dolum barı -->
-                <div class="absolute left-0 bottom-0 h-1 bg-kaos transition-all duration-1000 shadow-[0_0_10px_currentColor]" style="width: ${yuzde}%"></div>
-                
-                <div class="flex-grow z-10 w-full md:w-auto pr-4">
-                    <div class="flex items-center gap-3 mb-3 flex-wrap">
-                        <span class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded border border-slate-600 font-bold uppercase tracking-widest whitespace-nowrap"><i class="fas ${kitleIkon} text-gray-400 mr-1"></i> ${kitleMetni}</span>
-                        <span class="text-[10px] text-kaos font-bold uppercase tracking-widest whitespace-nowrap">Süre: ${onerge.sure} Hafta</span>
-                    </div>
-                    <h4 class="text-base md:text-lg font-black text-white mb-2 leading-tight">${onerge.baslik}</h4>
-                    <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3 md:mb-0">${onerge.sorun}</p>
-                </div>
-                
-                <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-3 mt-4 md:mt-0">
-                    <div class="text-center md:text-right whitespace-nowrap bg-slate-900/80 px-5 py-3 rounded-xl border border-slate-700 w-full">
-                        <div class="text-sm font-black ${kotaRenk} mb-1">${kotaMetni}</div>
-                        <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">${altMetin}</div>
-                    </div>
-                    <button data-id="${onerge.id}" class="btn-destekle w-full bg-slate-800 hover:bg-slate-700 border border-slate-500 px-5 py-3.5 rounded-xl text-white font-black text-[11px] transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
-                        <i class="fas fa-arrow-up text-kaos"></i> DESTEKLE
-                    </button>
-                </div>
-            `;
-            container.appendChild(div);
+            if (isKotaDoldu) {
+                // ====================================================
+                // KOTASI DOLANLAR GÜNDEM SIRASINA GİDER (YUKARI LOCA)
+                // ====================================================
+                gundemBos = false;
+                if (gundemContainer) {
+                    const div = document.createElement('div');
+                    // Yukarıdaki tasarım: Altında mavi çizgi yok, Destekle butonu yok, sadece yeşil şerit var
+                    div.className = 'bg-black/40 border border-slate-600 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden shadow-lg';
+                    
+                    div.innerHTML = `
+                        <div class="absolute left-0 bottom-0 h-1 bg-green-500 w-full shadow-[0_0_10px_#22c55e]"></div>
+                        
+                        <div class="flex-grow z-10 pr-4">
+                            <div class="flex items-center gap-3 mb-3 flex-wrap">
+                                <span class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded border border-slate-600 font-bold uppercase tracking-widest whitespace-nowrap"><i class="fas ${kitleIkon} text-gray-400 mr-1"></i> ${kitleMetni}</span>
+                                <span class="text-[10px] text-green-400 font-bold uppercase tracking-widest whitespace-nowrap">Süre: ${onerge.sure} Hafta</span>
+                            </div>
+                            <h4 class="text-base md:text-lg font-black text-white leading-tight">${onerge.baslik}</h4>
+                        </div>
+                        
+                        <div class="flex flex-col md:items-end shrink-0 z-10 mt-4 md:mt-0">
+                            <div class="text-center md:text-right whitespace-nowrap bg-slate-900/80 px-5 py-3 rounded-xl border border-green-900/50 w-full">
+                                <div class="text-sm font-black text-green-400 mb-1">✅ ${destekSayisi}/50 Destek</div>
+                                <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">SALI 20:26'YI BEKLİYOR</div>
+                            </div>
+                        </div>
+                    `;
+                    gundemContainer.appendChild(div);
+                }
+            } else {
+                // ====================================================
+                // 50'NİN ALTINDAKİLER MECLİSTE KALIR (AŞAĞI LOCA)
+                // ====================================================
+                meclisBos = false;
+                if (meclisContainer) {
+                    const yuzde = Math.min((destekSayisi / 50) * 100, 100);
+                    const div = document.createElement('div');
+                    div.className = 'bg-black/40 border border-slate-600 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-500 transition relative overflow-hidden';
+                    
+                    div.innerHTML = `
+                        <div class="absolute left-0 bottom-0 h-1 bg-kaos transition-all duration-1000 shadow-[0_0_10px_currentColor]" style="width: ${yuzde}%"></div>
+                        
+                        <div class="flex-grow z-10 w-full md:w-auto pr-4">
+                            <div class="flex items-center gap-3 mb-3 flex-wrap">
+                                <span class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded border border-slate-600 font-bold uppercase tracking-widest whitespace-nowrap"><i class="fas ${kitleIkon} text-gray-400 mr-1"></i> ${kitleMetni}</span>
+                                <span class="text-[10px] text-kaos font-bold uppercase tracking-widest whitespace-nowrap">Süre: ${onerge.sure} Hafta</span>
+                            </div>
+                            <h4 class="text-base md:text-lg font-black text-white mb-2 leading-tight">${onerge.baslik}</h4>
+                            <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3 md:mb-0">${onerge.sorun}</p>
+                        </div>
+                        
+                        <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-3 mt-4 md:mt-0">
+                            <div class="text-center md:text-right whitespace-nowrap bg-slate-900/80 px-5 py-3 rounded-xl border border-slate-700 w-full">
+                                <div class="text-sm font-black text-green-400 mb-1">✅ ${destekSayisi} / 50 Destek</div>
+                                <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Hedef Kotası</div>
+                            </div>
+                            <button data-id="${onerge.id}" class="btn-destekle w-full bg-slate-800 hover:bg-slate-700 border border-slate-500 px-5 py-3.5 rounded-xl text-white font-black text-[11px] transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
+                                <i class="fas fa-arrow-up text-kaos"></i> DESTEKLE
+                            </button>
+                        </div>
+                    `;
+                    meclisContainer.appendChild(div);
+                }
+            }
         });
+
+        if (meclisBos && meclisContainer) meclisContainer.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Henüz oylama yeterliliği (50 destek) için bekleyen bir önerge yok.</p>';
+        if (gundemBos && gundemContainer) gundemContainer.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Gündem sırasında bekleyen önerge bulunmuyor.</p>';
     }
 };
