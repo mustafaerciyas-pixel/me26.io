@@ -279,8 +279,8 @@
         
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl overflow-hidden mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="p-8 md:p-12 text-center border-b border-slate-700 bg-black/40">
-                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest"><span class="text-kaos">CANLI</span> OYLAMALAR</h2>
-                <p class="text-gray-400 text-sm mt-4 tracking-wide">Aşağıdaki oylamalara katılabilmek için Profil panelinden kimliğini ve oy gücünü güncellemelisin.</p>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest"><span class="text-kaos">KURUCU BAŞLANGIÇ</span> OYLAMALARI</h2>
+                <p class="text-gray-400 text-sm mt-4 tracking-wide max-w-4xl mx-auto leading-relaxed">Aşağıdaki ilk oylamalar, ME26’nin çalışma mantığını göstermek ve mesleki gündemi başlatmak amacıyla hazırlanmıştır. Sistem açıldıktan sonra gündem tek merkezden belirlenmez. Doğrulanmış üyeler yeni önergeler oluşturabilir; <strong class="text-white">50 destek alan önergeler</strong> Ortak Akıl Sandığı’na taşınarak yetkili üyelerin oyuna açılır. Hakaret, iftira, kişisel hedef gösterme veya hukuka aykırı içerikler oylama sürecine alınmaz.</p>
             </div>
             
             <div class="p-6 md:p-10 space-y-10 bg-slate-800/20" id="polls-container">
@@ -409,11 +409,11 @@
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl p-8 md:p-12 mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700 pb-6 gap-4">
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest"><span class="text-kaos">MECLİS</span> ÖNERGELERİ (YENİ FİKİRLER)</h2>
-                    <p class="text-gray-400 text-xs mt-2 font-medium">Yazılan sorunlar 100 kişinin desteğini alırsa yukarıdaki büyük oylamaya girer.</p>
+                    <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest"><span class="text-kaos">MECLİS</span> ÖNERGELERİ</h2>
+                    <p class="text-gray-400 text-xs mt-2 font-medium max-w-xl leading-relaxed">Doğrulanmış üyeler, mesleğin sorunlarına dair yeni önerge oluşturabilir. Bir önerge 50 destek aldığında Ortak Akıl Sandığı’na taşınır ve tüm yetkili üyelerin oyuna açılır.</p>
                 </div>
                 <button type="button" id="btn-open-proposal-modal" class="bg-slate-800 hover:bg-slate-700 hover:border-white text-white border border-slate-600 px-6 py-3 rounded-lg text-[11px] font-bold uppercase tracking-widest transition shadow-md whitespace-nowrap">
-                    📝 YENİ SORUN BİLDİR
+                    📝 YENİ ÖNERGE OLUŞTUR
                 </button>
             </div>
             <div id="proposals-container" class="flex flex-col gap-4"></div>
@@ -510,8 +510,8 @@
     <!-- 6. Sorun Bildir Modalı -->
     <div id="onerge-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)]">
-            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>📝</span> Yeni Fikir Yaz</h3>
-            <p class="text-gray-400 text-xs mb-6 font-medium">Meslekte yaşadığın sorunu yaz. Eğer <strong class="text-white">100 kişi seni desteklerse</strong>, konu mecliste oylanır.</p>
+            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>📝</span> Yeni Önerge Oluştur</h3>
+            <p class="text-gray-400 text-xs mb-6 font-medium leading-relaxed">Kural: Her doğrulanmış üye önerge oluşturabilir. <strong class="text-white">50 destek alan</strong> önergeler ana oylamaya taşınır. ME26, hakaret, iftira, kişisel hedef gösterme veya hukuka aykırı içerikleri oylamaya açmaz.</p>
             <div class="text-left space-y-4 mb-6">
                 <div>
                     <label for="input-proposal-category" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Konu Ne İle İlgili?</label>
@@ -532,7 +532,7 @@
                     <input type="text" id="input-proposal-title" placeholder="Örn: X Belediyesindeki İmar Sorunu" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
                 </div>
                 <div>
-                    <label for="input-proposal-desc" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Sorun Nedir ve Nasıl Çözülür?</label>
+                    <label for="input-proposal-desc" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Önerge Detayı ve Çözüm Önerisi</label>
                     <textarea id="input-proposal-desc" placeholder="İstediğin çözümü detaylıca yaz..." class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium h-28 resize-none custom-scrollbar focus:border-kaos transition"></textarea>
                 </div>
             </div>
