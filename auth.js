@@ -7,7 +7,7 @@ import { supabase } from './supabase.js';
 import { signInWithPopup, GoogleAuthProvider, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 let confirmationResult = null;
-let me26Recaptcha = null; // İzole ve takılmayan motor hafızası
+let me26Recaptcha = null; 
 
 export async function googleIleGiris() {
     try {
@@ -32,7 +32,6 @@ export async function sistemdenCikis() {
 
 export async function gercekSmsGonder(phoneNumber) {
     try {
-        // ZARİF VE İZOLE KURULUM: Motoru senin butonuna değil, bağımsız görünmez odaya kuruyoruz.
         if (!me26Recaptcha) {
             if (!document.getElementById('izole-recaptcha-odasi')) {
                 const div = document.createElement('div');
@@ -79,63 +78,60 @@ export async function eDevletBelgesiOku(file, userUid) {
                 }
                 const cleanText = fullText.replace(/\s+/g, ' ');
 
-                // =================================================================
-                // YENİ ZIRHLI PARSER: Her türlü ayracı ( | , : , - , boşluk ) tanır
-                // =================================================================
+                // Tüm verilerdeki " | " işaretine karşı evrensel ayırıcı (Separator)
                 const sep = "[\\s|:.-]*";
-                const regexDuvar = "(?=Baba|Anne|Doğum|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu|Diploma|Mezuniyet|Durum|$)";
-
+                
                 const tcMatch = cleanText.match(new RegExp(`(?:T\\.C\\.|Kimlik)[\\s\\S]*?(?:Numarası|No)${sep}(\\d{11})`, 'i')) || cleanText.match(/(\d{11})/);
                 const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
 
+                const regexDuvar = "(?=Baba|Anne|Doğum|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu|Diploma|Mezuniyet|Durum|$)";
                 let ad_soyad = (cleanText.match(new RegExp(`Adı\\s*Soyadı${sep}([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1] || 'Bulunamadı';
                 ad_soyad = ad_soyad.replace(/[\/\|:-]/g, '').trim();
-                
+
+                // =================================================================
+                // YENİ: ZIRHLI ANNE/BABA PARSER'I
+                // E-Devlet isimleri BÜYÜK HARF kullanır. Sadece büyük harfleri yakalayıp
+                // diğer etiketlerin (Örn: "Doğum Tarihi") karışmasını engelliyoruz.
+                // =================================================================
                 let baba_adi = 'Bulunamadı';
                 let anne_adi = 'Bulunamadı';
 
-                // 1. Durum: E-Devlet Ortak Satır (Baba / Anne Adı : COŞKUN / GÜLER)
-                const anneBabaSatiri = cleanText.match(new RegExp(`(Anne[\\s\\/]*Baba|Baba[\\s\\/]*Anne)\\s*Ad[ıi]${sep}(.*?)` + regexDuvar, 'i'));
+                // 1. Kademe Zırh: Küçük/Büyük harf duyarlılığı ile sadece İSİMLERİ (Büyük Harfliler) yakala
+                const babaMatch = cleanText.match(/[Bb]aba\s*[Aa]d[ıi][\s|:.-]*([A-ZÇĞİÖŞÜÂÎÛ]+(?:\s+[A-ZÇĞİÖŞÜÂÎÛ]+)*)/);
+                const anneMatch = cleanText.match(/[Aa]nne\s*[Aa]d[ıi][\s|:.-]*([A-ZÇĞİÖŞÜÂÎÛ]+(?:\s+[A-ZÇĞİÖŞÜÂÎÛ]+)*)/);
 
-                if (anneBabaSatiri && anneBabaSatiri[2]) {
-                    const sira = anneBabaSatiri[1].toLowerCase(); 
-                    const isAnneFirst = sira.startsWith('anne'); 
-                    let icerik = anneBabaSatiri[2].trim();
+                if (babaMatch) baba_adi = babaMatch[1].trim();
+                if (anneMatch) anne_adi = anneMatch[1].trim();
 
-                    if (icerik.includes('/')) {
-                        const parcalar = icerik.split('/');
-                        const isim1 = parcalar[0].replace(/[:\|]/g, '').trim();
-                        const isim2 = parcalar[1].replace(/[:\|]/g, '').trim();
+                // 2. Kademe Kurtarma Motoru: PDF okuyucu "GÜLER COŞKUN" diye isimleri ezer veya birleştirirse
+                if (baba_adi === 'Bulunamadı' || anne_adi === 'Bulunamadı' || baba_adi === anne_adi || anne_adi.includes(baba_adi) || baba_adi.includes(anne_adi)) {
+                    
+                    const blokMatch = cleanText.match(/(?:Baba|Anne)[\s\S]*?(?=Doğum|Kimlik|Program|Fakülte)/i);
+                    if (blokMatch) {
+                        let blok = blokMatch[0];
+                        const bIdx = blok.toLowerCase().indexOf('baba');
+                        const aIdx = blok.toLowerCase().indexOf('anne');
+                        const babaOnce = bIdx < aIdx;
 
-                        if (isAnneFirst) { anne_adi = isim1; baba_adi = isim2; } 
-                        else { baba_adi = isim1; anne_adi = isim2; }
-                    } else {
-                        const kelimeler = icerik.split(/\s+/);
-                        if (kelimeler.length >= 2) {
-                            if (isAnneFirst) {
-                                baba_adi = kelimeler.pop().trim(); 
-                                anne_adi = kelimeler.join(' ').trim(); 
-                            } else {
-                                anne_adi = kelimeler.pop().trim(); 
-                                baba_adi = kelimeler.join(' ').trim(); 
-                            }
-                        } else {
-                            if (isAnneFirst) anne_adi = icerik.replace(/[:\|]/g, '');
-                            else baba_adi = icerik.replace(/[:\|]/g, '');
+                        // Etiketleri silip sadece BÜYÜK HARFLİ isimleri havuzda topluyoruz
+                        blok = blok.replace(/Baba\s*Ad[ıi]/gi, '').replace(/Anne\s*Ad[ıi]/gi, '').replace(/[:|/-]/g, ' ').trim();
+                        const isimler = blok.match(/[A-ZÇĞİÖŞÜÂÎÛ]{2,}/g) || [];
+
+                        if (isimler.length === 2) {
+                            baba_adi = babaOnce ? isimler[0] : isimler[1];
+                            anne_adi = babaOnce ? isimler[1] : isimler[0];
+                        } else if (isimler.length > 2) {
+                            const orta = Math.ceil(isimler.length / 2);
+                            baba_adi = babaOnce ? isimler.slice(0, orta).join(' ') : isimler.slice(orta).join(' ');
+                            anne_adi = babaOnce ? isimler.slice(orta).join(' ') : isimler.slice(0, orta).join(' ');
                         }
                     }
-                } else {
-                    // 2. Durum: Tamamen Ayrı Satırlar (Senin PDF'indeki gibi: "Baba Adı | : COŞKUN")
-                    const ayriBaba = cleanText.match(new RegExp(`Baba\\s*Ad[ıi]${sep}([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i'));
-                    const ayriAnne = cleanText.match(new RegExp(`Anne\\s*Ad[ıi]${sep}([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i'));
-                    
-                    if (ayriBaba) baba_adi = ayriBaba[1].replace(/[\/\|:-]/g, '').trim();
-                    if (ayriAnne) anne_adi = ayriAnne[1].replace(/[\/\|:-]/g, '').trim();
                 }
 
-                // Hata payını sıfıra indirmek için güvenlik filtresi (Eğer 25 karakteri geçiyorsa patlamıştır)
+                // Hata payı sıfırlayıcı
                 if (baba_adi.length > 25) baba_adi = baba_adi.split(/\s+/)[0];
                 if (anne_adi.length > 25) anne_adi = anne_adi.split(/\s+/)[0];
+                // =================================================================
 
                 const dogum_tarihi = (cleanText.match(new RegExp(`Doğum\\s*Tarihi${sep}(\\d{2}\\.\\d{2}\\.\\d{4})`, 'i')) || [])[1] || 'Bulunamadı';
                 
