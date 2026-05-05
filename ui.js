@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   Eksiksiz (Export) Sürüm
+   Kademeli Profilleme (Progressive Onboarding) Uyumlu Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -8,19 +8,19 @@ import { STATE } from './state.js';
 export const UI = {
     // Sayfa Görünümlerini Değiştirme (Landing <-> Voting)
     showView: (viewId) => {
-        document.getElementById('landing-view')?.classList.add('hidden');
-        document.getElementById('voting-view')?.classList.add('hidden');
+        document.getElementById('landing-view').classList.add('hidden');
+        document.getElementById('voting-view').classList.add('hidden');
         document.getElementById('manifesto')?.classList.add('hidden');
         document.getElementById('sticky-cta')?.classList.add('hidden');
         document.getElementById('ana-footer')?.classList.add('hidden');
 
         if (viewId === 'landing') {
-            document.getElementById('landing-view')?.classList.remove('hidden');
+            document.getElementById('landing-view').classList.remove('hidden');
             document.getElementById('manifesto')?.classList.remove('hidden');
             document.getElementById('sticky-cta')?.classList.remove('hidden');
             document.getElementById('ana-footer')?.classList.remove('hidden');
         } else if (viewId === 'voting') {
-            document.getElementById('voting-view')?.classList.remove('hidden');
+            document.getElementById('voting-view').classList.remove('hidden');
         }
     },
 
@@ -105,7 +105,6 @@ export const UI = {
 
         // GÖREV 1 KONTROLÜ: Şehir seçilmiş mi?
         const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
-        const hasAssignedId = user.userNo && user.userNo !== 'BEKLEYEN' && String(user.userNo) !== 'null';
         
         setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
         
@@ -123,12 +122,6 @@ export const UI = {
             if (idBadge) {
                 idBadge.textContent = 'VIP KURUCU';
                 idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
-            }
-            if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
-        } else if (hasAssignedId) {
-            if (idBadge) {
-                idBadge.textContent = 'STANDART';
-                idBadge.className = 'bg-slate-700 text-white border border-slate-500 px-1.5 py-0.5 rounded text-[8px] font-bold';
             }
             if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
         } else {
@@ -167,8 +160,9 @@ export const UI = {
         // =========================================================
         const btnPhone = document.getElementById('btn-open-phone-modal');
         const btnPdf = document.getElementById('btn-open-pdf-modal');
-        const citySelector = document.getElementById('ui-city-selector-container'); 
+        const citySelector = document.getElementById('ui-city-selector-container'); // Yeni eklenecek HTML
 
+        // Şehir seçimi UI Kontrolü
         if (citySelector) {
             if (!isCitySelected) {
                 citySelector.classList.remove('hidden');
@@ -215,7 +209,7 @@ export const UI = {
                 insertPendingAlert(btnPhone);
             }
         } 
-        // DURUM 2: Her şey tam, VIP veya PDF onaylandı (1.0x Güç)
+        // DURUM 2: Her şey tam, VIP veya PDF onaylandı
         else if (user.authStage === 'pdf_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
@@ -229,12 +223,8 @@ export const UI = {
         else if (user.authStage === 'phone_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) {
-                if (hasAssignedId) {
-                    btnPdf.classList.add('hidden'); // ID ALDIYSA GİZLE
-                } else {
-                    btnPdf.classList.remove('hidden');
-                    insertPhoneSuccessAlert(btnPdf);
-                }
+                btnPdf.classList.remove('hidden');
+                insertPhoneSuccessAlert(btnPdf);
             }
         } 
         // DURUM 4: Sadece kayıt oldu, telefon onayı bekleniyor
@@ -244,7 +234,10 @@ export const UI = {
         }
     },
 
+    // =========================================================
     // VIP KURUCU NUMARA MOTORU
+    // =========================================================
+    
     updateVipModalState: () => {
         const lockedState = document.getElementById('vip-locked-state');
         const unlockedState = document.getElementById('vip-unlocked-state');
