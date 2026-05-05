@@ -7,7 +7,7 @@ import { supabase } from './supabase.js';
 import { signInWithPopup, GoogleAuthProvider, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 let confirmationResult = null;
-let me26Recaptcha = null; // MOTORU SADECE 1 KERE KURMAK İÇİN HAFIZA
+let me26Recaptcha = null; // İzole ve takılmayan motor hafızası
 
 export async function googleIleGiris() {
     try {
@@ -32,22 +32,25 @@ export async function sistemdenCikis() {
 
 export async function gercekSmsGonder(phoneNumber) {
     try {
-        // 1. ZARİF MOTOR KURULUMU: Yıkıp dökmek yok. Eğer motor yoksa 1 kez kuruyoruz.
+        // ZARİF VE İZOLE KURULUM: Motoru senin butonuna değil, bağımsız görünmez odaya kuruyoruz.
         if (!me26Recaptcha) {
-            me26Recaptcha = new RecaptchaVerifier(auth, 'btn-submit-phone', { 
+            if (!document.getElementById('izole-recaptcha-odasi')) {
+                const div = document.createElement('div');
+                div.id = 'izole-recaptcha-odasi';
+                document.body.appendChild(div);
+            }
+            me26Recaptcha = new RecaptchaVerifier(auth, 'izole-recaptcha-odasi', { 
                 'size': 'invisible' 
             });
         }
 
         let formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+90' + phoneNumber.replace(/^0/, '');
-        
-        // 2. SMS'İ VEYA TEST KODUNU ATEŞLE
         confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, me26Recaptcha);
         return true;
 
     } catch (error) {
         console.error("SMS Hatası Detayı:", error);
-        throw error; // Hata olsa bile motoru silmiyoruz ki null hatası vermesin!
+        throw error; 
     }
 }
 
