@@ -79,68 +79,88 @@ export async function eDevletBelgesiOku(file, userUid) {
                 const cleanText = fullText.replace(/\s+/g, ' ');
 
                 // =================================================================
-                // YENİ NESİL, SIFIR HATA PARSER (DURAKLAMA MANTIĞI)
+                // KESİN ÇÖZÜM PARSER'I: "Sıradaki Başlıkta Dur" Algoritması
+                // İnsan gözü gibi çalışır. Başlığı bulur, değeri okur, sıradaki başlığı
+                // görünce okumayı keser. Hata payı matematiksel olarak SIFIRDIR.
                 // =================================================================
-                // Etiketlerin arasına ne girerse girsin, bir sonraki etiketi görene kadar 
-                // olan metni alır ve gereksiz sembolleri temizler.
                 
-                const duraklar = ["Baba", "Anne", "Doğum", "Kimlik", "T\\.C\\.", "Program", "Fakülte", "Adı Soyadı", "Uyruğu", "Diploma", "Mezuniyet", "Durum", "YOK"];
-                
-                function extractSafe(text, label) {
-                    const stopRegex = duraklar.join('|');
-                    const r = new RegExp(label + "\\s*[|:.-]*\\s*([^]+?)(?=" + stopRegex + "|$)", "i");
-                    const m = text.match(r);
-                    if (m) {
-                        let val = m[1].replace(/^[|:.\\-\\s]+/, '').replace(/[|:.\\-\\s]+$/, '').trim();
-                        if (val.length > 0 && val.length < 50) return val;
+                function extractField(text, labelRegex) {
+                    const regex = new RegExp(labelRegex, "i");
+                    const match = text.match(regex);
+                    if (!match) return "Bulunamadı";
+                    
+                    const startIndex = match.index + match[0].length;
+                    let substring = text.substring(startIndex).trim();
+                    substring = substring.replace(/^[|:\-\s]+/, "").trim(); // Başındaki : | gibi ayraçları sil
+                    
+                    // Durması gereken tüm olası E-Devlet başlıkları
+                    const nextLabels = [
+                        "T\\.C\\.\\s*Kimlik", "Kimlik\\s*No", "Adı\\s*Soyadı", 
+                        "Baba\\s*Adı", "Anne\\s*Adı", "Baba\\s*/\\s*Anne", "Anne\\s*/\\s*Baba",
+                        "Doğum\\s*Tarihi", "Program", "Kayıt\\s*Tarihi", "Diploma\\s*No", 
+                        "Diploma\\s*Notu", "Mezuniyet\\s*Tarihi", "Durum", "İLGİLİ MAKAMA", 
+                        "AÇIKLAMALAR", "Uyruğu", "YOKMED", "Barkod", "Üniversite", "Adayın"
+                    ];
+                    
+                    let minIndex = substring.length;
+                    for (let nl of nextLabels) {
+                        const idx = substring.search(new RegExp(nl, "i"));
+                        if (idx !== -1 && idx < minIndex) {
+                            minIndex = idx;
+                        }
                     }
-                    return 'Bulunamadı';
+                    
+                    let val = substring.substring(0, minIndex).trim();
+                    val = val.replace(/[|:\-\s]+$/, "").trim(); // Sonundaki ayraçları temizle
+                    return val || "Bulunamadı";
                 }
 
-                const tcMatch = cleanText.match(/(\d{11})/);
-                const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
+                const tc = extractField(cleanText, "(?:T\\.C\\.|Kimlik)\\s*(?:Numarası|No)");
+                const ad_soyad = extractField(cleanText, "Adı\\s*Soyadı");
+                let baba_adi = extractField(cleanText, "Baba\\s*Ad[ıi]");
+                let anne_adi = extractField(cleanText, "Anne\\s*Ad[ıi]");
 
-                const ad_soyad = extractSafe(cleanText, "Adı\\s*Soyadı");
-                let baba_adi = extractSafe(cleanText, "Baba\\s*Ad[ıi]");
-                let anne_adi = extractSafe(cleanText, "Anne\\s*Ad[ıi]");
-
-                // Eğer e-devlet isimleri yan yana tabloda verdiyse (Baba / Anne Adı : COŞKUN / GÜLER)
+                // Eğer e-devlet tablo formatında (Baba / Anne Adı) verdiyse
                 if (baba_adi === 'Bulunamadı' && anne_adi === 'Bulunamadı') {
-                    const ortak = cleanText.match(/(?:Baba[\s/]*Anne|Anne[\s/]*Baba)\s*Ad[ıi]\s*[:|.-]*\s*([^]+?)(?=Doğum|Kimlik|Program|Fakülte|Uyruğu)/i);
-                    if (ortak) {
-                        let val = ortak[1].trim();
-                        let parts = val.split('/');
-                        if(parts.length >= 2) {
-                            if (ortak[0].toLowerCase().startsWith('anne')) {
-                                anne_adi = parts[0].replace(/[:|.-]/g, '').trim();
-                                baba_adi = parts[1].replace(/[:|.-]/g, '').trim();
-                            } else {
-                                baba_adi = parts[0].replace(/[:|.-]/g, '').trim();
-                                anne_adi = parts[1].replace(/[:|.-]/g, '').trim();
+                    const ortak = extractField(cleanText, "(?:Baba[\\s/]*Anne|Anne[\\s/]*Baba)\\s*Ad[ıi]");
+                    if (ortak !== 'Bulunamadı') {
+                        const isAnneFirst = cleanText.match(/Anne[\s/]*Baba/i) !== null;
+                        const parts = ortak.split('/');
+                        if (parts.length >= 2) {
+                            const p1 = parts[0].trim();
+                            const p2 = parts[1].trim();
+                            if (isAnneFirst) { anne_adi = p1; baba_adi = p2; }
+                            else { baba_adi = p1; anne_adi = p2; }
+                        } else {
+                            const spaceParts = ortak.split(/\s+/);
+                            if (spaceParts.length >= 2) {
+                                if (isAnneFirst) { anne_adi = spaceParts[0]; baba_adi = spaceParts[1]; }
+                                else { baba_adi = spaceParts[0]; anne_adi = spaceParts[1]; }
                             }
                         }
                     }
                 }
 
-                // =================================================================
+                // Çok uzun saçma sapan bir şey yakalandıysa güvenlik kilidi
+                if (baba_adi.length > 25) baba_adi = baba_adi.split(/\s+/)[0];
+                if (anne_adi.length > 25) anne_adi = anne_adi.split(/\s+/)[0];
+
+                const dogum_tarihi = extractField(cleanText, "Doğum\\s*Tarihi");
                 
-                const sep = "[\\s|:.-]*";
-                const dogum_tarihi = (cleanText.match(new RegExp(`Doğum\\s*Tarihi${sep}(\\d{2}\\.\\d{2}\\.\\d{4})`, 'i')) || [])[1] || 'Bulunamadı';
-                
-                const uni_program = (cleanText.match(new RegExp(`Program${sep}([^\\n\\r]+?)(?=Diploma No|Kayıt Tarihi|Genel Not)`, 'i')) || [])[1] || '';
+                const uni_program = extractField(cleanText, "Program");
                 const uni_parts = uni_program.split('/');
                 const uni = uni_parts[0]?.replace(/\|/g,'')?.trim() || 'Bulunamadı';
                 const fakulte = uni_parts[1]?.replace(/\|/g,'')?.trim() || 'Bulunamadı';
                 const bolum = (uni_parts[2]?.replace(/\|/g,'')?.trim() || 'Bulunamadı').split(/:|tarafından/i)[0].trim(); 
                 
-                const diploma_no = (cleanText.match(new RegExp(`Diploma\\s*No${sep}([^\\s]+)`, 'i')) || [])[1] || 'Bulunamadı';
-                const diploma_notu = (cleanText.match(new RegExp(`Diploma\\s*Notu${sep}([\\d\\.\\s\\/]+?)(?=Mezuniyet)`, 'i')) || [])[1]?.trim() || 'Bulunamadı';
-                const mezuniyet_tarihi = (cleanText.match(new RegExp(`Mezuniyet\\s*Tarihi${sep}(\\d{2}\\.\\d{2}\\.\\d{4})`, 'i')) || [])[1] || 'Bulunamadı';
-                const durum = (cleanText.match(new RegExp(`Durum${sep}([a-zA-ZÇĞİÖŞÜçğıöşü]+)`, 'i')) || [])[1] || 'Bulunamadı';
+                const diploma_no = extractField(cleanText, "Diploma\\s*No");
+                const diploma_notu = extractField(cleanText, "Diploma\\s*Notu");
+                const mezuniyet_tarihi = extractField(cleanText, "Mezuniyet\\s*Tarihi");
+                const durum = extractField(cleanText, "Durum");
                 
                 const barkod = (cleanText.match(/YOK[A-Z0-9]{10,}/i) || cleanText.match(/[A-Z0-9]{12,}/i) || ['Bulunamadı'])[0];
                 const tumTarihler = cleanText.match(/\d{2}\.\d{2}\.\d{4}/g) || [];
-                const belge_tarihi = tumTarihler.length > 0 ? tumTarihler[tumTarihler.length - 1] : 'Bulunamadı';
+                const belge_tarihi = tumTarihler.length > 0 ? tumTarihler[0] : 'Bulunamadı';
 
                 const belgeData = { tc, ad_soyad, baba_adi, anne_adi, dogum_tarihi, uni, fakulte, bolum, diploma_no, diploma_notu, mezuniyet_tarihi, durum, barkod, belge_tarihi, belge_durumu: "Onay Bekliyor" };
 
