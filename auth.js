@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - KİMLİK VE YETKİ YÖNETİCİSİ (auth.js)
-   1 Tıkla Giriş + Taze Veri Motoru (No-Cache) + Sinyal Mimarisi
+   1 Tıkla Giriş + Geniş Sensör (Sütun Şaşılığı Çözümü) + Sinyal Mimarisi
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -76,37 +76,42 @@ export const AUTH = {
             const dbUser = await DB.sistemeGiris(gizliPaket);
             if (!dbUser) throw new Error("Veritabanı yanıt vermedi.");
 
+            // SÜTUN ŞAŞILIĞI ÇÖZÜMÜ (Tüm ihtimalleri okuyoruz)
+            const dbTelefon = dbUser.telefon || dbUser.telefon_no || dbUser.tel_no || dbUser.phone;
+            const dbSehir = dbUser.sehir || dbUser.sehir_tribunu || dbUser.city || 'Seçilmedi';
+            const dbMeslek = dbUser.mesleki_durum || dbUser.role || dbUser.m_durum || 'Belirsiz';
+            const dbBelgeDurumu = dbUser.belge_durumu || dbUser.durum;
+
             let authStage = 'registered';
             const guc = parseFloat(dbUser.oy_gucu || 0);
-            
-            // VERİTABANINDAN TELEFONU YAKALA (Geniş Sensör)
-            const dbTelefon = dbUser.telefon || dbUser.telefon_no || dbUser.tel_no || dbUser.phone;
             const gercektenTelefonuVarMi = !!dbTelefon;
             
             if (guc >= 1.0) authStage = 'pdf_verified';
             else if (gercektenTelefonuVarMi) authStage = 'phone_verified';
             
-            if (dbUser.belge_durumu === 'Onay Bekliyor' || dbUser.belge_durumu?.includes('Bekliyor')) {
+            if (dbBelgeDurumu === 'Onay Bekliyor' || dbBelgeDurumu?.includes('Bekliyor')) {
                 authStage = 'document_pending'; 
             }
 
+            // STATE GÜNCELLEMESİ (Okunan gerçek verilerle)
             STATE.setUser({
-                uid: dbUser.id,
+                uid: dbUser.id || dbUser.uid,
                 authStage: authStage,
-                userNo: dbUser.vip_kurucu_no || 'BEKLEYEN',
-                role: dbUser.mesleki_durum,
-                city: dbUser.sehir_tribunu,
+                userNo: dbUser.vip_kurucu_no || dbUser.userNo || 'BEKLEYEN',
+                role: dbMeslek,
+                city: dbSehir, 
                 votePower: guc.toFixed(1) + 'x',
                 inviteCount: dbUser.basarili_davet_sayisi || 0,
                 isVip: !!dbUser.vip_kurucu_no,
                 davetKodu: dbUser.kendi_davet_kodu,
-                hasPhone: gercektenTelefonuVarMi // ARTIK ASLA HAYALET OLMAYACAK
+                hasPhone: gercektenTelefonuVarMi 
             });
             
             UI.renderProfile(); 
             UI.showView('voting');
             
-            if (dbUser.basarili_davet_sayisi === 0 && guc === 0 && !gercektenTelefonuVarMi) {
+            // Eğer yeni üyeyse ilk tebrik ekranını aç
+            if (dbUser.basarili_davet_sayisi === 0 && guc === 0 && !gercektenTelefonuVarMi && dbSehir === 'Seçilmedi') {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
                 UI.openModal('wow-modal');
@@ -263,7 +268,6 @@ export const AUTH = {
             const phoneInput = getEl('input-phone-number');
             const phoneVal = normalizeTurkishPhone(phoneInput.value);
             
-            // VERİTABANINA GERÇEKTEN YAZIYOR
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
