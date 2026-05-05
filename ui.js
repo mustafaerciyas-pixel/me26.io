@@ -105,7 +105,7 @@ export const UI = {
 
         // GÖREV 1 KONTROLÜ: Şehir seçilmiş mi?
         const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
-        const hasAssignedId = user.userNo && user.userNo !== 'BEKLEYEN'; // ID ALINMIŞ MI KONTROLÜ
+        const hasAssignedId = user.userNo && user.userNo !== 'BEKLEYEN' && String(user.userNo) !== 'null';
         
         setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
         
@@ -169,7 +169,6 @@ export const UI = {
         const btnPdf = document.getElementById('btn-open-pdf-modal');
         const citySelector = document.getElementById('ui-city-selector-container'); 
 
-        // Şehir seçimi UI Kontrolü
         if (citySelector) {
             if (!isCitySelected) {
                 citySelector.classList.remove('hidden');
@@ -216,7 +215,7 @@ export const UI = {
                 insertPendingAlert(btnPhone);
             }
         } 
-        // DURUM 2: Her şey tam, VIP veya PDF onaylandı
+        // DURUM 2: Her şey tam, VIP veya PDF onaylandı (1.0x Güç)
         else if (user.authStage === 'pdf_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
@@ -226,16 +225,12 @@ export const UI = {
                 insertPdfSuccessAlert(btnPhone); 
             }
         } 
-        // DURUM 3: Sadece telefon onaylı, PDF yüklemesi bekleniyor
+        // DURUM 3: Sadece telefon onaylı, PDF yüklemesi bekleniyor (ID OLSA BİLE GÖSTERECEK!)
         else if (user.authStage === 'phone_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) {
-                if (hasAssignedId) {
-                    btnPdf.classList.add('hidden'); // ID ALDIYSA KESİN GİZLE
-                } else {
-                    btnPdf.classList.remove('hidden');
-                    insertPhoneSuccessAlert(btnPdf);
-                }
+                btnPdf.classList.remove('hidden');
+                insertPhoneSuccessAlert(btnPdf);
             }
         } 
         // DURUM 4: Sadece kayıt oldu, telefon onayı bekleniyor
@@ -245,10 +240,7 @@ export const UI = {
         }
     },
 
-    // =========================================================
     // VIP KURUCU NUMARA MOTORU
-    // =========================================================
-    
     updateVipModalState: () => {
         const lockedState = document.getElementById('vip-locked-state');
         const unlockedState = document.getElementById('vip-unlocked-state');
