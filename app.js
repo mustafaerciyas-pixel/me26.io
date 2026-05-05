@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   1 Tıkla Giriş + Akıllı Arayüz + Sıralı Görev Mimarisi
+   Sıkı Hunileme (Strict Funneling) ve Sıralı Görev Mimarisi
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -48,7 +48,7 @@ export const Me26VotingSystem = {
             const authStage = STATE.user.authStage || 'registered';
             const votePower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
             const hasPhone = STATE.user.hasPhone === true;
-            const hasAssignedId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN';
+            const hasAssignedId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN' && String(STATE.user.userNo) !== 'null';
 
             // 1. ŞEHİR KUTUSUNU YÖNET
             if (citySection) {
@@ -73,11 +73,20 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // 2. VIP KUTUSUNU YÖNET
+            // =====================================================================
+            // 2. VIP KUTUSUNU YÖNET (ASKERİ HUNİLEME KURALI BURADA)
+            // =====================================================================
             if (vipSection) {
                 if (hasAssignedId) {
+                    // Zaten numarasını aldıysa kalabalık yapmasın, GİZLE.
                     vipSection.classList.add('hidden'); 
-                } else {
+                } 
+                else if (authStage !== 'document_pending' && authStage !== 'pdf_verified') {
+                    // ADAM HENÜZ E-DEVLET BELGESİNİ YÜKLEMEDİYSE KESİNLİKLE GİZLE!
+                    vipSection.classList.add('hidden');
+                } 
+                else {
+                    // Belgesini yükleyip "Onay Bekliyor"a düştüyse veya "Onaylandıysa" GÖSTER.
                     vipSection.classList.remove('hidden');
                 }
             }
@@ -91,12 +100,13 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // 4. PDF (E-DEVLET) BUTONUNU YÖNET (SIRALI MANTIK + ID KONTROLÜ)
+            // 4. PDF (E-DEVLET) BUTONUNU YÖNET
             if (pdfBtn) {
-                if (!hasPhone || hasAssignedId) {
-                    // TELEFON YOKSA VEYA ID ALDIYSA BUTONU KESİN OLARAK GİZLE!
+                if (!hasPhone) {
+                    // TELEFON YOKSA GİZLE
                     pdfBtn.classList.add('hidden');
                 } else {
+                    // TELEFON VARSA DURUMA BAK
                     if (authStage === 'pdf_verified' || votePower >= 1.0) {
                         pdfBtn.classList.add('hidden'); 
                     } else if (authStage === 'document_pending') {
