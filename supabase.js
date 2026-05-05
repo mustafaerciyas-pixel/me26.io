@@ -93,5 +93,19 @@ export const DB = {
             throw error;
         }
         return data;
+    },
+
+    // 7. YENİ: ÖNERGELERİ EKRANA ÇEKME MOTORU
+    onergeleriGetir: async () => {
+        const { data, error } = await supabase
+            .from('onergeler')
+            .select('*')
+            .order('olusturulma_tarihi', { ascending: false }); // En yeniler en üstte
+            
+        if (error) {
+            console.error('🔥 Önergeleri Çekme Hatası:', error.message);
+            throw error;
+        }
+        return data;
     }
 };
