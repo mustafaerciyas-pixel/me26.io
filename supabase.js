@@ -71,5 +71,27 @@ export const DB = {
             throw error;
         }
         return data; 
+    },
+
+    // 6. YENİ ÖNERGE (ORTAK AKIL) VERİTABANINA YAZMA MOTORU
+    onergeGonder: async (uid, baslik, sorun, cozum, hedefKitle, sure) => {
+        const { data, error } = await supabase
+            .from('onergeler')
+            .insert([
+                { 
+                    yazar_uid: uid, 
+                    baslik: baslik, 
+                    sorun: sorun, 
+                    cozum: cozum, 
+                    hedef_kitle: hedefKitle, 
+                    sure: parseInt(sure) 
+                }
+            ]);
+            
+        if (error) {
+            console.error('🔥 Önerge Gönderme Hatası:', error.message);
+            throw error;
+        }
+        return data;
     }
 };
