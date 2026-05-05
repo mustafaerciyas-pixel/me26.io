@@ -1,379 +1,299 @@
 /* ==========================================================================
-   ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
+   ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
+   Eksiksiz (Export) Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
-import { UI } from './ui.js';
-import { AUTH } from './auth.js';
-import { DB } from './supabase.js';
 
-export const Me26VotingSystem = {
-    init: function() {
-        document.querySelectorAll('.vote-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleVote(e.target));
-        });
+export const UI = {
+    // Sayfa Görünümlerini Değiştirme (Landing <-> Voting)
+    showView: (viewId) => {
+        document.getElementById('landing-view')?.classList.add('hidden');
+        document.getElementById('voting-view')?.classList.add('hidden');
+        document.getElementById('manifesto')?.classList.add('hidden');
+        document.getElementById('sticky-cta')?.classList.add('hidden');
+        document.getElementById('ana-footer')?.classList.add('hidden');
 
-        const unlockBtn = document.getElementById('btn-unlock-manifesto');
-        if(unlockBtn) {
-            unlockBtn.addEventListener('click', () => {
-                if (STATE.isLoggedIn()) {
-                    UI.toggleProfileDrawer(true);
-                } else {
-                    AUTH.loginWithGoogle(); 
-                }
-            });
+        if (viewId === 'landing') {
+            document.getElementById('landing-view')?.classList.remove('hidden');
+            document.getElementById('manifesto')?.classList.remove('hidden');
+            document.getElementById('sticky-cta')?.classList.remove('hidden');
+            document.getElementById('ana-footer')?.classList.remove('hidden');
+        } else if (viewId === 'voting') {
+            document.getElementById('voting-view')?.classList.remove('hidden');
         }
     },
 
-    updateVisibility: function() {
-        const lockedState = document.getElementById('locked-state');
-        const manifestoGrid = document.getElementById('manifesto-grid');
+    // Modalları Açıp Kapatma
+    openModal: (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
 
-        const navReg = document.getElementById('btn-register-nav');
-        const navLog = document.getElementById('btn-login-nav');
-        const navProf = document.getElementById('btn-profile-nav');
-        
-        const mobReg = document.getElementById('btn-register-mobile');
-        const mobLog = document.getElementById('btn-login-mobile');
-        const mobProf = document.getElementById('btn-profile-mobile');
+    closeModal: (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    },
 
-        const vipSection = document.getElementById('ui-vip-section');
-        const citySection = document.getElementById('ui-city-selector-container');
-        const phoneBtn = document.getElementById('btn-open-phone-modal');
-        const pdfBtn = document.getElementById('btn-open-pdf-modal');
-
-        if (STATE.isLoggedIn()) {
-            const isCitySelected = STATE.user.city && STATE.user.city !== 'Seçilmedi' && STATE.user.city !== 'Belirsiz';
-            const authStage = STATE.user.authStage || 'registered';
-            const votePower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
-            const hasPhone = STATE.user.hasPhone === true;
-            const hasAssignedId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN' && String(STATE.user.userNo) !== 'null';
-
-            // 1. ŞEHİR KUTUSUNU YÖNET
-            if (citySection) {
-                if (isCitySelected) {
-                    citySection.classList.add('hidden'); 
-                } else {
-                    citySection.classList.remove('hidden'); 
-                }
-            }
-
-            if (isCitySelected) {
-                if(lockedState) lockedState.style.display = 'none';
-                if(manifestoGrid) {
-                    manifestoGrid.classList.remove('hidden');
-                    manifestoGrid.classList.add('grid');
-                }
-            } else {
-                if(lockedState) lockedState.style.display = 'flex';
-                if(manifestoGrid) {
-                    manifestoGrid.classList.add('hidden');
-                    manifestoGrid.classList.remove('grid');
-                }
-            }
-
-            // 2. VIP KUTUSUNU YÖNET
-            if (vipSection) {
-                if (hasAssignedId) {
-                    vipSection.classList.add('hidden'); 
-                } else {
-                    vipSection.classList.remove('hidden');
-                }
-            }
-
-            // 3. TELEFON BUTONUNU YÖNET
-            if (phoneBtn) {
-                if (hasPhone) {
-                    phoneBtn.classList.add('hidden'); 
-                } else {
-                    phoneBtn.classList.remove('hidden'); 
-                }
-            }
-
-            // 4. PDF (E-DEVLET) BUTONUNU YÖNET (ID GİZLEME KURALI KALDIRILDI)
-            if (pdfBtn) {
-                if (!hasPhone) {
-                    // TELEFON YOKSA GİZLE
-                    pdfBtn.classList.add('hidden');
-                } else {
-                    // TELEFON VARSA DURUMA BAK (1.0 GÜÇ ALANA KADAR GÖSTER)
-                    if (authStage === 'pdf_verified' || votePower >= 1.0) {
-                        pdfBtn.classList.add('hidden'); 
-                    } else if (authStage === 'document_pending') {
-                        pdfBtn.classList.remove('hidden');
-                        pdfBtn.innerHTML = '⏳ BELGE ONAY BEKLİYOR...';
-                        pdfBtn.disabled = true;
-                        pdfBtn.classList.add('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
-                        pdfBtn.classList.remove('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
-                    } else {
-                        pdfBtn.classList.remove('hidden');
-                        pdfBtn.innerHTML = '📜 E-Devlet Yükle (1.0x Tam Yetki)';
-                        pdfBtn.disabled = false;
-                        pdfBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
-                        pdfBtn.classList.add('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
-                    }
-                }
-            }
-            
-            const inviteLinkEl = document.getElementById('ui-invite-link');
-            if(inviteLinkEl && STATE.user && STATE.user.davetKodu) {
-                inviteLinkEl.textContent = `https://me26.org/katil?ref=${STATE.user.davetKodu}`;
-            }
-
-            if(navReg) navReg.classList.add('hidden');
-            if(navLog) navLog.classList.add('hidden');
-            if(navProf) navProf.classList.remove('hidden');
-
-            if(mobReg) mobReg.classList.add('hidden');
-            if(mobLog) mobLog.classList.add('hidden');
-            if(mobProf) mobProf.classList.remove('hidden');
-            
+    // Çekmece ve Menüler
+    toggleMobileMenu: (show) => {
+        const menu = document.getElementById('mobile-menu');
+        if (!menu) return;
+        if (show) {
+            menu.classList.remove('-translate-x-full');
         } else {
-            if(lockedState) lockedState.style.display = 'flex';
-            if(manifestoGrid) {
-                manifestoGrid.classList.add('hidden');
-                manifestoGrid.classList.remove('grid');
-            }
-
-            if(navReg) navReg.classList.remove('hidden');
-            if(navLog) navLog.classList.remove('hidden');
-            if(navProf) navProf.classList.add('hidden');
-
-            if(mobReg) mobReg.classList.remove('hidden');
-            if(mobLog) mobLog.classList.remove('hidden');
-            if(mobProf) mobProf.classList.add('hidden');
+            menu.classList.add('-translate-x-full');
         }
     },
 
-    handleVote: async function(btnEl) {
-        if (!STATE.isLoggedIn()) {
-            UI.showToast('Oy kullanmak için sisteme giriş yapmalısın!', 'error');
-            return;
+    toggleProfileDrawer: (show) => {
+        const drawer = document.getElementById('profile-drawer');
+        if (!drawer) return;
+        if (show) {
+            drawer.classList.remove('translate-x-full');
+        } else {
+            drawer.classList.add('translate-x-full');
         }
-
-        const userRole = (STATE.user && (STATE.user.role || STATE.user.job)) ? (STATE.user.role || STATE.user.job).toLowerCase() : '';
-        const container = btnEl.closest('.vote-buttons-container');
-        const requiredAuth = container.getAttribute('data-auth'); 
-
-        if (requiredAuth === 'icmimar' && !userRole.includes('içmimar') && !userRole.includes('mimar')) {
-            UI.showToast('Erişim Engellendi: Bu sandığı sadece İçmimarlar oylayabilir.', 'error');
-            return;
-        }
-        if (requiredAuth === 'ogrenci' && !userRole.includes('öğrenci')) {
-            UI.showToast('Erişim Engellendi: Bu sandık sadece Öğrenciler içindir.', 'error');
-            return;
-        }
-
-        const currentPower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
-        if (currentPower === 0) {
-            UI.showToast('Geçersiz Oy Gücü! Profil panelinden e-devlet belgenizi onaylatmalısınız.', 'error');
-            return;
-        }
-
-        const choice = btnEl.getAttribute('data-vote');
-        
-        const allButtons = container.querySelectorAll('.vote-btn');
-        allButtons.forEach(b => {
-            b.disabled = true;
-            b.classList.remove('hover:border-green-500', 'hover:border-yellow-500', 'hover:border-red-500', 'hover:bg-slate-700');
-            b.classList.add('opacity-30', 'cursor-not-allowed');
-        });
-
-        btnEl.classList.remove('opacity-30', 'bg-slate-800', 'text-gray-400');
-        
-        if (choice === 'yes') btnEl.classList.add('bg-green-900/60', 'border-green-500', 'text-green-400');
-        else if (choice === 'abstain') btnEl.classList.add('bg-yellow-900/60', 'border-yellow-500', 'text-yellow-400');
-        else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
-        
-        this.animateResults(container.parentElement, choice, currentPower);
-        UI.showToast(`Oyunuz test sandığına başarıyla işlendi! (Güç: ${currentPower}x)`, 'success');
     },
 
-    animateResults: function(cardEl, userChoice, votePower) {
-        let baseYes = Math.floor(Math.random() * 40) + 20; 
-        let baseAbstain = Math.floor(Math.random() * 10) + 5;
-        let baseNo = 100 - (baseYes + baseAbstain);
+    // Bildirim (Toast) Mesajları
+    showToast: (message, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
 
-        if (userChoice === 'yes') baseYes += (20 * votePower);
-        if (userChoice === 'abstain') baseAbstain += (20 * votePower);
-        if (userChoice === 'no') baseNo += (20 * votePower);
+        const toast = document.createElement('div');
+        const isSuccess = type === 'success';
+        const isInfo = type === 'info';
+        
+        let bgColor = isSuccess ? 'bg-green-900/90 text-green-400 border-green-700' : 
+                      isInfo ? 'bg-blue-900/90 text-blue-400 border-blue-700' : 
+                      'bg-red-900/90 text-red-400 border-red-700';
+                      
+        let icon = isSuccess ? '✅' : isInfo ? 'ℹ️' : '❌';
 
-        const total = baseYes + baseAbstain + baseNo;
-        const pY = Math.round((baseYes / total) * 100);
-        const pA = Math.round((baseAbstain / total) * 100);
-        const pN = 100 - (pY + pA);
+        toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-xs font-bold uppercase tracking-widest transform transition-all duration-500 translate-y-10 opacity-0 border ${bgColor}`;
+        
+        toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+        container.appendChild(toast);
 
         setTimeout(() => {
-            const barY = cardEl.querySelector('.vote-bar-yes');
-            const barA = cardEl.querySelector('.vote-bar-abstain');
-            const barN = cardEl.querySelector('.vote-bar-no');
-            if(barY) barY.style.width = pY + '%';
-            if(barA) barA.style.width = pA + '%';
-            if(barN) barN.style.width = pN + '%';
+            toast.classList.remove('translate-y-10', 'opacity-0');
+        }, 10);
 
-            const textY = cardEl.querySelector('.vote-text-yes');
-            const textA = cardEl.querySelector('.vote-text-abstain');
-            const textN = cardEl.querySelector('.vote-text-no');
-            if(textY) textY.textContent = `%${pY} Kabul`;
-            if(textA) textA.textContent = `%${pA} Çekimser`;
-            if(textN) textN.textContent = `%${pN} Ret`;
-        }, 50);
-    }
-};
+        setTimeout(() => {
+            toast.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    },
 
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    Me26VotingSystem.init();
+    // Profili Ekrana Çizme (Verileri HTML'e Basma)
+    renderProfile: () => {
+        if (!STATE.isLoggedIn()) return;
 
-    window.addEventListener('auth_changed', () => {
-        Me26VotingSystem.updateVisibility();
-    });
-
-    const bind = (id, event, fn) => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener(event, fn);
-    };
-
-    const loginButtons = [
-        'btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile',
-        'btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'
-    ];
-    
-    loginButtons.forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = AUTH.loginWithGoogle;
-    });
-
-    ['btn-profile-nav', 'btn-profile-mobile'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = () => {
-            UI.toggleMobileMenu(false);
-            UI.toggleProfileDrawer(true);
+        const user = STATE.user;
+        
+        const setEl = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
         };
-    });
 
-    bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
-    bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
-    bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
-    
-    bind('btn-save-profile-city', 'click', async () => {
-        const citySelect = document.getElementById('input-profile-city');
-        const selectedCity = citySelect.value;
+        // GÖREV 1 KONTROLÜ: Şehir seçilmiş mi?
+        const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
+        const hasAssignedId = user.userNo && user.userNo !== 'BEKLEYEN' && String(user.userNo) !== 'null';
         
-        if (!selectedCity) {
-            UI.showToast('Lütfen listeden bir tribün (şehir) seçin.', 'error');
-            return;
-        }
-
-        const btn = document.getElementById('btn-save-profile-city');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '...';
-        btn.disabled = true;
-
-        try {
-            await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
-            STATE.updateUser('city', selectedCity); 
-            UI.renderProfile(); 
-            Me26VotingSystem.updateVisibility(); 
-            
-            UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
-        } catch (error) {
-            UI.showToast('Şehir kaydedilemedi. Bağlantınızı kontrol edin.', 'error');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    });
-
-    bind('btn-close-wow', 'click', () => {
-        UI.closeModal('wow-modal');
-        UI.showView('voting');
-        UI.toggleProfileDrawer(true); 
-    });
-
-    const copyLinkToClipboard = async () => {
-        const inviteLinkEl = document.getElementById('ui-invite-link');
-        const link = inviteLinkEl ? inviteLinkEl.textContent : 'https://me26.org';
-        try {
-            await navigator.clipboard.writeText(link);
-            UI.showToast('Davet linkin kopyalandı! Instagramda paylaş.', 'success');
-        } catch(e) {
-            UI.showToast('Link kopyalanamadı, manuel seç.', 'error');
-        }
-    };
-    
-    bind('btn-copy-invite', 'click', copyLinkToClipboard);
-    bind('ui-invite-link', 'click', copyLinkToClipboard);
-    bind('btn-wow-copy-link', 'click', copyLinkToClipboard);
-    bind('btn-vip-copy-invite-locked', 'click', copyLinkToClipboard);
-
-    bind('btn-share-id-card', 'click', copyLinkToClipboard); 
-    bind('btn-whatsapp-share', 'click', () => {
-        const link = document.getElementById('ui-invite-link')?.textContent || 'https://me26.org';
-        window.open(`https://wa.me/?text=Sadece İçmimarların Girebildiği Dijital Stadyuma Katıl: ${link}`, '_blank');
-    });
-
-    bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
-    bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
-
-    bind('btn-standart-numara', 'click', async () => {
-        if (!confirm('VIP numara seçme hakkından vazgeçip, sıradaki ilk boş numarayı otomatik almak istediğine emin misin?')) return;
+        setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
         
-        const btn = document.getElementById('btn-standart-numara');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = 'NUMARAN BASILIYOR...';
-        btn.disabled = true;
+        // E-Devlet Yüklenmediyse Rolü "Kimlik Bekleniyor" Göster
+        const displayRole = (user.role === 'Belirsiz' || !user.role) ? 'Kimlik Bekleniyor' : user.role;
+        setEl('ui-user-role', displayRole);
+        
+        setEl('ui-vote-power', user.votePower || '0.0x');
 
-        try {
-            const yeniNo = await DB.standartNumaraAl(STATE.user.uid);
-            STATE.updateUser('userNo', yeniNo);
-            STATE.updateUser('isVip', false);
-            
-            UI.renderProfile(); 
-            Me26VotingSystem.updateVisibility(); 
-            
-            UI.showToast(`Harika! Numaran atandı: TR-IA-${yeniNo}`, 'success');
-            
-        } catch(e) {
-            UI.showToast('Numara atanırken bir hata oluştu.', 'error');
-        } finally {
-            if(btn) {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+        // Kimlik Numarası ve Rozet
+        const idBadge = document.getElementById('ui-role-badge');
+        const userIdEl = document.getElementById('ui-user-id');
+        
+        if (user.isVip) {
+            if (idBadge) {
+                idBadge.textContent = 'VIP KURUCU';
+                idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
+            }
+            if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
+        } else if (hasAssignedId) {
+            if (idBadge) {
+                idBadge.textContent = 'STANDART';
+                idBadge.className = 'bg-slate-700 text-white border border-slate-500 px-1.5 py-0.5 rounded text-[8px] font-bold';
+            }
+            if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
+        } else {
+            if (idBadge) {
+                idBadge.textContent = 'Aday Kurucu';
+                idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
+            }
+            if (userIdEl) userIdEl.textContent = 'TR-IA-BEKLEYEN';
+        }
+
+        // Paylaşım ve VIP Barı
+        const inviteCount = user.inviteCount || 0;
+        setEl('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
+        
+        const progressBar = document.getElementById('ui-vip-progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${Math.min((inviteCount / 3) * 100, 100)}%`;
+        }
+
+        const vipStatus = document.getElementById('ui-vip-status');
+        if (vipStatus) {
+            if (user.isVip) {
+                vipStatus.textContent = 'VIP AKTİF';
+                vipStatus.className = 'text-[9px] text-slate-900 font-black bg-kaos px-2 py-1 rounded border border-kaos shadow-kaos';
+            } else if (inviteCount >= 3) {
+                vipStatus.textContent = 'KİLİT AÇILDI';
+                vipStatus.className = 'text-[9px] text-green-400 font-bold bg-green-900/30 px-2 py-1 rounded border border-green-700';
+            } else {
+                vipStatus.textContent = 'KİLİTLİ';
+                vipStatus.className = 'text-[9px] text-gray-500 font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700';
             }
         }
-    });
 
-    bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
-    bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
-    bind('btn-submit-phone', 'click', AUTH.verifyPhone);
-    bind('btn-verify-otp', 'click', AUTH.verifyOtp);
+        // =========================================================
+        // YETKİ BUTONLARI VE ONAY BEKLEME EKRANI (GÖREVLER)
+        // =========================================================
+        const btnPhone = document.getElementById('btn-open-phone-modal');
+        const btnPdf = document.getElementById('btn-open-pdf-modal');
+        const citySelector = document.getElementById('ui-city-selector-container'); 
 
-    bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
-    bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
-
-    bind('btn-logout', 'click', AUTH.logout);
-    bind('btn-delete-account', 'click', AUTH.deleteAccount);
-
-    bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
-    bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
-    
-    const btnSubmitPdf = document.getElementById('btn-submit-pdf');
-    if (btnSubmitPdf) {
-        const newBtn = btnSubmitPdf.cloneNode(true);
-        btnSubmitPdf.parentNode.replaceChild(newBtn, btnSubmitPdf);
-        newBtn.addEventListener('click', AUTH.verifyPdf);
-    }
-
-    const isRedirect = await AUTH.checkRedirect();
-    
-    if (!isRedirect) {
-        if (STATE.isLoggedIn()) {
-            UI.showView('voting');
-        } else {
-            UI.showView('landing');
+        if (citySelector) {
+            if (!isCitySelected) {
+                citySelector.classList.remove('hidden');
+            } else {
+                citySelector.classList.add('hidden');
+            }
         }
-        UI.renderProfile();
-        Me26VotingSystem.updateVisibility();
+
+        document.getElementById('ui-pending-alert')?.remove();
+        document.getElementById('ui-phone-success-alert')?.remove();
+        document.getElementById('ui-pdf-success-alert')?.remove();
+
+        const insertPhoneSuccessAlert = (referenceElement) => {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'ui-phone-success-alert';
+            alertDiv.className = 'w-full bg-green-900/20 border border-green-700/50 text-green-400 text-[10px] md:text-xs text-center py-2 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2';
+            alertDiv.innerHTML = '<span>✅</span> TELEFON DOĞRULANDI (BOT KONTROLÜ)';
+            referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
+        };
+
+        const insertPdfSuccessAlert = (referenceElement) => {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'ui-pdf-success-alert';
+            alertDiv.className = 'w-full bg-indigo-900/20 border border-indigo-700/50 text-indigo-400 text-[10px] md:text-xs text-center py-2 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2';
+            alertDiv.innerHTML = '<span>🎓</span> E-DEVLET KİMLİĞİ ONAYLANDI';
+            referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
+        };
+
+        const insertPendingAlert = (referenceElement) => {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'ui-pending-alert';
+            alertDiv.className = 'w-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[10px] md:text-xs text-center py-3 rounded uppercase tracking-widest font-bold flex items-center justify-center gap-2';
+            alertDiv.innerHTML = '<span>⏳</span> KİMLİĞİNİZ YÖNETİCİ ONAYINDA BEKLİYOR';
+            referenceElement.parentElement.insertBefore(alertDiv, referenceElement);
+        };
+
+        // DURUM 1: Belge yüklendi, Yönetici onayı bekliyor
+        if (user.authStage === 'document_pending') {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            if (btnPdf) btnPdf.classList.add('hidden');
+            
+            if (btnPhone && btnPhone.parentElement) {
+                insertPhoneSuccessAlert(btnPhone);
+                insertPendingAlert(btnPhone);
+            }
+        } 
+        // DURUM 2: Her şey tam, VIP veya PDF onaylandı (1.0x Güç)
+        else if (user.authStage === 'pdf_verified') {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            if (btnPdf) btnPdf.classList.add('hidden');
+            
+            if (btnPhone && btnPhone.parentElement) {
+                insertPhoneSuccessAlert(btnPhone);
+                insertPdfSuccessAlert(btnPhone); 
+            }
+        } 
+        // DURUM 3: Sadece telefon onaylı, PDF yüklemesi bekleniyor
+        else if (user.authStage === 'phone_verified') {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            if (btnPdf) {
+                if (hasAssignedId) {
+                    btnPdf.classList.add('hidden'); // ID ALDIYSA GİZLE
+                } else {
+                    btnPdf.classList.remove('hidden');
+                    insertPhoneSuccessAlert(btnPdf);
+                }
+            }
+        } 
+        // DURUM 4: Sadece kayıt oldu, telefon onayı bekleniyor
+        else {
+            if (btnPhone) btnPhone.classList.remove('hidden');
+            if (btnPdf) btnPdf.classList.add('hidden');
+        }
+    },
+
+    // VIP KURUCU NUMARA MOTORU
+    updateVipModalState: () => {
+        const lockedState = document.getElementById('vip-locked-state');
+        const unlockedState = document.getElementById('vip-unlocked-state');
+        const inviteCount = STATE.user?.inviteCount || 0;
+
+        if (inviteCount >= 3 || STATE.user?.isVip) {
+            lockedState.classList.add('hidden');
+            unlockedState.classList.remove('hidden');
+            UI.renderVipGrid();
+        } else {
+            lockedState.classList.remove('hidden');
+            unlockedState.classList.add('hidden');
+        }
+    },
+
+    renderVipGrid: () => {
+        const gridEl = document.getElementById('ui-vip-grid');
+        if (!gridEl) return;
+        gridEl.innerHTML = '';
+
+        for (let i = 101; i <= 1000; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'vip-number-btn bg-slate-800 border border-slate-700 text-gray-400 font-mono text-[10px] md:text-xs py-2 rounded hover:border-kaos hover:text-kaos transition';
+            btn.textContent = i;
+            
+            if (i === 105 || i === 199 || i === 206 || i === 333 || i === 404 || i === 500) {
+                btn.classList.add('opacity-30', 'cursor-not-allowed', 'bg-red-900/20', 'border-red-900/50', 'text-red-500');
+                btn.disabled = true;
+            } else {
+                btn.onclick = () => UI.selectVipNumber(i, btn);
+            }
+            gridEl.appendChild(btn);
+        }
+    },
+
+    selectVipNumber: (num, btnEl) => {
+        document.querySelectorAll('.vip-number-btn').forEach(b => {
+            b.classList.remove('bg-kaos', 'text-slate-900', 'font-black', 'border-kaos');
+            if(!b.disabled) b.classList.add('bg-slate-800', 'text-gray-400');
+        });
+        
+        btnEl.classList.remove('bg-slate-800', 'text-gray-400');
+        btnEl.classList.add('bg-kaos', 'text-slate-900', 'font-black', 'border-kaos');
+
+        const claimBtn = document.getElementById('btn-claim-vip-number');
+        if (claimBtn) {
+            claimBtn.disabled = false;
+            claimBtn.dataset.selectedNumber = num;
+            claimBtn.textContent = num + ' NUMARAYI KİLİTLE';
+        }
     }
-});
+};
