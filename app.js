@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Gerçek SMS + Tank Modu Arayüz Geçişi + Zamanlama
+   Gerçek SMS + Sniper Arayüz Geçişi + Boşluk Temizleyici
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -43,71 +43,78 @@ export const AUTH = {
             return; 
         }
 
-        const btn = document.getElementById('btn-submit-phone');
+        const btn = document.getElementById('btn-submit-phone') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('BAĞLAN'));
         const originalText = btn ? btn.innerHTML : 'BAĞLAN';
         if(btn) { btn.innerHTML = 'BAĞLANIYOR...'; btn.disabled = true; }
 
         try {
-            // MOTOR: SMS VEYA TEST KODUNU ATEŞLE
+            // 1. MOTOR SMS'İ ATEŞLER
             await gercekSmsGonder(phoneValue);
             UI.showToast('Kod gönderildi! Lütfen ekrana girin.', 'success');
 
-            // TANK MODU: ARAYÜZÜ ZORLA DEĞİŞTİR
+            // ======================================================
+            // 2. SNIPER MODU: TELEFON EKRANINI GÖZÜNDEN VURUP GİZLE
+            // ======================================================
             if (phoneInput) {
+                // TR+90 yazan siyah kılıfı bul ve gizle
+                const wrapper = phoneInput.closest('.flex') || phoneInput.parentElement;
+                if(wrapper) wrapper.style.display = 'none';
                 phoneInput.style.display = 'none';
-                phoneInput.classList.add('hidden');
             }
-            if (btn) {
-                btn.style.display = 'none';
-                btn.classList.add('hidden');
-            }
-            
-            const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]');
-            const otpBtn = document.getElementById('btn-verify-otp');
-            
+            if (btn) btn.style.display = 'none';
+
+            // Ekrandaki "TELEFON NUMARAN" yazısını bul ve yokederek ekranı temizle
+            document.querySelectorAll('label, span, div, p').forEach(el => {
+                if (el.textContent.trim() === 'TELEFON NUMARAN') el.style.display = 'none';
+            });
+
+            // 3. ŞİFRE KUTUSUNU ZORLA GÖRÜNÜR YAP
+            const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]') || document.querySelector('input[type="text"][class*="tracking"]');
             if (otpInput) {
                 otpInput.classList.remove('hidden');
                 otpInput.style.display = 'block'; 
                 if (otpInput.parentElement) {
                     otpInput.parentElement.classList.remove('hidden');
-                    otpInput.parentElement.style.display = 'block';
-                }
-            }
-            if (otpBtn) {
-                otpBtn.classList.remove('hidden');
-                otpBtn.style.display = 'block'; 
-                if (otpBtn.parentElement) {
-                    otpBtn.parentElement.classList.remove('hidden');
-                    otpBtn.parentElement.style.display = 'block';
+                    otpInput.parentElement.style.display = 'flex'; // Kutu kılıfını düzelt
                 }
             }
 
+            const otpBtn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('KODU ONAYLA'));
+            if (otpBtn) {
+                otpBtn.classList.remove('hidden');
+                otpBtn.style.display = 'block'; 
+            }
+
         } catch (error) {
-            UI.showToast('Hata! Lütfen konsolu (F12) kontrol edin.', 'error');
+            UI.showToast('Hata! Lütfen konsolu kontrol edin.', 'error');
             if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
         } 
     },
     verifyOtp: async () => {
-        const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]');
-        const otpValue = otpInput ? otpInput.value : '';
+        // Kodu bul
+        const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]') || document.querySelector('input[type="text"][class*="tracking"]');
+        
+        // BOŞLUK TEMİZLEYİCİ: Adam araya boşluk koysa bile biz kodu bitişik ('111111') hale getiriyoruz!
+        const rawValue = otpInput ? otpInput.value : '';
+        const otpValue = rawValue.replace(/\s+/g, ''); 
 
-        if(!otpValue || otpValue.length < 6) { UI.showToast('6 haneli kodu girin.', 'error'); return; }
+        if(!otpValue || otpValue.length < 6) { UI.showToast('6 haneli kodu eksiksiz girin.', 'error'); return; }
 
-        const btn = document.getElementById('btn-verify-otp');
+        // KODU ONAYLA butonunu HTML ID'sine bakmadan bul!
+        const btn = document.getElementById('btn-verify-otp') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('KODU ONAYLA') || b.textContent.includes('DOĞRULANIYOR'));
         if(btn) { btn.innerHTML = 'DOĞRULANIYOR...'; btn.disabled = true; }
 
         try {
             const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
             await gercekSmsDogrula(otpValue, STATE.user.uid, phoneInput.value);
             
-            UI.showToast('Telefon onaylandı!', 'success');
+            UI.showToast('Telefon başarıyla onaylandı!', 'success');
             STATE.updateUser('hasPhone', true);
             UI.closeModal('phone-modal');
             Me26VotingSystem.updateVisibility();
         } catch (error) {
-            UI.showToast('Hatalı kod!', 'error');
-        } finally {
-            if(btn) { btn.innerHTML = 'DOĞRULA'; btn.disabled = false; }
+            UI.showToast('Hatalı kod girdiniz!', 'error');
+            if(btn) { btn.innerHTML = 'KODU ONAYLA'; btn.disabled = false; }
         }
     },
     deleteAccount: () => {}
@@ -129,19 +136,15 @@ export const Me26VotingSystem = {
             });
         }
     },
-
     updateVisibility: function() {
         const lockedState = document.getElementById('locked-state');
         const manifestoGrid = document.getElementById('manifesto-grid');
-
         const navReg = document.getElementById('btn-register-nav');
         const navLog = document.getElementById('btn-login-nav');
         const navProf = document.getElementById('btn-profile-nav');
-        
         const mobReg = document.getElementById('btn-register-mobile');
         const mobLog = document.getElementById('btn-login-mobile');
         const mobProf = document.getElementById('btn-profile-mobile');
-
         const vipSection = document.getElementById('ui-vip-section');
         const citySection = document.getElementById('ui-city-selector-container');
         const phoneBtn = document.getElementById('btn-open-phone-modal');
@@ -224,7 +227,6 @@ export const Me26VotingSystem = {
             if(mobProf) mobProf.classList.add('hidden');
         }
     },
-
     handleVote: async function(btnEl) {
         if (!STATE.isLoggedIn()) { UI.showToast('Oy kullanmak için sisteme giriş yapmalısın!', 'error'); return; }
 
@@ -386,10 +388,19 @@ function şantiyeyiBaslat() {
         finally { if(btn) { btn.innerHTML = originalText; btn.disabled = false; } }
     });
 
+    // BAĞLANTILARI ZORLA KUR
     bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
-    bind('btn-submit-phone', 'click', AUTH.verifyPhone);
-    bind('btn-verify-otp', 'click', AUTH.verifyOtp);
+    
+    document.querySelectorAll('button').forEach(btn => {
+        if (btn.textContent.includes('BAĞLAN') && !btn.textContent.includes('BAĞLANIYOR')) {
+            btn.onclick = AUTH.verifyPhone;
+        }
+        if (btn.textContent.includes('KODU ONAYLA')) {
+            btn.onclick = AUTH.verifyOtp;
+        }
+    });
+
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
     bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
     bind('btn-logout', 'click', AUTH.logout);
