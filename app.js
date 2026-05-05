@@ -239,7 +239,6 @@ export const Me26VotingSystem = {
         else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
         this.animateResults(container.parentElement, choice, currentPower);
         
-        // Bildirim metni
         UI.showToast(`Oyunuz Otonom Ortak Akıl Sandığı'na kaydedildi. (Güç: ${currentPower}x)`, 'success');
     },
     animateResults: function(cardEl, userChoice, votePower) {
@@ -274,7 +273,6 @@ function şantiyeyiBaslat() {
     Me26VotingSystem.init();
     window.addEventListener('auth_changed', () => { Me26VotingSystem.updateVisibility(); });
 
-    // Sayfa ilk yüklendiğinde de fabrika ayarlarına döndür ki bug olmasın
     AUTH.resetPhoneModal(); 
 
     const bind = (id, event, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(event, fn); };
@@ -344,38 +342,67 @@ function şantiyeyiBaslat() {
 
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
     
-    // BUTONLARA KÖPRÜYÜ AT
+    // BUTONLARA KÖPRÜYÜ AT (YENİ DESTEK BUTONU EKLENDİ)
     document.body.addEventListener('click', (e) => {
         const text = (e.target.textContent || '').trim();
         const id = e.target.id;
         
-        // SMS GÖNDER Butonuna tıklanınca
+        // 1. SMS GÖNDER Butonu
         if (id === 'btn-submit-phone' || text === 'SMS GÖNDER') { 
             e.preventDefault(); 
             AUTH.verifyPhone(); 
         }
-        // KODU ONAYLA Butonuna tıklanınca
+        // 2. KODU ONAYLA Butonu
         else if (id === 'btn-verify-otp' || text === 'KODU ONAYLA') { 
             e.preventDefault(); 
             AUTH.verifyOtp(); 
+        }
+
+        // 3. YENİ EKLENEN: DESTEKLE Butonuna Tıklanınca
+        const destekBtn = e.target.closest('.btn-destekle');
+        if (destekBtn) {
+            e.preventDefault();
+            if (!STATE.isLoggedIn()) {
+                UI.showToast('Destek vermek için giriş yapmalısınız.', 'error');
+                return;
+            }
+            
+            const onergeId = destekBtn.getAttribute('data-id');
+            const originalText = destekBtn.innerHTML;
+            destekBtn.innerHTML = '...';
+            destekBtn.disabled = true;
+
+            DB.destekVer(STATE.user.uid, onergeId).then(() => {
+                UI.showToast('Önergeye destek verdiniz!', 'success');
+                // Başarılı olunca listeyi baştan çek ve ekrana yansıt (Sayaç artar)
+                Me26VotingSystem.loadProposals(); 
+            }).catch(err => {
+                if (err.message === 'already_supported') {
+                    UI.showToast('Bu önergeyi zaten desteklediniz.', 'info');
+                    destekBtn.innerHTML = 'DESTEKLENDİ';
+                    destekBtn.classList.remove('bg-slate-800', 'border-slate-500', 'hover:bg-slate-700');
+                    destekBtn.classList.add('bg-green-900/50', 'text-green-400', 'border-green-500');
+                } else {
+                    UI.showToast('Bir hata oluştu.', 'error');
+                    destekBtn.innerHTML = originalText;
+                    destekBtn.disabled = false;
+                }
+            });
         }
     });
 
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
     bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
     
-    // YENİ EKLENEN KISIM: ÖNERGE GÖNDERME BUTONU MOTORU
     bind('btn-submit-proposal', 'click', async () => {
         if (!STATE.isLoggedIn()) { UI.showToast('Önerge vermek için giriş yapmalısınız.', 'error'); return; }
         
-        // Formdaki verileri topla
         const baslik = document.getElementById('input-proposal-title').value.trim();
         const sorun = document.getElementById('input-proposal-problem').value.trim();
         const cozum = document.getElementById('input-proposal-solution').value.trim();
         const hedefKitle = document.getElementById('input-proposal-audience').value;
         const sure = document.getElementById('input-proposal-duration').value;
 
-        // Boş alan kontrolü
         if (!baslik || !sorun || !cozum) {
             UI.showToast('Lütfen Başlık, Sorun ve Çözüm alanlarını eksiksiz doldurun.', 'error');
             return;
@@ -387,11 +414,9 @@ function şantiyeyiBaslat() {
         btn.disabled = true;
 
         try {
-            // Supabase'e gönder
             await DB.onergeGonder(STATE.user.uid, baslik, sorun, cozum, hedefKitle, sure);
-            
-            // Başarılı mesajı ver, formu temizle ve kapat
             UI.showToast('Önergeniz meclise sunuldu! Onay sürecinde...', 'success');
+            
             document.getElementById('input-proposal-title').value = '';
             document.getElementById('input-proposal-problem').value = '';
             document.getElementById('input-proposal-solution').value = '';
