@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Gerçek SMS + Arayüz Perde Geçişi + Manuel Onaylı PDF + Zamanlama
+   Gerçek SMS + Tank Modu Arayüz Geçişi + Zamanlama
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -10,9 +10,6 @@ import { auth } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { googleIleGiris, sistemdenCikis, eDevletBelgesiOku, gercekSmsGonder, gercekSmsDogrula } from './auth.js';
 
-// ==========================================================================
-// 1. KÖPRÜ MOTORLARI
-// ==========================================================================
 export const AUTH = {
     loginWithGoogle: async () => {
         const userData = await googleIleGiris();
@@ -51,13 +48,19 @@ export const AUTH = {
         if(btn) { btn.innerHTML = 'BAĞLANIYOR...'; btn.disabled = true; }
 
         try {
-            // 1. SMS VEYA TEST KODUNU ATEŞLE
+            // MOTOR: SMS VEYA TEST KODUNU ATEŞLE
             await gercekSmsGonder(phoneValue);
             UI.showToast('Kod gönderildi! Lütfen ekrana girin.', 'success');
 
-            // 2. ARAYÜZ PERDESİNİ AÇ (Telefonu gizle, Şifre Kutusunu göster)
-            if (phoneInput) phoneInput.style.display = 'none';
-            if (btn) btn.style.display = 'none';
+            // TANK MODU: ARAYÜZÜ ZORLA DEĞİŞTİR
+            if (phoneInput) {
+                phoneInput.style.display = 'none';
+                phoneInput.classList.add('hidden');
+            }
+            if (btn) {
+                btn.style.display = 'none';
+                btn.classList.add('hidden');
+            }
             
             const otpInput = document.getElementById('input-otp') || document.querySelector('input[placeholder*="Kod"]');
             const otpBtn = document.getElementById('btn-verify-otp');
@@ -65,14 +68,22 @@ export const AUTH = {
             if (otpInput) {
                 otpInput.classList.remove('hidden');
                 otpInput.style.display = 'block'; 
+                if (otpInput.parentElement) {
+                    otpInput.parentElement.classList.remove('hidden');
+                    otpInput.parentElement.style.display = 'block';
+                }
             }
             if (otpBtn) {
                 otpBtn.classList.remove('hidden');
                 otpBtn.style.display = 'block'; 
+                if (otpBtn.parentElement) {
+                    otpBtn.parentElement.classList.remove('hidden');
+                    otpBtn.parentElement.style.display = 'block';
+                }
             }
 
         } catch (error) {
-            UI.showToast('Hata! Numaranın başına +90 ekleyerek deneyin.', 'error');
+            UI.showToast('Hata! Lütfen konsolu (F12) kontrol edin.', 'error');
             if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
         } 
     },
@@ -89,7 +100,7 @@ export const AUTH = {
             const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
             await gercekSmsDogrula(otpValue, STATE.user.uid, phoneInput.value);
             
-            UI.showToast('Telefon onaylandı ve tabloya işlendi!', 'success');
+            UI.showToast('Telefon onaylandı!', 'success');
             STATE.updateUser('hasPhone', true);
             UI.closeModal('phone-modal');
             Me26VotingSystem.updateVisibility();
@@ -102,13 +113,9 @@ export const AUTH = {
     deleteAccount: () => {}
 };
 
-// GLOBAL KAZA SİGORTASI: HTML'den direkt çağrılmalara karşı köprü
 window.loginWithGoogle = AUTH.loginWithGoogle;
 window.AUTH = AUTH;
 
-// ==========================================================================
-// 2. ARAYÜZ VE OYLAMA SİSTEMİ 
-// ==========================================================================
 export const Me26VotingSystem = {
     init: function() {
         document.querySelectorAll('.vote-btn').forEach(btn => {
@@ -288,12 +295,8 @@ export const Me26VotingSystem = {
     }
 };
 
-// ==========================================================================
-// 3. ŞANTİYE BAŞLATMA MOTORU (ZAMANLAMA KRİZİNİ ÇÖZEN YAPI)
-// ==========================================================================
 function şantiyeyiBaslat() {
     Me26VotingSystem.init();
-
     window.addEventListener('auth_changed', () => { Me26VotingSystem.updateVisibility(); });
 
     const bind = (id, event, fn) => {
@@ -301,7 +304,6 @@ function şantiyeyiBaslat() {
         if (el) el.addEventListener(event, fn);
     };
 
-    // BUTONLARA GÜÇ VERİYORUZ
     const loginButtons = [
         'btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile',
         'btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'
@@ -324,13 +326,10 @@ function şantiyeyiBaslat() {
     bind('btn-save-profile-city', 'click', async () => {
         const citySelect = document.getElementById('input-profile-city');
         const selectedCity = citySelect.value;
-        
         if (!selectedCity) { UI.showToast('Lütfen listeden bir tribün seçin.', 'error'); return; }
-
         const btn = document.getElementById('btn-save-profile-city');
         const originalText = btn.innerHTML;
         btn.innerHTML = '...'; btn.disabled = true;
-
         try {
             await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
             STATE.updateUser('city', selectedCity); 
@@ -376,7 +375,6 @@ function şantiyeyiBaslat() {
         const btn = document.getElementById('btn-standart-numara');
         const originalText = btn.innerHTML;
         btn.innerHTML = 'NUMARAN BASILIYOR...'; btn.disabled = true;
-
         try {
             const yeniNo = await DB.standartNumaraAl(STATE.user.uid);
             STATE.updateUser('userNo', yeniNo);
@@ -406,7 +404,6 @@ function şantiyeyiBaslat() {
         newBtn.addEventListener('click', AUTH.verifyPdf);
     }
 
-    // HAFIZA KONTROLÜ
     onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser) {
             const { data: dbUser } = await supabase.from('users').select('*').eq('id', firebaseUser.uid).maybeSingle(); 
@@ -430,10 +427,8 @@ function şantiyeyiBaslat() {
     });
 }
 
-// KRİTİK NOKTA: Zamanlama krizini çözen Ateşleme Mekanizması
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', şantiyeyiBaslat);
 } else {
-    // Sayfa bizden önce yüklendiyse beklemeden direkt ateşle!
     şantiyeyiBaslat();
 }
