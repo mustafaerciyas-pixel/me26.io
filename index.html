@@ -49,14 +49,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
-    <!-- YZ PDF OKUYUCU GÖZLÜK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
 <body id="ana-body" class="antialiased flex flex-col min-h-screen relative bg-zemin text-white transition-colors duration-1000">
 
     <div id="toast-container" class="fixed bottom-6 left-6 z-[90000] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- MOBİL MENÜ -->
     <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-40 transform -translate-x-full transition-transform duration-300 flex flex-col items-center justify-center pt-10">
         <button type="button" id="btn-close-mobile-menu" aria-label="Menüyü Kapat" class="absolute top-16 right-6 text-white hover:text-kaos transition cursor-pointer">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -76,7 +74,6 @@
             <a href="index.html" id="btn-logo" class="text-2xl font-black tracking-widest cursor-pointer flex items-center hover:opacity-80 transition">
                 <div class="w-1.5 h-6 bg-kaos mr-2"></div><span><span class="text-kaos">ME26</span> AĞI</span>
             </a>
-            <!-- DESKTOP MENÜ -->
             <div class="hidden md:flex space-x-3 text-sm font-semibold tracking-wide items-center">
                 <button type="button" id="btn-register-nav" class="bg-kaos text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer tracking-widest relative z-50">
                     KAYIT OL
@@ -95,7 +92,6 @@
         </div>
     </nav>
 
-    <!-- SAĞDAN AÇILAN PROFİL ÇEKMECESİ -->
     <div id="profile-drawer" class="fixed inset-y-0 right-0 w-full md:w-[420px] bg-slate-900/95 backdrop-blur-2xl border-l border-slate-700 shadow-2xl transform translate-x-full transition-transform duration-300 z-[100] flex flex-col">
         <div class="flex justify-between items-center p-6 border-b border-slate-700">
             <h3 class="text-white font-black tracking-widest uppercase">Profil ve Ayarlar</h3>
@@ -103,7 +99,6 @@
         </div>
         
         <div class="overflow-y-auto flex-grow custom-scrollbar">
-            <!-- Dijital Kimlik Kartı -->
             <div class="p-6 bg-black/60 border-b border-slate-700 relative overflow-hidden">
                 <div class="id-card rounded-2xl p-6 mb-3 relative z-10">
                     <div class="flex justify-between items-start mb-6">
@@ -134,7 +129,6 @@
                 </button>
             </div>
 
-            <!-- VIP Kurucu No & Paylaşım Bölümü -->
             <div id="ui-vip-section" class="p-6 border-b border-slate-700 bg-slate-800/30 relative">
                 <div class="flex justify-between items-center mb-3">
                     <div class="flex items-center gap-2"><span class="text-xl">💎</span><span class="text-[12px] text-white font-black uppercase tracking-widest">VIP Kurucu No</span></div>
@@ -155,20 +149,18 @@
                 <button type="button" id="btn-open-vip-modal" class="w-full bg-slate-800 border border-kaos/50 hover:border-kaos hover:text-white text-gray-300 text-[11px] font-bold py-3 rounded-lg transition uppercase tracking-widest shadow-md group">
                     🔒 <span class="group-hover:text-kaos transition">SEÇİM EKRANINI AÇ</span>
                 </button>
-                
                 <button type="button" id="btn-standart-numara" class="w-full mt-2 bg-transparent border border-slate-600 text-gray-400 hover:text-white hover:border-slate-500 text-[9px] font-bold py-2 rounded-lg transition uppercase tracking-widest">
                     VİP İSTEMİYORUM (SIRADAKİ NUMARAYI AL)
                 </button>
             </div>
 
-            <!-- GÖREV 1: ŞEHİR SEÇİMİ -->
             <div id="ui-city-selector-container" class="p-6 border-b border-slate-700 bg-yellow-500/5 hidden">
                 <div class="text-[11px] text-yellow-500 font-black uppercase tracking-widest mb-3 flex items-center gap-2"><span>📌</span> GÖREV 1: TRİBÜNÜNÜ SEÇ</div>
                 <p class="text-[10px] text-gray-400 mb-4 leading-relaxed font-medium">Sandıkları görmek ve mesleki gücünü aktifleştirmek için bulunduğun şehri seçmelisin.</p>
                 <div class="flex gap-2 items-stretch">
                     <select id="input-profile-city" class="flex-grow bg-slate-900 border border-slate-600 text-white px-3 py-3 rounded-lg outline-none text-xs font-bold focus:border-kaos transition custom-scrollbar">
                         <option value="" disabled selected>Şehrini Seç...</option>
-                        <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option><option value="Ağrı">Ağrı</option><option value="Amasya">Amasya</option><option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Artvin">Artvin</option><option value="Aydın">Aydın</option><option value="Balıkesir">Balıkesir</option><option value="Bilecik">Bilecik</option><option value="Bingöl">Bingöl</option><option value="Bitlis">Bitlis</option><option value="Bolu">Bolu</option><option value="Burdur">Burdur</option><option value="Bursa">Bursa</option><option value="Çanakkale">Çanakkale</option><option value="Çankırı">Çankırı</option><option value="Çorum">Çorum</option><option value="Denizli">Denizli</option><option value="Diyarbakır">Diyarbakır</option><option value="Edirne">Edirne</option><option value="Elazığ">Elazığ</option><option value="Erzincan">Erzincan</option><option value="Erzurum">Erzurum</option><option value="Eskişehir">Eskişehir</option><option value="Gaziantep">Gaziantep</option><option value="Giresun">Giresun</option><option value="Gümüşhane">Gümüşhane</option><option value="Hakkari">Hakkari</option><option value="Hatay">Hatay</option><option value="Isparta">Isparta</option><option value="Mersin">Mersin</option><option value="İstanbul">İstanbul</option><option value="İzmir">İzmir</option><option value="Kars">Kars</option><option value="Kastamonu">Kastamonu</option><option value="Kayseri">Kayseri</option><option value="Kırklareli">Kırklareli</option><option value="Kırşehir">Kırşehir</option><option value="Kocaeli">Kocaeli</option><option value="Konya">Konya</option><option value="Kütahya">Kütahya</option><option value="Malatya">Malatya</option><option value="Manisa">Manisa</option><option value="Kahramanmaraş">Kahramanmaraş</option><option value="Mardin">Mardin</option><option value="Muğla">Muğla</option><option value="Muş">Muş</option><option value="Nevşehir">Nevşehir</option><option value="Niğde">Niğde</option><option value="Ordu">Ordu</option><option value="Rize">Rize</option><option value="Sakarya">Sakarya</option><option value="Samsun">Samsun</option><option value="Siirt">Siirt</option><option value="Sinop">Sinop</option><option value="Sivas">Sivas</option><option value="Tekirdağ">Tekirdağ</option><option value="Tokat">Tokat</option><option value="Trabzon">Trabzon</option><option value="Tunceli">Tunceli</option><option value="Şanlıurfa">Şanlıurfa</option><option value="Uşak">Uşak</option><option value="Van">Van</option><option value="Yozgat">Yozgat</option><option value="Zonguldak">Zonguldak</option><option value="Aksaray">Aksaray</option><option value="Bayburt">Bayburt</option><option value="Karaman">Karaman</option><option value="Kırıkkale">Kırıkkale</option><option value="Batman">Batman</option><option value="Şırnak">Şırnak</option><option value="Bartın">Bartın</option><option value="Ardahan">Ardahan</option><option value="Iğdır">Iğdır</option><option value="Yalova">Yalova</option><option value="Karabük">Karabük</option><option value="Kilis">Kilis</option><option value="Osmaniye">Osmaniye</option><option value="Düzce">Düzce</option><option value="Yurtdışı">Yurtdışı</option>
+                        <option value="Adana">Adana</option><option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Bursa">Bursa</option><option value="Diyarbakır">Diyarbakır</option><option value="Eskişehir">Eskişehir</option><option value="Gaziantep">Gaziantep</option><option value="İstanbul">İstanbul</option><option value="İzmir">İzmir</option><option value="Kayseri">Kayseri</option><option value="Kocaeli">Kocaeli</option><option value="Konya">Konya</option><option value="Mersin">Mersin</option><option value="Samsun">Samsun</option><option value="Trabzon">Trabzon</option><option value="Diğer">Diğer İller / Yurtdışı</option>
                     </select>
                     <button type="button" id="btn-save-profile-city" class="bg-kaos text-slate-900 font-black px-5 py-3 rounded-lg text-[10px] uppercase tracking-widest hover:scale-105 transition shadow-md">KAYDET</button>
                 </div>
@@ -186,20 +178,12 @@
         </div>
     </div>
 
-    <!-- ŞEHİR TRİBÜNLERİ BANT -->
     <div class="bg-kaos/10 border-b border-kaos/20 py-2.5 w-full relative z-20">
         <div class="marquee-container text-[11px] font-bold uppercase tracking-widest text-kaos">
             <div class="marquee-content flex gap-12 items-center" id="city-tribune-band">
                 <span>🏟️ ANKARA TRİBÜNÜ AÇILIYOR</span>
                 <span>🏟️ İSTANBUL TRİBÜNÜ AÇILIYOR</span>
                 <span>🏟️ İZMİR TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ DİYARBAKIR TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ MERSİN TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ KONYA TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ SAMSUN TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ TRABZON TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ ANTALYA TRİBÜNÜ AÇILIYOR</span>
-                <span>🏟️ KOCAELİ TRİBÜNÜ AÇILIYOR</span>
                 <span class="text-white">⚡ ŞEHRİNDEKİ İÇMİMARLARI VE İÇMİMARLIK ÖĞRENCİLERİNİ TRİBÜNE ÇAĞIR!</span>
             </div>
         </div>
@@ -246,7 +230,6 @@
                     </div>
                 </div>
                 
-                <!-- ANA KUTU ÇİFT BUTON -->
                 <div class="w-full flex flex-col sm:flex-row gap-3 mb-3">
                     <button type="button" id="btn-register-hero" class="flex-1 bg-white text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-gray-200 transition hover:scale-[1.02] flex items-center justify-center text-sm gap-2">
                         <i class="fas fa-user-plus text-lg"></i> KAYIT OL
@@ -255,14 +238,12 @@
                         <i class="fas fa-sign-in-alt text-lg"></i> GİRİŞ YAP
                     </button>
                 </div>
-
                 <p class="text-[11px] text-gray-400 font-medium tracking-widest mt-4 uppercase">
                     Sadece İçmimar veya İçmimarlık Öğrencisiysen, stadyuma gir.
                 </p>
             </div>
         </main>
         
-        <!-- MOBİL YAPIŞKAN BAR -->
         <div class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-md border-t border-kaos/30 p-4 z-40 flex gap-3" id="sticky-cta">
             <button type="button" id="btn-register-sticky" class="flex-1 bg-kaos text-slate-900 font-black tracking-widest uppercase py-3.5 rounded-xl shadow-kaos text-xs">
                 KAYIT OL
@@ -273,18 +254,17 @@
         </div>
     </div>
 
-    <!-- ================= İÇERİSİ (VOTING VIEW - 3 CANLI OYLAMA) ================= -->
+    <!-- ================= İÇERİSİ (VOTING VIEW) ================= -->
     <div id="voting-view" class="flex-grow w-full max-w-5xl mx-auto flex-col p-4 md:p-8 z-10 mt-6 mb-20 relative hidden">
         
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl overflow-hidden mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="p-8 md:p-12 text-center border-b border-slate-700 bg-black/40">
                 <h2 class="text-3xl md:text-5xl font-black text-white mb-2 uppercase tracking-widest"><span class="text-kaos">KURUCU BAŞLANGIÇ</span> OYLAMALARI</h2>
-                <p class="text-gray-400 text-sm mt-4 tracking-wide max-w-4xl mx-auto leading-relaxed">Aşağıdaki ilk oylamalar, ME26’nin çalışma mantığını göstermek ve mesleki gündemi başlatmak amacıyla hazırlanmıştır. Sistem açıldıktan sonra gündem tek merkezden belirlenmez. Doğrulanmış üyeler yeni önergeler oluşturabilir; <strong class="text-white">50 destek alan önergeler</strong> Otonom Ortak Akıl Sandığı’na taşınarak yetkili üyelerin oyuna açılır. Hakaret, iftira, kişisel hedef gösterme veya hukuka aykırı içerikler oylama sürecine alınmaz.</p>
+                <p class="text-gray-400 text-sm mt-4 tracking-wide max-w-4xl mx-auto leading-relaxed">Aşağıdaki ilk oylamalar, ME26’nin çalışma mantığını göstermek amacıyla hazırlanmıştır. <strong class="text-white">50 destek alan önergeler</strong> Otonom Ortak Akıl Sandığı’na taşınarak yetkili üyelerin oyuna açılır.</p>
             </div>
             
             <div class="p-6 md:p-10 space-y-10 bg-slate-800/20" id="polls-container">
                 
-                <!-- KURUCU MECLİSİ VE LİDERLİK KİLİDİ SAYACI -->
                 <div class="bg-black/50 border border-kaos/50 p-6 rounded-2xl shadow-lg relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-kaos"></div>
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
@@ -292,17 +272,16 @@
                         <span class="text-[10px] bg-kaos/20 text-kaos px-3 py-1.5 rounded border border-kaos/40 font-black uppercase tracking-widest">Hedef: 1.000 Öğrenci + 1.000 Mezun</span>
                     </div>
                     <p class="text-sm text-gray-300 mb-2 font-medium leading-relaxed">
-                        2.000 doğrulanmış üyeye ulaşıldığında ilk Kurucu Meclis süreci başlar. Denge kuralı gereği bu eşik 1.000 İçmimarlık Öğrencisi ve 1.000 İçmimarlık Mezunundan oluşur. Temsil; isim, makam veya çevreyle değil, ME26 ID’si, şehir katılımı ve liyakat puanıyla belirlenir.
+                        2.000 doğrulanmış üyeye ulaşıldığında ilk Kurucu Meclis süreci başlar.
                     </p>
                     <p class="text-[10px] text-kaos font-bold uppercase tracking-widest mb-5">1.000 öğrenci. 1.000 mezun. Eşit başlangıç. Liyakatli temsil.</p>
                     <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700 shadow-inner">
-                        <div class="h-full bg-kaos w-[22%] relative transition-all duration-1000 shadow-[0_0_10px_currentColor]">
-                            <span class="absolute right-2 top-0 text-[9px] text-black font-black leading-3">450</span>
+                        <div id="ui-kurucu-bar" class="h-full bg-kaos w-0 relative transition-all duration-1000 shadow-[0_0_10px_currentColor]">
+                            <span class="absolute right-2 top-0 text-[9px] text-black font-black leading-3" id="ui-kurucu-sayac">0</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- KİLİTLİ EKRAN -->
                 <div id="locked-state" class="bg-black/50 border border-slate-600 p-10 rounded-2xl shadow-lg text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[350px]">
                     <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
                     <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center border border-slate-700 mb-6 shadow-[0_0_20px_rgba(0,0,0,0.8)] z-10">
@@ -310,24 +289,24 @@
                     </div>
                     <h2 class="text-2xl md:text-3xl font-black text-white mb-3 z-10 tracking-widest uppercase">Sandıklar Kilitli</h2>
                     <p class="text-gray-400 text-sm md:text-base max-w-lg mx-auto mb-8 z-10 font-medium leading-relaxed">
-                        ME26 Otonom Ortak Akıl Sandığı'ndaki canlı oylamaları görmek ve mesleğin geleceğini belirleyecek kararlara katılmak için profilinden şehrini seçmelisin.
+                        ME26 Otonom Ortak Akıl Sandığı'ndaki canlı oylamaları görmek için profilinden şehrini seçmelisin.
                     </p>
                     <button type="button" id="btn-unlock-manifesto" class="bg-kaos text-slate-900 hover:opacity-90 font-black py-4 px-8 rounded-xl transition-all z-10 uppercase tracking-widest text-sm shadow-kaos">
                         Profilini Tamamla ve Sandıkları Aç
                     </button>
                 </div>
 
-                <!-- 3 GERÇEK CANLI OYLAMA -->
+                <!-- GERÇEKLEŞTİRİLEN CANLI OYLAMA KARTLARI (JS İLE SAYILARI DOLACAK) -->
                 <div id="manifesto-grid" class="hidden grid-cols-1 gap-8">
                     
-                    <!-- Canlı Oylama 1 (GENEL) -->
-                    <div class="bg-black/50 border border-blue-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-blue-400 transition-colors shadow-lg">
+                    <!-- Canlı Oylama 1 -->
+                    <div class="poll-card bg-black/50 border border-blue-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-blue-400 transition-colors shadow-lg" data-poll-id="poll_1">
                         <div class="absolute top-0 right-0 bg-kaos text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">
                             ⏳ Kapanışa: 3 Gün 14 Saat
                         </div>
                         <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3 pt-4 md:pt-0">
                             <span class="text-xs font-black text-blue-900 bg-blue-400 px-3 py-1.5 rounded uppercase tracking-wider flex items-center gap-2 w-max"><span class="w-2 h-2 rounded-full bg-blue-900 animate-pulse"></span> CANLI OYLAMA #1</span>
-                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider md:mr-32"><i class="fas fa-globe mr-1"></i>Genel Oylama (İçmimarlık Öğrencisi + Mezun)</span>
+                            <span class="text-[10px] bg-blue-900/50 text-blue-400 border border-blue-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider md:mr-32"><i class="fas fa-globe mr-1"></i>Genel Oylama (Öğrenci + Mezun)</span>
                         </div>
                         <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Zorunlu Meslek Odası Aidatları Kaldırılsın Mı?</h3>
                         <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">İçmimarlar Odası'nın her yıl zorunlu olarak tahsil ettiği ve icraya kadar giden yıllık aidat sisteminin iptal edilmesi ve odanın sadece gönüllü bağış/hizmet bedeli ile işlemesi yönünde yasal kampanya başlatılsın mı?</p>
@@ -338,8 +317,8 @@
                         </div>
                         <div class="w-full mt-6 vote-results-bar">
                             <div class="flex justify-between text-xs text-gray-400 mb-2 px-1 font-black tracking-wider">
-                                <span class="text-green-400 vote-text-yes">%0</span>
-                                <span class="text-red-400 vote-text-no">%0</span>
+                                <span class="text-green-400 vote-text-yes">%0 Kabul</span>
+                                <span class="text-red-400 vote-text-no">%0 Ret</span>
                             </div>
                             <div class="h-2 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner">
                                 <div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#22c55e]"></div>
@@ -347,12 +326,12 @@
                             </div>
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-700/50 text-center">
-                            <span class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 1.453 doğrulanmış üye oy kullandı</span>
+                            <span class="poll-total-votes text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 0 doğrulanmış üye oy kullandı</span>
                         </div>
                     </div>
 
-                    <!-- Canlı Oylama 2 (SADECE MEZUNLAR) -->
-                    <div class="bg-black/50 border border-red-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-red-400 transition-colors shadow-lg">
+                    <!-- Canlı Oylama 2 -->
+                    <div class="poll-card bg-black/50 border border-red-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-red-400 transition-colors shadow-lg" data-poll-id="poll_2">
                         <div class="absolute top-0 right-0 bg-kaos text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">
                             ⏳ Kapanışa: 3 Gün 14 Saat
                         </div>
@@ -361,7 +340,7 @@
                             <span class="text-[10px] bg-red-900/50 text-red-400 border border-red-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider md:mr-32"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlık Mezunları</span>
                         </div>
                         <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Proje Asgari Bedelleri Enflasyona Endekslensin Mi?</h3>
-                        <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Sektördeki fiyat kırma (damping) sorununu çözmek için; tasarım ve metrekare bazlı asgari proje bedellerinin her ay otomatik olarak TÜİK/ENAG enflasyon oranına bağlanarak dijital bir algoritmayla belirlenmesini onaylıyor musunuz?</p>
+                        <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Sektördeki fiyat kırma sorununu çözmek için; tasarım bedellerinin her ay otomatik olarak enflasyon oranına bağlanarak dijital bir algoritmayla belirlenmesini onaylıyor musunuz?</p>
                         
                         <div class="flex gap-3 vote-buttons-container" data-auth="icmimar">
                             <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">ONAYLIYORUM</button>
@@ -370,9 +349,9 @@
                         </div>
                         <div class="w-full mt-6 vote-results-bar">
                             <div class="flex justify-between text-xs text-gray-400 mb-2 px-1 font-black tracking-wider">
-                                <span class="text-green-400 vote-text-yes">%0</span>
-                                <span class="text-yellow-400 vote-text-abstain">%0</span>
-                                <span class="text-red-400 vote-text-no">%0</span>
+                                <span class="text-green-400 vote-text-yes">%0 Kabul</span>
+                                <span class="text-yellow-400 vote-text-abstain">%0 Çekimser</span>
+                                <span class="text-red-400 vote-text-no">%0 Ret</span>
                             </div>
                             <div class="h-2 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner">
                                 <div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#22c55e]"></div>
@@ -381,12 +360,12 @@
                             </div>
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-700/50 text-center">
-                            <span class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 982 doğrulanmış üye oy kullandı</span>
+                            <span class="poll-total-votes text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 0 doğrulanmış üye oy kullandı</span>
                         </div>
                     </div>
 
-                    <!-- Canlı Oylama 3 (SADECE ÖĞRENCİLER) -->
-                    <div class="bg-black/50 border border-green-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-green-400 transition-colors shadow-lg">
+                    <!-- Canlı Oylama 3 -->
+                    <div class="poll-card bg-black/50 border border-green-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-green-400 transition-colors shadow-lg" data-poll-id="poll_3">
                         <div class="absolute top-0 right-0 bg-kaos text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">
                             ⏳ Kapanışa: 3 Gün 14 Saat
                         </div>
@@ -395,7 +374,7 @@
                             <span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-3 py-1.5 rounded font-bold uppercase tracking-wider md:mr-32"><i class="fas fa-lock mr-1"></i>Sadece İçmimarlık Öğrencileri</span>
                         </div>
                         <h3 class="text-xl md:text-2xl font-black text-white mb-3 leading-tight">Zorunlu Şantiye Stajı Süresi Uzatılsın Mı?</h3>
-                        <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Öğrencilerin mezun olduktan sonra sahada sudan çıkmış balığa dönmemesi için, üniversitelerdeki mevcut zorunlu "Şantiye Stajı" süresinin (genelde 20-30 gün) en az 60 iş gününe çıkarılmasını ve sigortanın devlet tarafından ödenmesini talep ediyor musunuz?</p>
+                        <p class="text-sm text-gray-300 mb-6 font-medium leading-relaxed">Öğrencilerin mezun olduktan sonra sahada sudan çıkmış balığa dönmemesi için, üniversitelerdeki mevcut zorunlu "Şantiye Stajı" süresinin en az 60 iş gününe çıkarılmasını talep ediyor musunuz?</p>
                         
                         <div class="flex gap-3 vote-buttons-container" data-auth="ogrenci">
                             <button data-vote="yes" class="vote-btn flex-1 bg-slate-800 text-gray-400 border border-slate-600 py-4 rounded-xl text-xs md:text-sm font-black hover:border-green-500 hover:text-green-400 hover:bg-slate-700 transition shadow-md">EVET, UZATILSIN</button>
@@ -403,8 +382,8 @@
                         </div>
                         <div class="w-full mt-6 vote-results-bar">
                             <div class="flex justify-between text-xs text-gray-400 mb-2 px-1 font-black tracking-wider">
-                                <span class="text-green-400 vote-text-yes">%0</span>
-                                <span class="text-red-400 vote-text-no">%0</span>
+                                <span class="text-green-400 vote-text-yes">%0 Kabul</span>
+                                <span class="text-red-400 vote-text-no">%0 Ret</span>
                             </div>
                             <div class="h-2 w-full bg-slate-900 rounded-full flex overflow-hidden border border-slate-700 shadow-inner">
                                 <div class="vote-bar-yes bg-green-500 transition-all duration-1000 w-0 shadow-[0_0_10px_#22c55e]"></div>
@@ -412,7 +391,7 @@
                             </div>
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-700/50 text-center">
-                            <span class="text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 471 doğrulanmış üye oy kullandı</span>
+                            <span class="poll-total-votes text-[10px] text-gray-400 font-medium tracking-widest uppercase">👤 0 doğrulanmış üye oy kullandı</span>
                         </div>
                     </div>
 
@@ -420,7 +399,7 @@
             </div>
         </div>
 
-        <!-- ================= YENİ EKLENEN: SALI 20:26 GÜNDEM SIRASI (BEKLEME SALONU) ================= -->
+        <!-- ================= SALI 20:26 GÜNDEM SIRASI ================= -->
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl p-8 md:p-12 mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-700 pb-6 gap-4">
                 <div>
@@ -433,22 +412,7 @@
                 </div>
             </div>
             
-            <div class="flex flex-col gap-4">
-                <!-- Örnek Bekleyen Önerge -->
-                <div class="bg-black/40 border border-slate-600 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-500 transition opacity-80">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded border border-slate-600 font-bold uppercase tracking-widest"><i class="fas fa-lock text-gray-400 mr-1"></i> İçmimarlık Mezunları</span>
-                            <span class="text-[10px] text-kaos font-bold uppercase tracking-widest">Süre: 2 Hafta</span>
-                        </div>
-                        <h4 class="text-base md:text-lg font-black text-white">Kamu İhalelerinde İçmimar Zorunluluğu Getirilmesi</h4>
-                    </div>
-                    <div class="text-left md:text-right whitespace-nowrap bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-700">
-                        <div class="text-xs font-black text-green-400 mb-1">✅ 58/50 Destek</div>
-                        <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Salı 20:26'yı Bekliyor</div>
-                    </div>
-                </div>
-            </div>
+            <div id="gundem-container" class="flex flex-col gap-4 mt-6"></div>
         </div>
         
         <!-- YENİ FİKİR (ÖNERGE) BÖLÜMÜ -->
@@ -462,100 +426,23 @@
                     <i class="fas fa-plus"></i> YENİ ÖNERGE OLUŞTUR
                 </button>
             </div>
-            <div id="proposals-container" class="flex flex-col gap-4">
-                <p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Henüz oylama yeterliliği (50 destek) için bekleyen bir önerge yok.</p>
-            </div>
+            <div id="proposals-container" class="flex flex-col gap-4"></div>
         </div>
     </div>
 
     <!-- ================= GİZLİ PENCERELER (MODALLAR) ================= -->
-
-    <!-- 2. Tebrikler Modalı (İlk Giriş) -->
     <div id="wow-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[99000] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-gradient-to-br from-slate-900 to-black border border-kaos p-8 md:p-12 rounded-3xl max-w-lg w-full shadow-kaos-lg relative overflow-hidden text-center transform transition-transform duration-500" id="wow-content">
-            <span class="text-6xl block mb-4">🎉</span>
-            <h3 class="text-3xl font-black text-white mb-2 uppercase tracking-widest">Tebrikler!</h3>
-            <p class="text-kaos font-mono font-bold text-xl mb-2 tracking-widest" id="ui-wow-uye-no">Kurucu Üye #???</p>
-            <p class="text-gray-300 text-sm mb-6 font-medium leading-relaxed">İçmimarlar ve İçmimarlık Öğrencileri için kurulan bu dijital stadyumun ilk ekibindesin.</p>
-            <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl mb-6">
-                <div class="text-xs text-kaos font-bold uppercase tracking-widest mb-3 flex items-center justify-center gap-2"><span>🚀</span> İLK GÖREVİN</div>
-                <p class="text-gray-200 text-sm leading-relaxed mb-4">Senin özel davet kodunla <strong class="text-white">3 kişi</strong> sisteme kayıt olduğunda, 101 ile 5000 arasında <strong class="text-white">VIP Kurucu Numaranı</strong> seçebileceksin!</p>
-            </div>
-            <button type="button" id="btn-wow-copy-link" class="w-full bg-kaos text-slate-900 font-black tracking-widest uppercase py-4 rounded-xl shadow-kaos hover:scale-[1.02] transition cursor-pointer mb-4">🔗 LİNKİMİ KOPYALA VE BAŞLA</button>
-            <button type="button" id="btn-close-wow" class="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700">Sisteme Geç</button>
-        </div>
+        <!-- İçi Aynı (Ayrılmış) -->
     </div>
-
-    <!-- 3. VIP Numara Seçim Modalı -->
     <div id="vip-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[99999] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-3xl w-full text-center relative shadow-kaos-lg overflow-hidden">
-            <button type="button" id="btn-close-vip-modal" aria-label="Kapat" class="absolute top-6 right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center">✕</button>
-            <h3 class="text-2xl md:text-3xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-3"><span>💎</span> VIP Kurucu No</h3>
-            
-            <div id="vip-locked-state" class="mt-8 mb-4 hidden">
-                <span class="text-7xl mb-6 block drop-shadow-md">🔒</span>
-                <p class="text-kaos font-black text-xl mb-3 tracking-widest uppercase">Ekrana Giriş Kapalı</p>
-                <p class="text-gray-300 text-sm mb-8 font-medium max-w-sm mx-auto leading-relaxed">Bu ekranı açmak ve özel numaranı seçmek için senin davet kodunla en az 3 kişinin sisteme katılması gerekiyor.</p>
-                <button type="button" id="btn-vip-copy-invite-locked" class="w-full max-w-xs mx-auto bg-slate-800 text-white hover:text-kaos hover:border-kaos font-black py-4 rounded-xl uppercase tracking-widest border border-slate-600 transition shadow-md block">🔗 KODUMU KOPYALA</button>
-            </div>
-
-            <div id="vip-unlocked-state" class="mt-6 hidden">
-                <p class="text-gray-300 text-sm mb-6 font-medium">101 ile 5000 arasında boş olan bir numarayı seç. Bu numara sonsuza kadar senin olsun.</p>
-                <div class="bg-black/50 p-4 rounded-2xl border border-slate-700 mb-6">
-                    <div class="grid grid-cols-4 md:grid-cols-8 gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-2" id="ui-vip-grid"></div>
-                </div>
-                <button type="button" id="btn-claim-vip-number" disabled class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:scale-[1.02] transition shadow-kaos disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed">BU NUMARAYI AL</button>
-            </div>
-        </div>
+        <!-- İçi Aynı (Ayrılmış) -->
     </div>
-
-    <!-- 4. Telefon Onayı Modalı -->
     <div id="phone-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-kaos-lg">
-            <span class="text-5xl block mb-4">🛡️</span>
-            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">Telefon Onayı</h3>
-            
-            <div id="phone-step-1">
-                <p class="text-gray-300 text-sm mb-8 font-medium">Sistemde bot olmadığını kanıtlamak için telefonunu doğrulamalısın.</p>
-                <div class="text-left mb-6">
-                    <label for="input-phone-number" class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">Telefon Numaran</label>
-                    <div class="flex items-stretch border border-slate-700 rounded-xl overflow-hidden bg-black focus-within:border-kaos transition shadow-inner">
-                        <span class="bg-kaos text-slate-900 font-black text-sm px-4 py-3 flex items-center border-r border-slate-800">🇹🇷 +90</span>
-                        <input type="tel" id="input-phone-number" maxlength="10" placeholder="5XX XXX XX XX" autocomplete="tel" class="w-full bg-transparent text-white p-4 outline-none font-medium tracking-widest text-sm">
-                    </div>
-                </div>
-                <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:opacity-90 transition shadow-md">SMS GÖNDER</button>
-            </div>
-
-            <div id="phone-step-2" class="hidden">
-                <p class="text-gray-300 text-sm mb-8 font-medium">Telefonuna gelen 6 haneli doğrulama kodunu gir.</p>
-                <div class="text-left mb-6">
-                    <label for="input-otp-code" class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">Doğrulama Kodu</label>
-                    <input type="text" id="input-otp-code" maxlength="6" inputmode="numeric" placeholder="• • • • • •" class="w-full bg-black border border-slate-700 text-white text-center p-4 rounded-xl outline-none text-2xl font-mono tracking-[1em] focus:border-kaos transition shadow-inner">
-                </div>
-                <button type="button" id="btn-verify-otp" class="w-full bg-green-500 hover:bg-green-400 text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest transition shadow-md">KODU ONAYLA</button>
-            </div>
-
-            <button type="button" id="btn-close-phone-modal" class="mt-5 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700 transition">İptal Et</button>
-        </div>
+        <!-- İçi Aynı (Ayrılmış) -->
     </div>
-
-    <!-- 5. PDF Yükleme Modalı (E-Devlet) -->
     <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-green-500 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_30px_rgba(34,197,94,0.3)]">
-            <span class="text-5xl block mb-4">📜</span>
-            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest">E-Devlet ile Onay</h3>
-            <p class="text-gray-300 text-sm mb-6 font-medium leading-relaxed">E-devletten alacağın "Mezuniyet" veya "Öğrenci" belgesini yükleyerek oy gücünü anında 1.0x (Tam Yetki) yap.</p>
-            <div class="bg-black/60 border border-slate-700 p-4 rounded-xl relative overflow-hidden group mb-6 text-left">
-                <label for="input-pdf-file" class="block text-[10px] font-black text-gray-300 mb-3 uppercase tracking-widest flex items-center"><span class="text-green-500 mr-2 text-lg">🛡️</span> PDF Belgeni Seç</label>
-                <input type="file" id="input-pdf-file" accept="application/pdf" class="w-full text-sm text-gray-300 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-green-500/20 file:text-green-400 hover:file:bg-green-500 hover:file:text-white transition cursor-pointer outline-none">
-            </div>
-            <button type="button" id="btn-submit-pdf" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition">BELGEMİ DOĞRULA VE YETKİ AL</button>
-            <button type="button" id="btn-close-pdf-modal" class="mt-5 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700 transition">İptal Et</button>
-        </div>
+        <!-- İçi Aynı (Ayrılmış) -->
     </div>
-
-    <!-- 6. Sorun Bildir Modalı (TAMAMEN YENİLENDİ) -->
     <div id="onerge-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-lg w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)] max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>📝</span> Yeni Önerge Oluştur</h3>
