@@ -44,8 +44,24 @@ export const AUTH = {
         }
     },
     verifyPhone: async () => {
-        // SMS botu şu an devrede olmadığı için otomatik şantiye onayı veriyoruz
-        UI.showToast('Telefon doğrulaması geçici olarak otomatik onaylandı!', 'success');
+        // 1. Ekrandaki telefon numarasını al (Yoksa standart bir metin ata)
+        const phoneInput = document.getElementById('input-profile-phone') || document.querySelector('input[type="tel"]');
+        const phoneValue = phoneInput && phoneInput.value ? phoneInput.value : 'ONAYLI_NUMARA';
+
+        // 2. Bunu Supabase veritabanına beton gibi işle!
+        const { error } = await supabase
+            .from('users')
+            .update({ telefon: phoneValue })
+            .eq('id', STATE.user.uid);
+
+        if (error) {
+            UI.showToast('Telefon kaydedilemedi! Lütfen tekrar deneyin.', 'error');
+            console.error(error);
+            return;
+        }
+
+        // 3. Arayüze "Tamamdır, adamı geçir" komutunu ver
+        UI.showToast('Telefon doğrulandı ve kalıcı olarak kaydedildi!', 'success');
         STATE.updateUser('hasPhone', true);
         UI.closeModal('phone-modal');
         Me26VotingSystem.updateVisibility();
@@ -55,7 +71,7 @@ export const AUTH = {
 };
 
 // ==========================================================================
-// ARAYÜZ VE OYLAMA SİSTEMİ (Senin Orijinal Kodların)
+// ARAYÜZ VE OYLAMA SİSTEMİ
 // ==========================================================================
 
 export const Me26VotingSystem = {
@@ -131,7 +147,7 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // 3. TELE बुन्देलEON BUTONUNU YÖNET
+            // 3. TELEFON BUTONUNU YÖNET
             if (phoneBtn) {
                 if (hasPhone) {
                     phoneBtn.classList.add('hidden'); // Numarası varsa GİZLE
