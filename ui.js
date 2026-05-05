@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   Kademeli Profilleme (Progressive Onboarding) Uyumlu Sürüm
+   Kademeli Profilleme ve Otonom Sandık Uyumlu Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -115,7 +115,7 @@ export const UI = {
         setEl('ui-vote-power', user.votePower || '0.0x');
 
         // =========================================================
-        // KİMLİK NUMARASI VE ROZET MOTORU (DÜZELTİLEN KISIM)
+        // KİMLİK NUMARASI VE ROZET MOTORU
         // =========================================================
         const idBadge = document.getElementById('ui-role-badge');
         const userIdEl = document.getElementById('ui-user-id');
@@ -302,5 +302,56 @@ export const UI = {
             claimBtn.dataset.selectedNumber = num;
             claimBtn.textContent = num + ' NUMARAYI KİLİTLE';
         }
+    },
+
+    // =========================================================
+    // YENİ: VERİTABANINDAN GELEN ÖNERGELERİ EKRANA ÇİZEN MOTOR
+    // =========================================================
+    renderProposals: (onergeler) => {
+        const container = document.getElementById('proposals-container');
+        if (!container) return;
+
+        if (!onergeler || onergeler.length === 0) {
+            container.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Henüz oylama yeterliliği (50 destek) için bekleyen bir önerge yok.</p>';
+            return;
+        }
+
+        container.innerHTML = ''; // Eski mesajı sil
+        
+        onergeler.forEach(onerge => {
+            // Hedef kitle etiketini belirle
+            let kitleMetni = 'Herkes (Öğrenci + Mezun)';
+            let kitleIkon = 'fa-globe';
+            if (onerge.hedef_kitle === 'icmimar') { kitleMetni = 'Sadece İçmimarlık Mezunları'; kitleIkon = 'fa-lock'; }
+            if (onerge.hedef_kitle === 'ogrenci') { kitleMetni = 'Sadece İçmimarlık Öğrencileri'; kitleIkon = 'fa-lock'; }
+
+            // % Hesaplama (Görsellik İçin - 50 destekte dolar)
+            const yuzde = Math.min((onerge.destek_sayisi / 50) * 100, 100);
+
+            const div = document.createElement('div');
+            div.className = 'bg-black/40 border border-slate-600 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-500 transition relative overflow-hidden';
+            
+            div.innerHTML = `
+                <!-- Arka plan dolum barı -->
+                <div class="absolute left-0 bottom-0 h-1 bg-kaos transition-all duration-1000 shadow-[0_0_10px_currentColor]" style="width: ${yuzde}%"></div>
+                
+                <div class="flex-grow z-10 w-full md:w-auto">
+                    <div class="flex items-center gap-3 mb-2 flex-wrap">
+                        <span class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded border border-slate-600 font-bold uppercase tracking-widest whitespace-nowrap"><i class="fas ${kitleIkon} text-gray-400 mr-1"></i> ${kitleMetni}</span>
+                        <span class="text-[10px] text-kaos font-bold uppercase tracking-widest whitespace-nowrap">Süre: ${onerge.sure} Hafta</span>
+                    </div>
+                    <h4 class="text-base md:text-lg font-black text-white mb-2 leading-tight">${onerge.baslik}</h4>
+                    <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3 md:mb-0">${onerge.sorun}</p>
+                </div>
+                
+                <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-2">
+                    <button class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-500 px-5 py-3 rounded-xl text-white font-black text-xs transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
+                        <i class="fas fa-arrow-up text-kaos"></i> DESTEKLE (${onerge.destek_sayisi})
+                    </button>
+                    <div class="text-[9px] text-gray-500 font-bold tracking-widest uppercase text-center md:text-right w-full">Hedef: 50</div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
     }
 };
