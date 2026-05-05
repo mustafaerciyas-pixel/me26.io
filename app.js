@@ -131,7 +131,7 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // 3. TELEFON BUTONUNU YÖNET
+            // 3. TELE बुन्देलEON BUTONUNU YÖNET
             if (phoneBtn) {
                 if (hasPhone) {
                     phoneBtn.classList.add('hidden'); // Numarası varsa GİZLE
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('users')
                 .select('*')
                 .eq('id', firebaseUser.uid)
-                .single();
+                .maybeSingle(); // <--- İŞTE PANİK HATASINI ÇÖZEN KİLİT NOKTA (.maybeSingle)
 
             if (dbUser) {
                 // 2. Veritabanındaki jilet gibi veriyi arayüzün (app.js) anlayacağı dile çevir
