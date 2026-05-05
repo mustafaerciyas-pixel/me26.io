@@ -120,7 +120,6 @@ export const UI = {
         const idBadge = document.getElementById('ui-role-badge');
         const userIdEl = document.getElementById('ui-user-id');
         
-        // Eğer kullanıcının bir numarası varsa (VIP veya Standart fark etmez)
         if (user.userNo && user.userNo !== 'BEKLEYEN') {
             if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
             
@@ -212,6 +211,7 @@ export const UI = {
         if (user.authStage === 'document_pending') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
+            
             if (btnPhone && btnPhone.parentElement) {
                 insertPhoneSuccessAlert(btnPhone);
                 insertPendingAlert(btnPhone);
@@ -220,6 +220,7 @@ export const UI = {
         else if (user.authStage === 'pdf_verified') {
             if (btnPhone) btnPhone.classList.add('hidden');
             if (btnPdf) btnPdf.classList.add('hidden');
+            
             if (btnPhone && btnPhone.parentElement) {
                 insertPhoneSuccessAlert(btnPhone);
                 insertPdfSuccessAlert(btnPhone); 
@@ -238,6 +239,9 @@ export const UI = {
         }
     },
 
+    // =========================================================
+    // VIP KURUCU NUMARA MOTORU
+    // =========================================================
     updateVipModalState: () => {
         const lockedState = document.getElementById('vip-locked-state');
         const unlockedState = document.getElementById('vip-unlocked-state');
@@ -291,10 +295,9 @@ export const UI = {
     },
 
     // =========================================================
-    // İKİLİ EKRAN MOTORU (MECLİS VE GÜNDEM SIRASI)
+    // EKSİK OLAN KISIM: GERÇEK VERİLERLE ÖNERGE LİSTELEME MOTORU
     // =========================================================
     renderProposals: (onergeler) => {
-        // İki farklı kasayı bul (Meclis ve Gündem Sırası)
         const meclisContainer = document.getElementById('proposals-container');
         const gundemContainer = document.getElementById('gundem-container'); 
 
@@ -316,17 +319,14 @@ export const UI = {
             if (onerge.hedef_kitle === 'icmimar') { kitleMetni = 'Sadece İçmimarlık Mezunları'; kitleIkon = 'fa-lock'; }
             if (onerge.hedef_kitle === 'ogrenci') { kitleMetni = 'Sadece İçmimarlık Öğrencileri'; kitleIkon = 'fa-lock'; }
 
+            // GERÇEK SAYILAR VERİTABANINDAN ÇEKİLİYOR
             const destekSayisi = onerge.destek_sayisi || 0;
             const isKotaDoldu = destekSayisi >= 50;
 
             if (isKotaDoldu) {
-                // ====================================================
-                // KOTASI DOLANLAR GÜNDEM SIRASINA GİDER (YUKARI LOCA)
-                // ====================================================
                 gundemBos = false;
                 if (gundemContainer) {
                     const div = document.createElement('div');
-                    // Yukarıdaki tasarım: Altında mavi çizgi yok, Destekle butonu yok, sadece yeşil şerit var
                     div.className = 'bg-black/40 border border-slate-600 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden shadow-lg';
                     
                     div.innerHTML = `
@@ -350,9 +350,6 @@ export const UI = {
                     gundemContainer.appendChild(div);
                 }
             } else {
-                // ====================================================
-                // 50'NİN ALTINDAKİLER MECLİSTE KALIR (AŞAĞI LOCA)
-                // ====================================================
                 meclisBos = false;
                 if (meclisContainer) {
                     const yuzde = Math.min((destekSayisi / 50) * 100, 100);
