@@ -7,6 +7,7 @@ import { supabase } from './supabase.js';
 import { signInWithPopup, GoogleAuthProvider, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 let confirmationResult = null;
+let me26Recaptcha = null; // MOTORU SADECE 1 KERE KURMAK İÇİN HAFIZA
 
 export async function googleIleGiris() {
     try {
@@ -31,39 +32,22 @@ export async function sistemdenCikis() {
 
 export async function gercekSmsGonder(phoneNumber) {
     try {
-        // 1. Arayüzdeki butonu rahat bırakıp, sadece reCAPTCHA için görünmez bir oda (div) inşa ediyoruz
-        if (!document.getElementById('gizli-recaptcha-odasi')) {
-            const div = document.createElement('div');
-            div.id = 'gizli-recaptcha-odasi';
-            document.body.appendChild(div);
-        }
-
-        // 2. Motoru senin butonuna değil, bu görünmez odaya kuruyoruz
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'gizli-recaptcha-odasi', { 
+        // 1. ZARİF MOTOR KURULUMU: Yıkıp dökmek yok. Eğer motor yoksa 1 kez kuruyoruz.
+        if (!me26Recaptcha) {
+            me26Recaptcha = new RecaptchaVerifier(auth, 'btn-submit-phone', { 
                 'size': 'invisible' 
             });
         }
 
         let formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+90' + phoneNumber.replace(/^0/, '');
         
-        // 3. SMS'i ateşle
-        confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, window.recaptchaVerifier);
+        // 2. SMS'İ VEYA TEST KODUNU ATEŞLE
+        confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, me26Recaptcha);
         return true;
 
     } catch (error) {
         console.error("SMS Hatası Detayı:", error);
-        
-        // Eğer en ufak bir hata olursa, görünmez odayı ve motoru komple yık!
-        // Böylece ikinci tıklamada "Zaten kurulu" hatası veremeyecek, tertemiz sıfırdan kuracak.
-        if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.clear();
-            window.recaptchaVerifier = null;
-        }
-        const oda = document.getElementById('gizli-recaptcha-odasi');
-        if (oda) oda.remove();
-        
-        throw error;
+        throw error; // Hata olsa bile motoru silmiyoruz ki null hatası vermesin!
     }
 }
 
