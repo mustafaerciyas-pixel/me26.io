@@ -38,6 +38,9 @@ export const Me26VotingSystem = {
         const mobLog = document.getElementById('btn-login-mobile');
         const mobProf = document.getElementById('btn-profile-mobile');
 
+        // YENİ: VIP KUTUSUNU YAKALA
+        const vipSection = document.getElementById('ui-vip-section');
+
         if (STATE.isLoggedIn()) {
             const isCitySelected = STATE.user.city && STATE.user.city !== 'Seçilmedi' && STATE.user.city !== 'Belirsiz';
 
@@ -52,6 +55,15 @@ export const Me26VotingSystem = {
                 if(manifestoGrid) {
                     manifestoGrid.classList.add('hidden');
                     manifestoGrid.classList.remove('grid');
+                }
+            }
+
+            // NUMARASI OLAN ADAMDA VIP KUTUSUNU TAMAMEN YOK ET!
+            if (vipSection) {
+                if (STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN') {
+                    vipSection.style.display = 'none'; // Numara alındıysa gizle
+                } else {
+                    vipSection.style.display = 'block'; // Bekliyorsa göster
                 }
             }
             
@@ -165,7 +177,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     Me26VotingSystem.init();
 
-    // SİNYAL ALICISI EKLENDİ (Kısa Devreyi Çözen Sistem)
     window.addEventListener('auth_changed', () => {
         Me26VotingSystem.updateVisibility();
     });
@@ -257,9 +268,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
     bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
 
-    // VIP İSTEMİYORUM (OTOMATİK NUMARA) BUTONU KABLOSU
+    // VIP İSTEMİYORUM BUTONU
     bind('btn-standart-numara', 'click', async () => {
-        if (!confirm('VIP numara seçme hakkından vazgeçip, 100\'den başlayan sıradaki ilk boş numarayı otomatik almak istediğine emin misin?')) return;
+        if (!confirm('VIP numara seçme hakkından vazgeçip, sıradaki ilk boş numarayı otomatik almak istediğine emin misin?')) return;
         
         const btn = document.getElementById('btn-standart-numara');
         const originalText = btn.innerHTML;
@@ -272,6 +283,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             STATE.updateUser('isVip', false);
             
             UI.renderProfile(); 
+            Me26VotingSystem.updateVisibility(); // VIP KUTUSUNU ANINDA GİZLER!
+            
             UI.showToast(`Harika! Numaran atandı: TR-IA-${yeniNo}`, 'success');
             
         } catch(e) {
