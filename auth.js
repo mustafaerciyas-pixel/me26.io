@@ -59,7 +59,6 @@ export const AUTH = {
     
     handleGoogleSuccess: async (user) => {
         try {
-            // Arka planda sessizce taze veri çeker
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || null;
 
@@ -79,7 +78,6 @@ export const AUTH = {
 
             let authStage = 'registered';
             
-            // SUPABASE'DEN GELEN GÜNCEL VERİLER (Yönetici ne yaptıysa o yansır)
             const guc = parseFloat(dbUser.oy_gucu || 0);
             
             if (guc >= 1.0) authStage = 'pdf_verified';
@@ -98,13 +96,13 @@ export const AUTH = {
                 votePower: guc.toFixed(1) + 'x',
                 inviteCount: dbUser.basarili_davet_sayisi || 0,
                 isVip: !!dbUser.vip_kurucu_no,
-                davetKodu: dbUser.kendi_davet_kodu
+                davetKodu: dbUser.kendi_davet_kodu,
+                hasPhone: !!dbUser.telefon // KESİN ÇÖZÜM KABLOSU BURADA
             });
             
             UI.renderProfile(); 
             UI.showView('voting');
             
-            // Eğer ilk girişse WOW modalını aç
             if (dbUser.basarili_davet_sayisi === 0 && guc === 0 && (!dbUser.telefon)) {
                 const wowNoEl = getEl('ui-wow-uye-no');
                 if (wowNoEl) wowNoEl.textContent = 'Aday Kurucu';
@@ -131,8 +129,6 @@ export const AUTH = {
                 
                 const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
                     unsubscribe(); 
-                    // DİKKAT: Buradaki "&& !STATE.isLoggedIn()" TEMBELLİĞİ SİLİNDİ!
-                    // Artık her sayfa yenilemesinde Supabase'e gidip güncel Onay ve Oy Gücünü zorla çekecek.
                     if (user) {
                         await AUTH.handleGoogleSuccess(user);
                         resolve(true);
@@ -168,7 +164,7 @@ export const AUTH = {
                 const result = await signInWithPopup(firebaseAuth, googleProvider);
                 await AUTH.handleGoogleSuccess(result.user);
             } catch (error) {
-                console.error('Google Giriş Hatası:', error);
+                console.error('Google Giri Hatası:', error);
                 if (error.code !== 'auth/popup-closed-by-user') {
                     UI.showToast('Google ile giriş başarısız oldu.', 'error');
                 }
@@ -267,10 +263,12 @@ export const AUTH = {
             await DB.telefonuOnayla(STATE.user.uid, `+90${phoneVal}`);
 
             STATE.updateUser('authStage', 'phone_verified');
+            STATE.updateUser('hasPhone', true); // NUMARASI VAR MÜHRÜ
 
             UI.closeModal('phone-modal');
             UI.renderProfile();
             resetPhoneModal();
+            window.dispatchEvent(new Event('auth_changed')); // SİNYALİ ATEŞLE GİZLESİN
 
             UI.showToast('Telefon doğrulandı (Bot Kontrolü). Şimdi PDF yükleme sırası!', 'success');
         } catch (error) {
@@ -409,6 +407,7 @@ export const AUTH = {
             
             UI.closeModal('pdf-modal');
             UI.renderProfile();
+            window.dispatchEvent(new Event('auth_changed')); // Sinyal gönder
             fileInput.value = '';
 
         } catch (error) {
