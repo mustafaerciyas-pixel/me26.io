@@ -78,61 +78,53 @@ export async function eDevletBelgesiOku(file, userUid) {
                 }
                 const cleanText = fullText.replace(/\s+/g, ' ');
 
-                // Tüm verilerdeki " | " işaretine karşı evrensel ayırıcı (Separator)
-                const sep = "[\\s|:.-]*";
+                // =================================================================
+                // YENİ NESİL, SIFIR HATA PARSER (DURAKLAMA MANTIĞI)
+                // =================================================================
+                // Etiketlerin arasına ne girerse girsin, bir sonraki etiketi görene kadar 
+                // olan metni alır ve gereksiz sembolleri temizler.
                 
-                const tcMatch = cleanText.match(new RegExp(`(?:T\\.C\\.|Kimlik)[\\s\\S]*?(?:Numarası|No)${sep}(\\d{11})`, 'i')) || cleanText.match(/(\d{11})/);
+                const duraklar = ["Baba", "Anne", "Doğum", "Kimlik", "T\\.C\\.", "Program", "Fakülte", "Adı Soyadı", "Uyruğu", "Diploma", "Mezuniyet", "Durum", "YOK"];
+                
+                function extractSafe(text, label) {
+                    const stopRegex = duraklar.join('|');
+                    const r = new RegExp(label + "\\s*[|:.-]*\\s*([^]+?)(?=" + stopRegex + "|$)", "i");
+                    const m = text.match(r);
+                    if (m) {
+                        let val = m[1].replace(/^[|:.\\-\\s]+/, '').replace(/[|:.\\-\\s]+$/, '').trim();
+                        if (val.length > 0 && val.length < 50) return val;
+                    }
+                    return 'Bulunamadı';
+                }
+
+                const tcMatch = cleanText.match(/(\d{11})/);
                 const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
 
-                const regexDuvar = "(?=Baba|Anne|Doğum|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu|Diploma|Mezuniyet|Durum|$)";
-                let ad_soyad = (cleanText.match(new RegExp(`Adı\\s*Soyadı${sep}([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1] || 'Bulunamadı';
-                ad_soyad = ad_soyad.replace(/[\/\|:-]/g, '').trim();
+                const ad_soyad = extractSafe(cleanText, "Adı\\s*Soyadı");
+                let baba_adi = extractSafe(cleanText, "Baba\\s*Ad[ıi]");
+                let anne_adi = extractSafe(cleanText, "Anne\\s*Ad[ıi]");
 
-                // =================================================================
-                // YENİ: ZIRHLI ANNE/BABA PARSER'I
-                // E-Devlet isimleri BÜYÜK HARF kullanır. Sadece büyük harfleri yakalayıp
-                // diğer etiketlerin (Örn: "Doğum Tarihi") karışmasını engelliyoruz.
-                // =================================================================
-                let baba_adi = 'Bulunamadı';
-                let anne_adi = 'Bulunamadı';
-
-                // 1. Kademe Zırh: Küçük/Büyük harf duyarlılığı ile sadece İSİMLERİ (Büyük Harfliler) yakala
-                const babaMatch = cleanText.match(/[Bb]aba\s*[Aa]d[ıi][\s|:.-]*([A-ZÇĞİÖŞÜÂÎÛ]+(?:\s+[A-ZÇĞİÖŞÜÂÎÛ]+)*)/);
-                const anneMatch = cleanText.match(/[Aa]nne\s*[Aa]d[ıi][\s|:.-]*([A-ZÇĞİÖŞÜÂÎÛ]+(?:\s+[A-ZÇĞİÖŞÜÂÎÛ]+)*)/);
-
-                if (babaMatch) baba_adi = babaMatch[1].trim();
-                if (anneMatch) anne_adi = anneMatch[1].trim();
-
-                // 2. Kademe Kurtarma Motoru: PDF okuyucu "GÜLER COŞKUN" diye isimleri ezer veya birleştirirse
-                if (baba_adi === 'Bulunamadı' || anne_adi === 'Bulunamadı' || baba_adi === anne_adi || anne_adi.includes(baba_adi) || baba_adi.includes(anne_adi)) {
-                    
-                    const blokMatch = cleanText.match(/(?:Baba|Anne)[\s\S]*?(?=Doğum|Kimlik|Program|Fakülte)/i);
-                    if (blokMatch) {
-                        let blok = blokMatch[0];
-                        const bIdx = blok.toLowerCase().indexOf('baba');
-                        const aIdx = blok.toLowerCase().indexOf('anne');
-                        const babaOnce = bIdx < aIdx;
-
-                        // Etiketleri silip sadece BÜYÜK HARFLİ isimleri havuzda topluyoruz
-                        blok = blok.replace(/Baba\s*Ad[ıi]/gi, '').replace(/Anne\s*Ad[ıi]/gi, '').replace(/[:|/-]/g, ' ').trim();
-                        const isimler = blok.match(/[A-ZÇĞİÖŞÜÂÎÛ]{2,}/g) || [];
-
-                        if (isimler.length === 2) {
-                            baba_adi = babaOnce ? isimler[0] : isimler[1];
-                            anne_adi = babaOnce ? isimler[1] : isimler[0];
-                        } else if (isimler.length > 2) {
-                            const orta = Math.ceil(isimler.length / 2);
-                            baba_adi = babaOnce ? isimler.slice(0, orta).join(' ') : isimler.slice(orta).join(' ');
-                            anne_adi = babaOnce ? isimler.slice(orta).join(' ') : isimler.slice(0, orta).join(' ');
+                // Eğer e-devlet isimleri yan yana tabloda verdiyse (Baba / Anne Adı : COŞKUN / GÜLER)
+                if (baba_adi === 'Bulunamadı' && anne_adi === 'Bulunamadı') {
+                    const ortak = cleanText.match(/(?:Baba[\s/]*Anne|Anne[\s/]*Baba)\s*Ad[ıi]\s*[:|.-]*\s*([^]+?)(?=Doğum|Kimlik|Program|Fakülte|Uyruğu)/i);
+                    if (ortak) {
+                        let val = ortak[1].trim();
+                        let parts = val.split('/');
+                        if(parts.length >= 2) {
+                            if (ortak[0].toLowerCase().startsWith('anne')) {
+                                anne_adi = parts[0].replace(/[:|.-]/g, '').trim();
+                                baba_adi = parts[1].replace(/[:|.-]/g, '').trim();
+                            } else {
+                                baba_adi = parts[0].replace(/[:|.-]/g, '').trim();
+                                anne_adi = parts[1].replace(/[:|.-]/g, '').trim();
+                            }
                         }
                     }
                 }
 
-                // Hata payı sıfırlayıcı
-                if (baba_adi.length > 25) baba_adi = baba_adi.split(/\s+/)[0];
-                if (anne_adi.length > 25) anne_adi = anne_adi.split(/\s+/)[0];
                 // =================================================================
-
+                
+                const sep = "[\\s|:.-]*";
                 const dogum_tarihi = (cleanText.match(new RegExp(`Doğum\\s*Tarihi${sep}(\\d{2}\\.\\d{2}\\.\\d{4})`, 'i')) || [])[1] || 'Bulunamadı';
                 
                 const uni_program = (cleanText.match(new RegExp(`Program${sep}([^\\n\\r]+?)(?=Diploma No|Kayıt Tarihi|Genel Not)`, 'i')) || [])[1] || '';
