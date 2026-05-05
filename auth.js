@@ -82,23 +82,67 @@ export async function eDevletBelgesiOku(file, userUid) {
                 const tcMatch = cleanText.match(/(?:T\.C\.|Kimlik)[\s\S]*?(?:Numarası|No)\s*[:\s]*(\d{11})/i) || cleanText.match(/(\d{11})/);
                 const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
 
-                const regexDuvar = "(?=Baba Adı|Anne Adı|Doğum Tarihi|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu)";
+                const regexDuvar = "(?=Baba Adı|Anne Adı|Doğum Tarihi|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu|Anne|Baba)";
                 const ad_soyad = (cleanText.match(new RegExp(`Adı\\s*Soyadı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
                 
                 let baba_adi = 'Bulunamadı';
                 let anne_adi = 'Bulunamadı';
 
-                // YENİ: E-Devlet özel tablo formatı yakalayıcısı ("COŞKUN / GÜLER" gibi aradaki slash'ı bulur)
-                const birlesikAnneBaba = cleanText.match(/(?:Baba|Anne)[^\/]*\/[^\/]*(?:Adı)[\s:]*([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)\s*\/\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]+?)(?=Doğum|Kimlik|T\.C\.|Program|Fakülte|Uyruğu)/i);
+                // =================================================================
+                // YENİ: ZIRHLI ANNE/BABA PARSER'I (Sırayı ve birleşik yazımları tanır)
+                // =================================================================
                 
-                if (birlesikAnneBaba) {
-                    baba_adi = birlesikAnneBaba[1].trim();
-                    anne_adi = birlesikAnneBaba[2].trim();
+                // Belgedeki Anne/Baba satırını komple yakala (Sıra "Anne / Baba" mı yoksa "Baba / Anne" mi kontrol eder)
+                const anneBabaSatiri = cleanText.match(/(Anne[\s\/]*Baba|Baba[\s\/]*Anne)\s*Ad[ıi][\s:]*(.*?)(?=Doğum|Kimlik|T\.C\.|Uyruğu|Program|Kayıt|Fakülte|TC|Cinsiyeti)/i);
+
+                if (anneBabaSatiri && anneBabaSatiri[2]) {
+                    const sira = anneBabaSatiri[1].toLowerCase(); 
+                    const isAnneFirst = sira.startsWith('anne'); // Önce anne adı mı yazıyor?
+                    let icerik = anneBabaSatiri[2].trim();
+
+                    if (icerik.includes('/')) {
+                        // Eğer arada slash kalmışsa temiz temiz böleriz
+                        const parcalar = icerik.split('/');
+                        const isim1 = parcalar[0].replace(/[:]/g, '').trim();
+                        const isim2 = parcalar[1].replace(/[:]/g, '').trim();
+
+                        if (isAnneFirst) {
+                            anne_adi = isim1; baba_adi = isim2;
+                        } else {
+                            baba_adi = isim1; anne_adi = isim2;
+                        }
+                    } else {
+                        // PDF slash'ı yutup isimleri yapıştırmışsa (Örn: GÜLER COŞKUN)
+                        const kelimeler = icerik.split(/\s+/);
+                        if (kelimeler.length >= 2) {
+                            if (isAnneFirst) {
+                                baba_adi = kelimeler.pop().trim(); // Son kelime babadır
+                                anne_adi = kelimeler.join(' ').trim(); // Kalan baş taraf annedir
+                            } else {
+                                anne_adi = kelimeler.pop().trim(); // Son kelime annedir
+                                baba_adi = kelimeler.join(' ').trim(); // Kalan baş taraf babadır
+                            }
+                        } else {
+                            // Tek bir kelime okuyabildiyse
+                            if (isAnneFirst) anne_adi = icerik;
+                            else baba_adi = icerik;
+                        }
+                    }
                 } else {
-                    // Normal ayrı yazılmışsa klasik yöntemle bul
-                    baba_adi = (cleanText.match(new RegExp(`Baba\\s*Adı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
-                    anne_adi = (cleanText.match(new RegExp(`Anne\\s*Adı\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1]?.trim() || 'Bulunamadı';
+                    // Eğer tamamen ayrı ayrı satırlardaysa
+                    const regexDuvarAna = "(?=Doğum|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu|Anne|Baba|Adı|Soyadı)";
+                    const ayriBaba = cleanText.match(new RegExp(`Baba\\s*Ad[ıi]\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvarAna, 'i'));
+                    const ayriAnne = cleanText.match(new RegExp(`Anne\\s*Ad[ıi]\\s*[:\\s]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvarAna, 'i'));
+                    
+                    if (ayriBaba) baba_adi = ayriBaba[1].replace(/[\/:-]/g, '').trim();
+                    if (ayriAnne) anne_adi = ayriAnne[1].replace(/[\/:-]/g, '').trim();
                 }
+
+                // Emniyet Kemeri: Eğer bir isim 25 karakterden uzunsa okuma hatasıdır, sadece ilk kelimesini al.
+                if (baba_adi.length > 25) baba_adi = baba_adi.split(/\s+/)[0];
+                if (anne_adi.length > 25) anne_adi = anne_adi.split(/\s+/)[0];
+                
+                // =================================================================
 
                 const dogum_tarihi = (cleanText.match(/Doğum\s*Tarihi\s*[:\s]*(\d{2}\.\d{2}\.\d{4})/i) || [])[1] || 'Bulunamadı';
                 
