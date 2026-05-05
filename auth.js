@@ -29,29 +29,40 @@ export async function sistemdenCikis() {
     try { await signOut(auth); window.location.reload(); } catch (error) { console.error(error); }
 }
 
-export async function gercekSmsGonder(phoneNumber, buttonId) {
+export async function gercekSmsGonder(phoneNumber) {
     try {
-        // Eski takılı kalan reCAPTCHA varsa önce onu söküp atıyoruz (Kilitlenmeyi çözer)
-        if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.clear();
-            window.recaptchaVerifier = null;
+        // 1. Arayüzdeki butonu rahat bırakıp, sadece reCAPTCHA için görünmez bir oda (div) inşa ediyoruz
+        if (!document.getElementById('gizli-recaptcha-odasi')) {
+            const div = document.createElement('div');
+            div.id = 'gizli-recaptcha-odasi';
+            document.body.appendChild(div);
         }
 
-        // Tertemiz sıfırdan kuruyoruz
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, buttonId, { 
-            'size': 'invisible' 
-        });
+        // 2. Motoru senin butonuna değil, bu görünmez odaya kuruyoruz
+        if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'gizli-recaptcha-odasi', { 
+                'size': 'invisible' 
+            });
+        }
 
         let formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+90' + phoneNumber.replace(/^0/, '');
+        
+        // 3. SMS'i ateşle
         confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, window.recaptchaVerifier);
         return true;
+
     } catch (error) {
         console.error("SMS Hatası Detayı:", error);
-        // Hata verirse bir sonraki denemede donmasın diye motoru temizle
+        
+        // Eğer en ufak bir hata olursa, görünmez odayı ve motoru komple yık!
+        // Böylece ikinci tıklamada "Zaten kurulu" hatası veremeyecek, tertemiz sıfırdan kuracak.
         if (window.recaptchaVerifier) {
             window.recaptchaVerifier.clear();
             window.recaptchaVerifier = null;
         }
+        const oda = document.getElementById('gizli-recaptcha-odasi');
+        if (oda) oda.remove();
+        
         throw error;
     }
 }
