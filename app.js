@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   Sıkı Hunileme (Strict Funneling) ve Sıralı Görev Mimarisi
+   Sıkı Hunileme (Strict Funneling) ve Çökme Korumalı Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -73,20 +73,15 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // =====================================================================
-            // 2. VIP KUTUSUNU YÖNET (ASKERİ HUNİLEME KURALI BURADA)
-            // =====================================================================
+            // 2. VIP KUTUSUNU YÖNET (ASKERİ HUNİLEME)
             if (vipSection) {
                 if (hasAssignedId) {
-                    // Zaten numarasını aldıysa kalabalık yapmasın, GİZLE.
                     vipSection.classList.add('hidden'); 
                 } 
                 else if (authStage !== 'document_pending' && authStage !== 'pdf_verified') {
-                    // ADAM HENÜZ E-DEVLET BELGESİNİ YÜKLEMEDİYSE KESİNLİKLE GİZLE!
                     vipSection.classList.add('hidden');
                 } 
                 else {
-                    // Belgesini yükleyip "Onay Bekliyor"a düştüyse veya "Onaylandıysa" GÖSTER.
                     vipSection.classList.remove('hidden');
                 }
             }
@@ -103,10 +98,8 @@ export const Me26VotingSystem = {
             // 4. PDF (E-DEVLET) BUTONUNU YÖNET
             if (pdfBtn) {
                 if (!hasPhone) {
-                    // TELEFON YOKSA GİZLE
                     pdfBtn.classList.add('hidden');
                 } else {
-                    // TELEFON VARSA DURUMA BAK
                     if (authStage === 'pdf_verified' || votePower >= 1.0) {
                         pdfBtn.classList.add('hidden'); 
                     } else if (authStage === 'document_pending') {
@@ -232,158 +225,166 @@ export const Me26VotingSystem = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    
-    Me26VotingSystem.init();
+    try {
+        Me26VotingSystem.init();
 
-    window.addEventListener('auth_changed', () => {
-        Me26VotingSystem.updateVisibility();
-    });
+        window.addEventListener('auth_changed', () => {
+            Me26VotingSystem.updateVisibility();
+        });
 
-    const bind = (id, event, fn) => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener(event, fn);
-    };
-
-    const loginButtons = [
-        'btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile',
-        'btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'
-    ];
-    
-    loginButtons.forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = AUTH.loginWithGoogle;
-    });
-
-    ['btn-profile-nav', 'btn-profile-mobile'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = () => {
-            UI.toggleMobileMenu(false);
-            UI.toggleProfileDrawer(true);
+        const bind = (id, event, fn) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener(event, fn);
+            }
         };
-    });
 
-    bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
-    bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
-    bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
-    
-    bind('btn-save-profile-city', 'click', async () => {
-        const citySelect = document.getElementById('input-profile-city');
-        const selectedCity = citySelect.value;
+        // GİRİŞ BUTONLARINI ZIRHLI BAĞLAMA (addEventListener kullanıldı)
+        const loginButtons = [
+            'btn-register-hero', 'btn-register-sticky', 'btn-register-nav', 'btn-register-mobile',
+            'btn-login-hero', 'btn-login-sticky', 'btn-login-nav', 'btn-login-mobile'
+        ];
         
-        if (!selectedCity) {
-            UI.showToast('Lütfen listeden bir tribün (şehir) seçin.', 'error');
-            return;
-        }
+        loginButtons.forEach(id => {
+            bind(id, 'click', (e) => {
+                e.preventDefault();
+                AUTH.loginWithGoogle();
+            });
+        });
 
-        const btn = document.getElementById('btn-save-profile-city');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '...';
-        btn.disabled = true;
+        ['btn-profile-nav', 'btn-profile-mobile'].forEach(id => {
+            bind(id, 'click', (e) => {
+                e.preventDefault();
+                UI.toggleMobileMenu(false);
+                UI.toggleProfileDrawer(true);
+            });
+        });
 
-        try {
-            await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
-            STATE.updateUser('city', selectedCity); 
-            UI.renderProfile(); 
-            Me26VotingSystem.updateVisibility(); 
-            
-            UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
-        } catch (error) {
-            UI.showToast('Şehir kaydedilemedi. Bağlantınızı kontrol edin.', 'error');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    });
-
-    bind('btn-close-wow', 'click', () => {
-        UI.closeModal('wow-modal');
-        UI.showView('voting');
-        UI.toggleProfileDrawer(true); 
-    });
-
-    const copyLinkToClipboard = async () => {
-        const inviteLinkEl = document.getElementById('ui-invite-link');
-        const link = inviteLinkEl ? inviteLinkEl.textContent : 'https://me26.org';
-        try {
-            await navigator.clipboard.writeText(link);
-            UI.showToast('Davet linkin kopyalandı! Instagramda paylaş.', 'success');
-        } catch(e) {
-            UI.showToast('Link kopyalanamadı, manuel seç.', 'error');
-        }
-    };
-    
-    bind('btn-copy-invite', 'click', copyLinkToClipboard);
-    bind('ui-invite-link', 'click', copyLinkToClipboard);
-    bind('btn-wow-copy-link', 'click', copyLinkToClipboard);
-    bind('btn-vip-copy-invite-locked', 'click', copyLinkToClipboard);
-
-    bind('btn-share-id-card', 'click', copyLinkToClipboard); 
-    bind('btn-whatsapp-share', 'click', () => {
-        const link = document.getElementById('ui-invite-link')?.textContent || 'https://me26.org';
-        window.open(`https://wa.me/?text=Sadece İçmimarların Girebildiği Dijital Stadyuma Katıl: ${link}`, '_blank');
-    });
-
-    bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
-    bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
-
-    bind('btn-standart-numara', 'click', async () => {
-        if (!confirm('VIP numara seçme hakkından vazgeçip, sıradaki ilk boş numarayı otomatik almak istediğine emin misin?')) return;
+        bind('btn-open-mobile-menu', 'click', () => UI.toggleMobileMenu(true));
+        bind('btn-close-mobile-menu', 'click', () => UI.toggleMobileMenu(false));
+        bind('btn-close-profile-drawer', 'click', () => UI.toggleProfileDrawer(false));
         
-        const btn = document.getElementById('btn-standart-numara');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = 'NUMARAN BASILIYOR...';
-        btn.disabled = true;
+        bind('btn-save-profile-city', 'click', async () => {
+            const citySelect = document.getElementById('input-profile-city');
+            const selectedCity = citySelect.value;
+            
+            if (!selectedCity) {
+                UI.showToast('Lütfen listeden bir tribün (şehir) seçin.', 'error');
+                return;
+            }
 
-        try {
-            const yeniNo = await DB.standartNumaraAl(STATE.user.uid);
-            STATE.updateUser('userNo', yeniNo);
-            STATE.updateUser('isVip', false);
-            
-            UI.renderProfile(); 
-            Me26VotingSystem.updateVisibility(); 
-            
-            UI.showToast(`Harika! Numaran atandı: TR-IA-${yeniNo}`, 'success');
-            
-        } catch(e) {
-            UI.showToast('Numara atanırken bir hata oluştu.', 'error');
-        } finally {
-            if(btn) {
+            const btn = document.getElementById('btn-save-profile-city');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '...';
+            btn.disabled = true;
+
+            try {
+                await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
+                STATE.updateUser('city', selectedCity); 
+                UI.renderProfile(); 
+                Me26VotingSystem.updateVisibility(); 
+                
+                UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
+            } catch (error) {
+                UI.showToast('Şehir kaydedilemedi. Bağlantınızı kontrol edin.', 'error');
+            } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
-        }
-    });
+        });
 
-    bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
-    bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
-    bind('btn-submit-phone', 'click', AUTH.verifyPhone);
-    bind('btn-verify-otp', 'click', AUTH.verifyOtp);
-
-    bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
-    bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
-
-    bind('btn-logout', 'click', AUTH.logout);
-    bind('btn-delete-account', 'click', AUTH.deleteAccount);
-
-    bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
-    bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
-    
-    const btnSubmitPdf = document.getElementById('btn-submit-pdf');
-    if (btnSubmitPdf) {
-        const newBtn = btnSubmitPdf.cloneNode(true);
-        btnSubmitPdf.parentNode.replaceChild(newBtn, btnSubmitPdf);
-        newBtn.addEventListener('click', AUTH.verifyPdf);
-    }
-
-    const isRedirect = await AUTH.checkRedirect();
-    
-    if (!isRedirect) {
-        if (STATE.isLoggedIn()) {
+        bind('btn-close-wow', 'click', () => {
+            UI.closeModal('wow-modal');
             UI.showView('voting');
-        } else {
-            UI.showView('landing');
+            UI.toggleProfileDrawer(true); 
+        });
+
+        const copyLinkToClipboard = async () => {
+            const inviteLinkEl = document.getElementById('ui-invite-link');
+            const link = inviteLinkEl ? inviteLinkEl.textContent : 'https://me26.org';
+            try {
+                await navigator.clipboard.writeText(link);
+                UI.showToast('Davet linkin kopyalandı! Instagramda paylaş.', 'success');
+            } catch(e) {
+                UI.showToast('Link kopyalanamadı, manuel seç.', 'error');
+            }
+        };
+        
+        bind('btn-copy-invite', 'click', copyLinkToClipboard);
+        bind('ui-invite-link', 'click', copyLinkToClipboard);
+        bind('btn-wow-copy-link', 'click', copyLinkToClipboard);
+        bind('btn-vip-copy-invite-locked', 'click', copyLinkToClipboard);
+
+        bind('btn-share-id-card', 'click', copyLinkToClipboard); 
+        bind('btn-whatsapp-share', 'click', () => {
+            const link = document.getElementById('ui-invite-link')?.textContent || 'https://me26.org';
+            window.open(`https://wa.me/?text=Sadece İçmimarların Girebildiği Dijital Stadyuma Katıl: ${link}`, '_blank');
+        });
+
+        bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
+        bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
+
+        bind('btn-standart-numara', 'click', async () => {
+            if (!confirm('VIP numara seçme hakkından vazgeçip, sıradaki ilk boş numarayı otomatik almak istediğine emin misin?')) return;
+            
+            const btn = document.getElementById('btn-standart-numara');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'NUMARAN BASILIYOR...';
+            btn.disabled = true;
+
+            try {
+                const yeniNo = await DB.standartNumaraAl(STATE.user.uid);
+                STATE.updateUser('userNo', yeniNo);
+                STATE.updateUser('isVip', false);
+                
+                UI.renderProfile(); 
+                Me26VotingSystem.updateVisibility(); 
+                
+                UI.showToast(`Harika! Numaran atandı: TR-IA-${yeniNo}`, 'success');
+                
+            } catch(e) {
+                UI.showToast('Numara atanırken bir hata oluştu.', 'error');
+            } finally {
+                if(btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        });
+
+        bind('btn-open-phone-modal', 'click', () => UI.openModal('phone-modal'));
+        bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
+        bind('btn-submit-phone', 'click', AUTH.verifyPhone);
+        bind('btn-verify-otp', 'click', AUTH.verifyOtp);
+
+        bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
+        bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
+
+        bind('btn-logout', 'click', AUTH.logout);
+        bind('btn-delete-account', 'click', AUTH.deleteAccount);
+
+        bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
+        bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
+        
+        const btnSubmitPdf = document.getElementById('btn-submit-pdf');
+        if (btnSubmitPdf) {
+            const newBtn = btnSubmitPdf.cloneNode(true);
+            btnSubmitPdf.parentNode.replaceChild(newBtn, btnSubmitPdf);
+            newBtn.addEventListener('click', AUTH.verifyPdf);
         }
-        UI.renderProfile();
-        Me26VotingSystem.updateVisibility();
+
+        const isRedirect = await AUTH.checkRedirect();
+        
+        if (!isRedirect) {
+            if (STATE.isLoggedIn()) {
+                UI.showView('voting');
+            } else {
+                UI.showView('landing');
+            }
+            UI.renderProfile();
+            Me26VotingSystem.updateVisibility();
+        }
+    } catch (error) {
+        console.error("🔥 Arayüz Motoru Başlatılamadı:", error);
     }
 });
