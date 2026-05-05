@@ -316,7 +316,7 @@ export const UI = {
             return;
         }
 
-        container.innerHTML = ''; // Eski mesajı sil
+        container.innerHTML = ''; 
         
         onergeler.forEach(onerge => {
             // Hedef kitle etiketini belirle
@@ -331,6 +331,7 @@ export const UI = {
             const div = document.createElement('div');
             div.className = 'bg-black/40 border border-slate-600 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-500 transition relative overflow-hidden';
             
+            // YENİ: data-id="${onerge.id}" ve class="btn-destekle" EKLENDİ
             div.innerHTML = `
                 <!-- Arka plan dolum barı -->
                 <div class="absolute left-0 bottom-0 h-1 bg-kaos transition-all duration-1000 shadow-[0_0_10px_currentColor]" style="width: ${yuzde}%"></div>
@@ -345,7 +346,7 @@ export const UI = {
                 </div>
                 
                 <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-2">
-                    <button class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-500 px-5 py-3 rounded-xl text-white font-black text-xs transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
+                    <button data-id="${onerge.id}" class="btn-destekle w-full md:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-500 px-5 py-3 rounded-xl text-white font-black text-xs transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
                         <i class="fas fa-arrow-up text-kaos"></i> DESTEKLE (${onerge.destek_sayisi})
                     </button>
                     <div class="text-[9px] text-gray-500 font-bold tracking-widest uppercase text-center md:text-right w-full">Hedef: 50</div>
