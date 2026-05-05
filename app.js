@@ -349,6 +349,48 @@ function şantiyeyiBaslat() {
 
     bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
     bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
+    
+    // YENİ EKLENEN KISIM: ÖNERGE GÖNDERME BUTONU MOTORU
+    bind('btn-submit-proposal', 'click', async () => {
+        if (!STATE.isLoggedIn()) { UI.showToast('Önerge vermek için giriş yapmalısınız.', 'error'); return; }
+        
+        // Formdaki verileri topla
+        const baslik = document.getElementById('input-proposal-title').value.trim();
+        const sorun = document.getElementById('input-proposal-problem').value.trim();
+        const cozum = document.getElementById('input-proposal-solution').value.trim();
+        const hedefKitle = document.getElementById('input-proposal-audience').value;
+        const sure = document.getElementById('input-proposal-duration').value;
+
+        // Boş alan kontrolü
+        if (!baslik || !sorun || !cozum) {
+            UI.showToast('Lütfen Başlık, Sorun ve Çözüm alanlarını eksiksiz doldurun.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-submit-proposal');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = 'SİSTEME İŞLENİYOR...'; 
+        btn.disabled = true;
+
+        try {
+            // Supabase'e gönder
+            await DB.onergeGonder(STATE.user.uid, baslik, sorun, cozum, hedefKitle, sure);
+            
+            // Başarılı mesajı ver, formu temizle ve kapat
+            UI.showToast('Önergeniz meclise sunuldu! Onay sürecinde...', 'success');
+            document.getElementById('input-proposal-title').value = '';
+            document.getElementById('input-proposal-problem').value = '';
+            document.getElementById('input-proposal-solution').value = '';
+            UI.closeModal('onerge-modal');
+            
+        } catch (error) { 
+            UI.showToast('Önerge gönderilemedi. Lütfen tekrar deneyin.', 'error'); 
+        } finally { 
+            btn.innerHTML = originalText; 
+            btn.disabled = false; 
+        }
+    });
+
     bind('btn-logout', 'click', AUTH.logout);
     bind('btn-delete-account', 'click', AUTH.deleteAccount);
     bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
