@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE DOM DİNLEYİCİLERİ (app.js)
-   1 Tıkla Giriş + Akıllı Arayüz + Sinyal Alıcısı Aktif
+   1 Tıkla Giriş + Akıllı Arayüz + Sıralı Görev Mimarisi
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -38,7 +38,6 @@ export const Me26VotingSystem = {
         const mobLog = document.getElementById('btn-login-mobile');
         const mobProf = document.getElementById('btn-profile-mobile');
 
-        // KONTROL EDİLECEK ARAYÜZ ELEMANLARI
         const vipSection = document.getElementById('ui-vip-section');
         const citySection = document.getElementById('ui-city-selector-container');
         const phoneBtn = document.getElementById('btn-open-phone-modal');
@@ -48,8 +47,9 @@ export const Me26VotingSystem = {
             const isCitySelected = STATE.user.city && STATE.user.city !== 'Seçilmedi' && STATE.user.city !== 'Belirsiz';
             const authStage = STATE.user.authStage || 'registered';
             const votePower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
+            const hasPhone = STATE.user.hasPhone === true;
 
-            // 1. ŞEHİR KUTUSUNU GİZLE/GÖSTER
+            // 1. ŞEHİR KUTUSUNU YÖNET
             if (citySection) {
                 if (isCitySelected) {
                     citySection.classList.add('hidden'); // Seçildiyse Yok Et
@@ -58,7 +58,6 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // SANDIKLARI GİZLE/GÖSTER
             if (isCitySelected) {
                 if(lockedState) lockedState.style.display = 'none';
                 if(manifestoGrid) {
@@ -73,7 +72,7 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // 2. VIP KUTUSUNU GİZLE/GÖSTER
+            // 2. VIP KUTUSUNU YÖNET
             if (vipSection) {
                 if (STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN') {
                     vipSection.classList.add('hidden'); // Numara alındıysa Yok Et
@@ -82,34 +81,37 @@ export const Me26VotingSystem = {
                 }
             }
 
-            // 3. TELEFON BUTONUNU GİZLE/GÖSTER
+            // 3. TELEFON BUTONUNU YÖNET
             if (phoneBtn) {
-                if (authStage === 'phone_verified' || authStage === 'document_pending' || authStage === 'pdf_verified' || votePower >= 1.0) {
-                    phoneBtn.classList.add('hidden'); // Onaylıysa Yok Et
+                if (hasPhone) {
+                    phoneBtn.classList.add('hidden'); // Numarası varsa GİZLE
                 } else {
-                    phoneBtn.classList.remove('hidden');
+                    phoneBtn.classList.remove('hidden'); // Yoksa GÖSTER
                 }
             }
 
-            // 4. PDF (E-DEVLET) BUTONUNU YÖNET
+            // 4. PDF (E-DEVLET) BUTONUNU YÖNET (SIRALI MANTIK - SADECE TELEFON VARSA ÇALIŞIR)
             if (pdfBtn) {
-                if (authStage === 'pdf_verified' || votePower >= 1.0) {
-                    // Tam yetkiliyse komple Yok Et
-                    pdfBtn.classList.add('hidden'); 
-                } else if (authStage === 'document_pending') {
-                    // Beklemedeyse dondur ve metni değiştir
-                    pdfBtn.classList.remove('hidden');
-                    pdfBtn.innerHTML = '⏳ BELGE ONAY BEKLİYOR...';
-                    pdfBtn.disabled = true;
-                    pdfBtn.classList.add('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
-                    pdfBtn.classList.remove('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
+                if (!hasPhone) {
+                    // TELEFON ONAYLANMAMIŞSA PDF BUTONUNU HİÇ GÖSTERME! KESİN KİLİT.
+                    pdfBtn.classList.add('hidden');
                 } else {
-                    // Hiç yüklemediyse normal göster
-                    pdfBtn.classList.remove('hidden');
-                    pdfBtn.innerHTML = '📜 E-Devlet Yükle (1.0x Tam Yetki)';
-                    pdfBtn.disabled = false;
-                    pdfBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
-                    pdfBtn.classList.add('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
+                    // TELEFON ONAYLANMIŞSA AÇ VE PDF DURUMUNU KONTROL ET
+                    if (authStage === 'pdf_verified' || votePower >= 1.0) {
+                        pdfBtn.classList.add('hidden'); // Tam yetkiliyse komple Yok Et
+                    } else if (authStage === 'document_pending') {
+                        pdfBtn.classList.remove('hidden');
+                        pdfBtn.innerHTML = '⏳ BELGE ONAY BEKLİYOR...';
+                        pdfBtn.disabled = true;
+                        pdfBtn.classList.add('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
+                        pdfBtn.classList.remove('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
+                    } else {
+                        pdfBtn.classList.remove('hidden');
+                        pdfBtn.innerHTML = '📜 E-Devlet Yükle (1.0x Tam Yetki)';
+                        pdfBtn.disabled = false;
+                        pdfBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'border-yellow-500/50', 'text-yellow-400');
+                        pdfBtn.classList.add('border-green-500/50', 'text-green-400', 'hover:bg-slate-700');
+                    }
                 }
             }
             
@@ -272,7 +274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
             STATE.updateUser('city', selectedCity); 
             UI.renderProfile(); 
-            Me26VotingSystem.updateVisibility(); // KUTUYU ANINDA GİZLER!
+            Me26VotingSystem.updateVisibility(); 
             
             UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
         } catch (error) {
@@ -314,7 +316,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('btn-open-vip-modal', 'click', () => UI.openModal('vip-modal'));
     bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
 
-    // VIP İSTEMİYORUM BUTONU
     bind('btn-standart-numara', 'click', async () => {
         if (!confirm('VIP numara seçme hakkından vazgeçip, sıradaki ilk boş numarayı otomatik almak istediğine emin misin?')) return;
         
@@ -329,7 +330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             STATE.updateUser('isVip', false);
             
             UI.renderProfile(); 
-            Me26VotingSystem.updateVisibility(); // VIP KUTUSUNU ANINDA GİZLER!
+            Me26VotingSystem.updateVisibility(); 
             
             UI.showToast(`Harika! Numaran atandı: TR-IA-${yeniNo}`, 'success');
             
