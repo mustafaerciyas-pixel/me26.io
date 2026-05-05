@@ -114,17 +114,31 @@ export const UI = {
         
         setEl('ui-vote-power', user.votePower || '0.0x');
 
-        // Kimlik Numarası ve Rozet
+        // =========================================================
+        // KİMLİK NUMARASI VE ROZET MOTORU (DÜZELTİLEN KISIM)
+        // =========================================================
         const idBadge = document.getElementById('ui-role-badge');
         const userIdEl = document.getElementById('ui-user-id');
         
-        if (user.isVip) {
-            if (idBadge) {
-                idBadge.textContent = 'VIP KURUCU';
-                idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
-            }
+        // Eğer kullanıcının bir numarası varsa (VIP veya Standart fark etmez)
+        if (user.userNo && user.userNo !== 'BEKLEYEN') {
             if (userIdEl) userIdEl.textContent = `TR-IA-${user.userNo}`;
+            
+            if (user.isVip) {
+                // Numara VIP ise
+                if (idBadge) {
+                    idBadge.textContent = 'VIP KURUCU';
+                    idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
+                }
+            } else {
+                // Standart Numara aldıysa
+                if (idBadge) {
+                    idBadge.textContent = 'ASİL KURUCU';
+                    idBadge.className = 'bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
+                }
+            }
         } else {
+            // Numarası hiç yoksa (Daha seçmediyse)
             if (idBadge) {
                 idBadge.textContent = 'Aday Kurucu';
                 idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
@@ -160,7 +174,7 @@ export const UI = {
         // =========================================================
         const btnPhone = document.getElementById('btn-open-phone-modal');
         const btnPdf = document.getElementById('btn-open-pdf-modal');
-        const citySelector = document.getElementById('ui-city-selector-container'); // Yeni eklenecek HTML
+        const citySelector = document.getElementById('ui-city-selector-container'); 
 
         // Şehir seçimi UI Kontrolü
         if (citySelector) {
