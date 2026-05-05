@@ -305,7 +305,7 @@ export const UI = {
     },
 
     // =========================================================
-    // YENİ: VERİTABANINDAN GELEN ÖNERGELERİ EKRANA ÇİZEN MOTOR
+    // YENİDEN TASARLANAN ÖNERGE KARTLARI (KOTA DOLDU EKRANI)
     // =========================================================
     renderProposals: (onergeler) => {
         const container = document.getElementById('proposals-container');
@@ -325,19 +325,25 @@ export const UI = {
             if (onerge.hedef_kitle === 'icmimar') { kitleMetni = 'Sadece İçmimarlık Mezunları'; kitleIkon = 'fa-lock'; }
             if (onerge.hedef_kitle === 'ogrenci') { kitleMetni = 'Sadece İçmimarlık Öğrencileri'; kitleIkon = 'fa-lock'; }
 
-            // % Hesaplama (Görsellik İçin - 50 destekte dolar)
-            const yuzde = Math.min((onerge.destek_sayisi / 50) * 100, 100);
+            const destekSayisi = onerge.destek_sayisi || 0;
+            // Bar %100'ü geçmesin diye sınır koyduk
+            const yuzde = Math.min((destekSayisi / 50) * 100, 100);
+
+            // Kotayı geçtiğinde değişecek yazılar
+            const isKotaDoldu = destekSayisi >= 50;
+            const kotaMetni = isKotaDoldu ? `✅ KOTA DOLDU (${destekSayisi}/50)` : `✅ ${destekSayisi} / 50 Destek`;
+            const altMetin = isKotaDoldu ? 'SALI 20:26 BEKLENİYOR' : 'Hedef Kotası';
+            const kotaRenk = isKotaDoldu ? 'text-kaos' : 'text-green-400';
 
             const div = document.createElement('div');
             div.className = 'bg-black/40 border border-slate-600 p-5 md:p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-500 transition relative overflow-hidden';
             
-            // YENİ: data-id="${onerge.id}" ve class="btn-destekle" EKLENDİ
             div.innerHTML = `
                 <!-- Arka plan dolum barı -->
                 <div class="absolute left-0 bottom-0 h-1 bg-kaos transition-all duration-1000 shadow-[0_0_10px_currentColor]" style="width: ${yuzde}%"></div>
                 
-                <div class="flex-grow z-10 w-full md:w-auto">
-                    <div class="flex items-center gap-3 mb-2 flex-wrap">
+                <div class="flex-grow z-10 w-full md:w-auto pr-4">
+                    <div class="flex items-center gap-3 mb-3 flex-wrap">
                         <span class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded border border-slate-600 font-bold uppercase tracking-widest whitespace-nowrap"><i class="fas ${kitleIkon} text-gray-400 mr-1"></i> ${kitleMetni}</span>
                         <span class="text-[10px] text-kaos font-bold uppercase tracking-widest whitespace-nowrap">Süre: ${onerge.sure} Hafta</span>
                     </div>
@@ -345,11 +351,14 @@ export const UI = {
                     <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3 md:mb-0">${onerge.sorun}</p>
                 </div>
                 
-                <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-2">
-                    <button data-id="${onerge.id}" class="btn-destekle w-full md:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-500 px-5 py-3 rounded-xl text-white font-black text-xs transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
-                        <i class="fas fa-arrow-up text-kaos"></i> DESTEKLE (${onerge.destek_sayisi})
+                <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-3 mt-4 md:mt-0">
+                    <div class="text-center md:text-right whitespace-nowrap bg-slate-900/80 px-5 py-3 rounded-xl border border-slate-700 w-full">
+                        <div class="text-sm font-black ${kotaRenk} mb-1">${kotaMetni}</div>
+                        <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">${altMetin}</div>
+                    </div>
+                    <button data-id="${onerge.id}" class="btn-destekle w-full bg-slate-800 hover:bg-slate-700 border border-slate-500 px-5 py-3.5 rounded-xl text-white font-black text-[11px] transition uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
+                        <i class="fas fa-arrow-up text-kaos"></i> DESTEKLE
                     </button>
-                    <div class="text-[9px] text-gray-500 font-bold tracking-widest uppercase text-center md:text-right w-full">Hedef: 50</div>
                 </div>
             `;
             container.appendChild(div);
