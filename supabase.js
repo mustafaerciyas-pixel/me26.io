@@ -107,5 +107,19 @@ export const DB = {
             throw error;
         }
         return data;
+    },
+
+    // =========================================================
+    // 8. EKSİK OLAN MOTOR: DESTEK VERME MOTORU
+    // =========================================================
+    destekVer: async (uid, onergeId) => {
+        const { error } = await supabase.rpc('me26_destek_ver', { p_onerge_id: onergeId, p_uid: uid });
+        if (error) {
+            // "unique constraint" hatası veriyorsa, adam bu önergeye zaten destek olmuştur.
+            if (error.message.includes('unique constraint') || error.code === '23505') {
+                throw new Error('already_supported');
+            }
+            throw error;
+        }
     }
 };
