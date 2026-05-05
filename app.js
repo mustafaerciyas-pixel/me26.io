@@ -48,13 +48,14 @@ export const Me26VotingSystem = {
             const authStage = STATE.user.authStage || 'registered';
             const votePower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
             const hasPhone = STATE.user.hasPhone === true;
+            const hasAssignedId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN';
 
             // 1. ŞEHİR KUTUSUNU YÖNET
             if (citySection) {
                 if (isCitySelected) {
-                    citySection.classList.add('hidden'); // Seçildiyse Yok Et
+                    citySection.classList.add('hidden'); 
                 } else {
-                    citySection.classList.remove('hidden'); // Seçilmediyse Göster
+                    citySection.classList.remove('hidden'); 
                 }
             }
 
@@ -74,8 +75,8 @@ export const Me26VotingSystem = {
 
             // 2. VIP KUTUSUNU YÖNET
             if (vipSection) {
-                if (STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN') {
-                    vipSection.classList.add('hidden'); // Numara alındıysa Yok Et
+                if (hasAssignedId) {
+                    vipSection.classList.add('hidden'); 
                 } else {
                     vipSection.classList.remove('hidden');
                 }
@@ -84,21 +85,20 @@ export const Me26VotingSystem = {
             // 3. TELEFON BUTONUNU YÖNET
             if (phoneBtn) {
                 if (hasPhone) {
-                    phoneBtn.classList.add('hidden'); // Numarası varsa GİZLE
+                    phoneBtn.classList.add('hidden'); 
                 } else {
-                    phoneBtn.classList.remove('hidden'); // Yoksa GÖSTER
+                    phoneBtn.classList.remove('hidden'); 
                 }
             }
 
-            // 4. PDF (E-DEVLET) BUTONUNU YÖNET (SIRALI MANTIK - SADECE TELEFON VARSA ÇALIŞIR)
+            // 4. PDF (E-DEVLET) BUTONUNU YÖNET (SIRALI MANTIK + ID KONTROLÜ)
             if (pdfBtn) {
-                if (!hasPhone) {
-                    // TELEFON ONAYLANMAMIŞSA PDF BUTONUNU HİÇ GÖSTERME! KESİN KİLİT.
+                if (!hasPhone || hasAssignedId) {
+                    // TELEFON YOKSA VEYA ID ALDIYSA BUTONU KESİN OLARAK GİZLE!
                     pdfBtn.classList.add('hidden');
                 } else {
-                    // TELEFON ONAYLANMIŞSA AÇ VE PDF DURUMUNU KONTROL ET
                     if (authStage === 'pdf_verified' || votePower >= 1.0) {
-                        pdfBtn.classList.add('hidden'); // Tam yetkiliyse komple Yok Et
+                        pdfBtn.classList.add('hidden'); 
                     } else if (authStage === 'document_pending') {
                         pdfBtn.classList.remove('hidden');
                         pdfBtn.innerHTML = '⏳ BELGE ONAY BEKLİYOR...';
@@ -186,7 +186,7 @@ export const Me26VotingSystem = {
         else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
         
         this.animateResults(container.parentElement, choice, currentPower);
-        UI.showToast(`Oyunuz blokzincire başarıyla işlendi! (Güç: ${currentPower}x)`, 'success');
+        UI.showToast(`Oyunuz test sandığına başarıyla işlendi! (Güç: ${currentPower}x)`, 'success');
     },
 
     animateResults: function(cardEl, userChoice, votePower) {
