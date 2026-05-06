@@ -10,6 +10,7 @@ import { auth } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { googleIleGiris, sistemdenCikis, eDevletBelgesiOku, gercekSmsGonder, gercekSmsDogrula } from './auth.js';
 import { VIP } from './vip.js'; 
+import { STADYUM } from './stadyum.js'; // <--- STADYUM MOTORU EKLENDİ
 
 // ======================================================
 // 1. EVRENSEL MECLİS KALEMİ (GEMINI AI - YAKINDA)
@@ -201,7 +202,6 @@ export const Me26VotingSystem = {
             const onergeler = await DB.onergeleriGetir();
             UI.renderProposals(onergeler);
             
-            // Eğer önergeler başarıyla çekildiyse, her birinin gerçek oy durumunu da çek ve barları doldur
             if(onergeler && onergeler.length > 0) {
                 onergeler.forEach(async (onerge) => {
                     const cardEl = document.querySelector(`button[data-id="${onerge.id}"]`)?.closest('.bg-black\\/40');
@@ -220,7 +220,6 @@ export const Me26VotingSystem = {
         if (!STATE.isLoggedIn()) { UI.showToast('Oy kullanmak için giriş yapmalısın!', 'error'); return; }
 
         const user = STATE.getUser();
-        // --- GÜVENLİK DUVARI: OY KULLANMA ---
         if (!user.hasPhone) { UI.showToast('Oy kullanmadan önce Profil sekmesinden Telefonunuzu onaylatmalısınız (Bot Koruması).', 'error'); return; }
         if (user.authStage !== 'pdf_verified') { UI.showToast('Oy kullanabilmek için mesleki belgenizi yükleyip tam erişim almalısınız.', 'error'); return; }
         
@@ -235,17 +234,15 @@ export const Me26VotingSystem = {
         if (currentPower === 0) { UI.showToast('Profil panelinden mesleki belgenizi yükleyip tam erişim almalısınız.', 'error'); return; }
         
         const onergeId = btnEl.getAttribute('data-onerge-id') || btnEl.closest('[data-id]')?.getAttribute('data-id');
-        const choice = btnEl.getAttribute('data-vote'); // 'yes', 'no', 'abstain'
+        const choice = btnEl.getAttribute('data-vote'); 
         
         const originalHtml = btnEl.innerHTML;
         btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btnEl.disabled = true;
 
         try {
-            // 1. Oyu Gerçek Veritabanına Yaz
             await DB.oyKullan(user.uid, onergeId, choice, currentPower);
             
-            // 2. Arayüzü Kilitle
             const allButtons = container.querySelectorAll('.vote-btn');
             allButtons.forEach(b => { b.disabled = true; b.classList.remove('hover:border-green-500', 'hover:border-yellow-500', 'hover:border-red-500', 'hover:bg-slate-700'); b.classList.add('opacity-30', 'cursor-not-allowed'); });
             
@@ -256,7 +253,6 @@ export const Me26VotingSystem = {
             
             btnEl.innerHTML = originalHtml;
 
-            // 3. Güncel Oyları Çekip Çubukları Doldur (Gerçek Matematik)
             const guncelOylar = await DB.oySonuclariniGetir(onergeId);
             this.calculateAndRenderRealVotes(container.parentElement, guncelOylar);
             
@@ -268,7 +264,6 @@ export const Me26VotingSystem = {
             
             if (error.message === 'already_voted') {
                 UI.showToast('Bu önergeye zaten oy verdiniz. Sistem bir kişinin ikinci kez oy kullanmasını engeller.', 'info');
-                // Adama zaten oy verdiğini göstermek için butonları kilitle
                 const allButtons = container.querySelectorAll('.vote-btn');
                 allButtons.forEach(b => { b.disabled = true; b.classList.add('opacity-30', 'cursor-not-allowed'); });
             } else {
@@ -277,7 +272,6 @@ export const Me26VotingSystem = {
         }
     },
 
-    // (YENİ) - Gelen gerçek verileri çubuklara matematiğiyle çizen motor
     calculateAndRenderRealVotes: function(cardEl, oylarDizisi) {
         if(!cardEl || !oylarDizisi) return;
 
@@ -298,7 +292,7 @@ export const Me26VotingSystem = {
         if (totalPower > 0) {
             pY = Math.round((totalYesPower / totalPower) * 100);
             pA = Math.round((totalAbstainPower / totalPower) * 100);
-            pN = 100 - (pY + pA); // Küsürat sapmasını önlemek için 100'den çıkar
+            pN = 100 - (pY + pA); 
         }
 
         const barY = cardEl.querySelector('.vote-bar-yes'); 
@@ -499,6 +493,7 @@ function şantiyeyiBaslat() {
         }
         
         UI.renderProfile();
+        STADYUM.baslat(); // <--- YENİ STADYUM MOTORU BURADA ATEŞLENİYOR
         if (typeof window.loadTribunLigiData === "function") window.loadTribunLigiData();
     });
 }
