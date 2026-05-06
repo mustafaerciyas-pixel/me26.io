@@ -315,9 +315,8 @@
                     </button>
                 </div>
 
-                <!-- GERÇEKLEŞTİRİLEN CANLI OYLAMA KARTLARI (JS İLE SAYILARI DOLACAK) -->
+                <!-- GERÇEKLEŞTİRİLEN CANLI OYLAMA KARTLARI -->
                 <div id="manifesto-grid" class="hidden grid-cols-1 gap-8">
-                    
                     <!-- Canlı Oylama 1 -->
                     <div class="poll-card bg-black/50 border border-blue-500/50 p-6 rounded-2xl relative overflow-hidden hover:border-blue-400 transition-colors shadow-lg" data-poll-id="poll_1">
                         <div class="absolute top-0 right-0 bg-kaos text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">
@@ -418,6 +417,26 @@
             </div>
         </div>
 
+        <!-- ================= ORTAK AKIL KÜTÜPHANESİ (KÜRSÜ / QA) ================= -->
+        <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl p-8 md:p-12 mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700 pb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest"><span class="text-kaos">ORTAK AKIL</span> KÜTÜPHANESİ</h2>
+                    <p class="text-gray-400 text-xs mt-2 font-medium max-w-xl leading-relaxed">Usta ve Çırakların buluştuğu, sansürsüz ama liyakatli mesleki soru-cevap kürsüsü.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="btn-qa-bekleyenler" class="bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-inner">🔴 BEKLEYENLER</button>
+                    <button id="btn-qa-kutuphane" class="bg-black/50 text-gray-500 border border-slate-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition hover:text-white">🟢 ARŞİV</button>
+                    <button type="button" id="btn-open-qa-modal" class="bg-kaos text-slate-900 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-kaos whitespace-nowrap md:ml-2">
+                        <i class="fas fa-plus"></i> YENİ SORU SOR
+                    </button>
+                </div>
+            </div>
+            <div id="qa-listesi" class="flex flex-col gap-4">
+                <div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest">Kürsü Kayıtları Bekleniyor...</div>
+            </div>
+        </div>
+
         <!-- ================= SALI 20:26 GÜNDEM SIRASI ================= -->
         <div class="bg-slate-900/95 backdrop-blur-2xl border border-slate-700 rounded-3xl p-8 md:p-12 mb-12 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-700 pb-6 gap-4">
@@ -464,6 +483,7 @@
             <button type="button" id="btn-close-wow" class="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700">Sisteme Geç</button>
         </div>
     </div>
+    
     <div id="vip-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-3xl w-full text-center relative shadow-kaos-lg overflow-hidden">
             <button type="button" id="btn-close-vip-modal" aria-label="Kapat" class="absolute top-6 right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center">✕</button>
@@ -485,6 +505,7 @@
             </div>
         </div>
     </div>
+    
     <div id="phone-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-kaos-lg">
             <span class="text-5xl block mb-4">🛡️</span>
@@ -514,6 +535,7 @@
             <button type="button" id="btn-close-phone-modal" class="mt-5 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700 transition">İptal Et</button>
         </div>
     </div>
+    
     <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-green-500 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-[0_0_30px_rgba(34,197,94,0.3)]">
             <span class="text-5xl block mb-4">📜</span>
@@ -527,6 +549,7 @@
             <button type="button" id="btn-close-pdf-modal" class="mt-5 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700 transition">İptal Et</button>
         </div>
     </div>
+    
     <div id="onerge-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-lg w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)] max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>📝</span> Yeni Önerge Oluştur</h3>
@@ -571,6 +594,48 @@
         </div>
     </div>
 
+    <!-- YENİ EKLENEN QA (KÜRSÜ) PENCERESİ -->
+    <div id="qa-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-lg w-full text-center relative shadow-[0_0_40px_rgba(255,255,255,0.1)] max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2"><span>🏛️</span> Kürsüye Soru Sun</h3>
+            <p class="text-gray-400 text-[11px] mb-6 font-medium leading-relaxed">Hedef kitleni seç, sorunu yaz ve istersen <strong class="text-kaos">Gemini AI</strong> ile profesyonelleştir.</p>
+
+            <div class="text-left space-y-5 mb-8">
+                <div>
+                    <label for="input-qa-audience" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Kimler Cevaplasın?</label>
+                    <select id="input-qa-audience" class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-xs font-bold focus:border-kaos transition">
+                        <option value="İçmimarlar ve İçmimarlık Öğrencileri">🌍 İçmimarlar ve İçmimarlık Öğrencileri</option>
+                        <option value="Sadece İçmimarlar">🔒 Sadece İçmimarlar (Usta Kalemi)</option>
+                        <option value="Sadece Öğrenciler">🔒 Sadece Öğrenciler (Çırak Kalemi)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="input-qa-title" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Konu Özeti (15-150 Karakter)</label>
+                    <input type="text" id="input-qa-title" minlength="15" maxlength="150" placeholder="Örn: Şantiyede epoksi dökümü sonrası kabarcık sorunu..." class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium focus:border-kaos transition">
+                </div>
+                <div>
+                    <label for="input-qa-content" class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex justify-between items-center">
+                        <span>Detaylar (50-3000 Karakter)</span>
+                        <button type="button" id="btn-qa-ai-fix" class="text-kaos hover:text-white transition flex items-center gap-1 bg-kaos/10 px-2 py-1 rounded border border-kaos/30 shadow-inner">
+                            <i class="fas fa-magic"></i> Gemini AI ile Düzelt
+                        </button>
+                    </label>
+                    <textarea id="input-qa-content" minlength="50" maxlength="3000" placeholder="Karşılaştığınız durumu, kullandığınız malzemeyi veya programı detaylıca yazın..." class="w-full bg-black border border-slate-700 text-white p-4 rounded-xl outline-none text-sm font-medium h-32 resize-none custom-scrollbar focus:border-kaos transition"></textarea>
+                </div>
+                
+                <div class="bg-black/40 border border-slate-700 p-4 rounded-xl flex items-start gap-3 mt-2">
+                    <input type="checkbox" id="input-qa-responsibility" class="mt-1 w-4 h-4 accent-kaos cursor-pointer">
+                    <label for="input-qa-responsibility" class="text-[10px] text-gray-400 font-medium leading-relaxed cursor-pointer select-none">
+                        Bu içeriği <strong class="text-white">Dijital Kimliğimle</strong> paylaşıyorum. Doğacak tüm mesleki ve hukuki sorumluluk bana aittir.
+                    </label>
+                </div>
+            </div>
+            
+            <button type="button" id="btn-submit-qa" class="w-full bg-slate-800 text-white hover:text-kaos hover:border-kaos border border-slate-600 font-black py-4 rounded-xl uppercase tracking-widest transition shadow-md">KÜRSÜYE GÖNDER</button>
+            <button type="button" id="btn-close-qa-modal" class="mt-5 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest underline decoration-gray-700 transition">İptal Et</button>
+        </div>
+    </div>
+
     <!-- ALT BİLGİ (FOOTER) -->
     <footer id="ana-footer" class="bg-[#050810] border-t border-slate-800 text-gray-500 py-10 w-full relative z-20 mt-auto">
         <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
@@ -590,5 +655,6 @@
 
     <div id="recaptcha-container"></div>
     <script type="module" src="app.js"></script>
+    <script type="module" src="qa.js"></script>
 </body>
 </html>
