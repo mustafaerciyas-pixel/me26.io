@@ -57,17 +57,17 @@
     <!-- ========================================== -->
     <!-- 1. GİRİŞ EKRANI (LANDING VIEW - DIŞ KAPI) -->
     <!-- ========================================== -->
-    <div id="landing-view" class="w-full h-full overflow-y-auto custom-scrollbar relative z-50 flex flex-col scroll-smooth">
-        
-        <nav class="bg-zemin text-white py-5 shadow-xl relative border-b border-slate-800 w-full sticky top-0 z-50">
+    <div id="landing-view" class="w-full h-full overflow-y-auto relative z-50 flex flex-col">
+        <nav class="bg-zemin text-white py-5 shadow-xl relative border-b border-slate-800 w-full">
             <div class="max-w-6xl mx-auto px-4 flex justify-between items-center relative">
-                <a href="#landing-view" class="text-2xl font-black tracking-widest flex items-center cursor-pointer hover:opacity-80 transition">
+                <div class="text-2xl font-black tracking-widest flex items-center">
                     <div class="w-1.5 h-6 bg-kaos mr-2"></div><span><span class="text-kaos">ME26</span> AĞI</span>
-                </a>
-                <div class="hidden lg:flex space-x-6 text-xs font-bold tracking-widest uppercase text-gray-400">
-                    <a href="#dao-nedir" class="hover:text-kaos transition">Ne Yapacağız?</a>
-                    <a href="#kurallar" class="hover:text-kaos transition">Kurallar</a>
-                    <a href="#gizlilik" class="hover:text-kaos transition">Gizlilik Zırhı</a>
+                </div>
+                <!-- YENİ: VİZYON VE KURALLAR LİNKLERİ (DESKTOP) -->
+                <div class="hidden lg:flex space-x-6 text-xs font-bold tracking-widest uppercase items-center text-gray-400">
+                    <a href="dao-nedir.html" class="hover:text-white transition">Ne Yapacağız?</a>
+                    <a href="kurallar.html" class="hover:text-white transition">Kurallar</a>
+                    <a href="gizlilik.html" class="hover:text-white transition">Gizlilik Zırhı</a>
                 </div>
                 <div class="flex space-x-3 text-sm font-semibold tracking-wide items-center">
                     <button type="button" id="btn-register-nav" class="bg-kaos text-slate-900 px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer tracking-widest text-xs md:text-sm">KAYIT OL</button>
@@ -112,118 +112,13 @@
                 </div>
             </div>
         </main>
-
-        <!-- YENİ BÖLÜM: BİRLİKTE NE YAPACAĞIZ (DAO) -->
-        <section id="dao-nedir" class="w-full bg-[#0b0f19] border-t border-slate-800 py-20 px-4 relative overflow-hidden">
-            <div class="absolute inset-0 opacity-5 bg-radial-kaos-sm"></div>
-            <div class="max-w-4xl mx-auto relative z-10">
-                <div class="text-center mb-12">
-                    <div class="inline-block bg-kaos text-slate-900 font-black px-4 py-1 rounded-full text-[10px] mb-4 tracking-widest uppercase shadow-kaos">SINIRSIZ POTANSİYEL</div>
-                    <h2 class="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Birlikte Ne Yapacağız?</h2>
-                    <p class="text-gray-300 text-lg leading-relaxed">Aslında en güzel yanı da bu: Birlikte ne yapacağımıza dair önceden yazılmış, dayatılan bir görev listesi yok. Kararı hep birlikte, otonom ağın içinde vereceğiz.</p>
-                </div>
-
-                <div class="bg-black/50 border border-slate-700 p-8 rounded-2xl shadow-lg mb-8">
-                    <p class="text-white text-lg font-bold mb-6">Eğer Türkiye'medeki on binlerce içmimar tek bir zeka, tek bir organizma gibi hareket edebilirse;</p>
-                    <ul class="space-y-4 text-gray-400 text-sm md:text-base">
-                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🏛️</span> <span>Binlerce kişilik tek sesli ve otonom bir lobi gücüyle <strong>devlet kurumlarını İçmimarlık için çalıştırabilir</strong>; bakanlıklara ve belediyelere mesleğimiz lehine yeni yönetmelikler yazdırabiliriz.</span></li>
-                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🎓</span> <span>Bürokrasinin çözemediği sorunları aşıp, üniversitelerdeki <strong>eğitim müfredatını</strong> sahanın gerçeklerine göre yeniden şekillendirecek akademik baskıyı tek merkezden kurabiliriz.</span></li>
-                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🏭</span> <span>Yarın oylamaya sunup, doğrudan mesleğimize ve ağımıza özel devasa <strong>üretim fabrikaları</strong> kurabiliriz.</span></li>
-                        <li class="flex items-start"><span class="text-kaos text-xl mr-3">🏢</span> <span>İçmimarların doğrudan ortak olduğu, global çapta iş yapan dev <strong>holdingler</strong> inşa edebiliriz.</span></li>
-                    </ul>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-                    <div class="bg-black border border-slate-800 p-6 rounded-xl border-l-4 border-l-blue-500 shadow-md">
-                        <h3 class="text-white font-bold mb-2 flex items-center"><span class="mr-2">📜</span> DAO Altyapısı (Otonom Karar)</h3>
-                        <p class="text-xs text-gray-400 leading-relaxed">Geleneksel şirketlerin aksine patronu, başkanı veya yönetim kurulu olmayan dijital kurumlardır. Kurallar önceden bilgisayar kodlarıyla yazılır. Tüm adımlar, Liyakat Puanı sahibi üyelerin oylarıyla şekillenir.</p>
-                    </div>
-                    <div class="bg-black border border-slate-800 p-6 rounded-xl border-l-4 border-l-green-500 shadow-md">
-                        <h3 class="text-white font-bold mb-2 flex items-center"><span class="mr-2">🔬</span> Güvenli Liman & İstihdam</h3>
-                        <p class="text-xs text-gray-400 leading-relaxed">Burası vitrin değil, mutfaktır. Fikirlerin çalınma korkusu olmadan paylaşılabildiği, iş yoğunluğu olan ofislerin yüklerini içeride paylaştığı bir mikro ekonomi laboratuvarıdır.</p>
-                    </div>
-                </div>
+        <footer id="ana-footer" class="mt-auto bg-[#050810] border-t border-slate-800 text-gray-500 py-8 text-center text-xs">
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8 mb-4 font-bold uppercase tracking-widest">
+                <a href="dao-nedir.html" class="hover:text-kaos transition">Ne Yapacağız?</a>
+                <a href="kurallar.html" class="hover:text-kaos transition">Kurallarımız</a>
+                <a href="gizlilik.html" class="hover:text-kaos transition">Gizlilik Zırhı</a>
             </div>
-        </section>
-
-        <!-- YENİ BÖLÜM: KURALLARIMIZ (Otonom Anayasa) -->
-        <section id="kurallar" class="w-full bg-zemin border-t border-slate-800 py-20 px-4">
-            <div class="max-w-4xl mx-auto">
-                <div class="text-center mb-12">
-                    <div class="inline-block bg-white text-black font-black px-4 py-1 rounded-full text-[10px] mb-4 tracking-widest uppercase">OTONOM ANAYASA</div>
-                    <h2 class="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Kurallarımız</h2>
-                    <p class="text-gray-400 text-base leading-relaxed max-w-2xl mx-auto">Eski sistemlerde kuralları yöneticiler kendi çıkarlarına göre esnetebilirdi. ME26 Ağı'nda ise kurallar <strong>bilgisayar kodlarına</strong> yazılmıştır. Gözyaşına bakılmaz, torpil işlemez.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-black border-l-4 border-kaos p-6 rounded-r-xl shadow-lg">
-                        <h3 class="text-lg font-black text-white mb-2 flex items-center"><span class="bg-slate-800 text-kaos w-6 h-6 flex items-center justify-center rounded text-xs mr-2">1</span> Liyakat Esastır</h3>
-                        <p class="text-xs text-gray-400 leading-relaxed">Projelerde veya fikir sunumlarında kimsenin ismine, unvanına bakılmaz. Kararı torpil değil, sadece saf yetenek belirler.</p>
-                    </div>
-                    <div class="bg-black border-l-4 border-kaos p-6 rounded-r-xl shadow-lg">
-                        <h3 class="text-lg font-black text-white mb-2 flex items-center"><span class="bg-slate-800 text-kaos w-6 h-6 flex items-center justify-center rounded text-xs mr-2">2</span> İtibar Kanıtı (Liyakat Skoru)</h3>
-                        <p class="text-xs text-gray-400 leading-relaxed">Ağ içinde ürettiğiniz her proje size manipüle edilemez bir <strong>Liyakat Skoru</strong> kazandırır. Sektördeki mesleki ahlakınızı bu skor kanıtlar.</p>
-                    </div>
-                    <div class="bg-black border-l-4 border-kaos p-6 rounded-r-xl shadow-lg">
-                        <h3 class="text-lg font-black text-white mb-2 flex items-center"><span class="bg-slate-800 text-kaos w-6 h-6 flex items-center justify-center rounded text-xs mr-2">3</span> Akışkan Demokrasi</h3>
-                        <p class="text-xs text-gray-400 leading-relaxed">Vaktiniz yoksa, oy kullanma hakkınızı vizyonuna güvendiğiniz bir "Usta"ya tek tıkla devredebilirsiniz.</p>
-                    </div>
-                    <div class="bg-black border-l-4 border-kaos p-6 rounded-r-xl shadow-lg">
-                        <h3 class="text-lg font-black text-white mb-2 flex items-center"><span class="bg-slate-800 text-kaos w-6 h-6 flex items-center justify-center rounded text-xs mr-2">4</span> Otonom Karar (Patron Yoktur)</h3>
-                        <p class="text-xs text-gray-400 leading-relaxed">Seçenekler sandıktan çıkar, sonuç bilgisayar tarafından otomatik uygulanır. Kimse sisteme kural dayatamaz.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- YENİ BÖLÜM: GİZLİLİK VE KVKK ZIRHI -->
-        <section id="gizlilik" class="w-full bg-[#050810] border-t border-slate-800 py-20 px-4">
-            <div class="max-w-4xl mx-auto">
-                <div class="text-center mb-12">
-                    <div class="inline-block bg-blue-500/20 text-blue-400 border border-blue-500/30 font-black px-4 py-1 rounded-full text-[10px] mb-4 tracking-widest uppercase">ME26 TEKNOLOJİ ALTYAPISI</div>
-                    <h2 class="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Gizlilik ve Hukuk Zırhı</h2>
-                    <p class="text-gray-400 text-base leading-relaxed max-w-2xl mx-auto">Kişisel verileriniz satılmaz, fikirleriniz çalınmaz. Bu ağ, şeffaf ve banka düzeyinde güvenli bir kaledir.</p>
-                </div>
-
-                <div class="space-y-6">
-                    <div class="bg-black border border-slate-800 p-6 rounded-xl relative overflow-hidden">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 bg-slate-800 text-kaos flex items-center justify-center rounded-lg text-lg mr-4">🥷</div>
-                            <h3 class="text-base font-black text-white uppercase tracking-wider">Şifreli Kasa ve Anonimlik</h3>
-                        </div>
-                        <p class="text-xs text-gray-400 leading-relaxed">Kayıt aşamasında verdiğiniz iletişim bilgileri arayüzde <strong>ASLA</strong> görünmez. Ağa bağlandığınız an diğer üyeler sizi sadece rastgele atanan "ME-ID Numaranız" ile tanır. Verileriniz uluslararası şifreli bulut merkezlerinde muhafaza edilir.</p>
-                    </div>
-
-                    <div class="bg-black border border-slate-800 p-6 rounded-xl relative overflow-hidden border-l-4 border-l-green-500">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 bg-slate-800 text-green-500 flex items-center justify-center rounded-lg text-lg mr-4">🔐</div>
-                            <h3 class="text-base font-black text-white uppercase tracking-wider">KYC ve E-Devlet Doğrulaması</h3>
-                        </div>
-                        <p class="text-xs text-gray-400 leading-relaxed">Ağa trollerin sızması imkansızdır. Sizden <strong>ASLA e-Devlet şifreniz istenmez.</strong> Belge üzerindeki Barkod Numarası makine tarafından okunarak mesleğiniz teyit edilir. Süreç KVKK standartlarına %100 uyumludur.</p>
-                    </div>
-
-                    <div class="bg-black border border-slate-800 p-6 rounded-xl relative overflow-hidden">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 bg-slate-800 text-red-400 flex items-center justify-center rounded-lg text-lg mr-4">🚪</div>
-                            <h3 class="text-base font-black text-white uppercase tracking-wider">Unutulma Hakkı (Çıkış Özgürlüğü)</h3>
-                        </div>
-                        <p class="text-xs text-gray-400 leading-relaxed">İstediğiniz an tek bir butona tıklayarak ağdan çıkabilirsiniz. Çıkış yaptığınız saniye tüm iletişim bilgileriniz veritabanından <strong>geri döndürülemez şekilde silinir.</strong> Ağın mimarisini bozmamak adına sadece geçmişte kullandığınız oylar anonim ID altında kalır.</p>
-                    </div>
-                </div>
-
-                <div class="mt-16 text-center">
-                    <a href="#landing-view" class="bg-white text-slate-900 hover:bg-gray-200 font-black py-4 px-10 rounded-xl text-sm shadow-md transition uppercase tracking-widest flex items-center justify-center gap-2 max-w-xs mx-auto">
-                        <i class="fas fa-arrow-up"></i> YUKARI ÇIK VE KAYIT OL
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <footer id="ana-footer" class="mt-auto bg-[#03050a] border-t border-slate-800 text-gray-500 py-8 text-center text-[10px] font-mono tracking-widest">
-            <div class="max-w-4xl mx-auto px-4">
-                <p class="text-kaos mb-2 font-bold">İNSAN YÖNETİCİ YOK. KURALLAR VAR.</p>
-                <p>&copy; 2026 ME26 Teknoloji A.Ş. • TÜM HAKLARI SAKLIDIR.</p>
-            </div>
+            <p class="font-mono mt-4">&copy; 2026 ME26 A.Ş. İNSAN YÖNETİCİ YOK. KURALLAR VAR.</p>
         </footer>
     </div>
 
@@ -303,7 +198,7 @@
                 <div id="ui-city-selector-container" class="mb-6 p-6 border border-yellow-500/50 bg-yellow-500/10 rounded-2xl hidden shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                     <div class="text-xs text-yellow-500 font-black uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-map-marker-alt"></i> GÖREV 1: TRİBÜNÜNÜ SEÇ</div>
                     <p class="text-sm text-gray-300 mb-4 font-medium">Sandıkları görmek ve mesleki gücünü aktifleştirmek için bulunduğun şehri seçmelisin.</p>
-                    <div class="flex gap-2 items-stretch max-w-md">
-                        <select id="input-profile-city" class="flex-grow bg-slate-900 border border-slate-600 text-white px-3 py-3 rounded-xl outline-none text-sm font-bold focus:border-kaos transition">
+                    <div class="flex flex-col md:flex-row gap-3 items-stretch max-w-lg">
+                        <select id="input-profile-city" class="flex-grow bg-slate-900 border border-slate-600 text-white px-3 py-3 rounded-xl outline-none text-sm font-bold focus:border-kaos transition h-[46px]">
                             <option value="" disabled selected>Şehrini Seç...</option>
-                            <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option><option value="Ağrı">Ağrı</option><option value="Aksaray">Aksaray</option><option value="Amasya">Amasya</option><option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Ardahan">Ardahan</option><option value="Artvin">Artvin</option><option value="Aydın">Aydın</option><option value="Balıkesir">Balıkesir</option><option value="Bartın">Bartın</option><option value="Batman">Batman</option><option value="Bayburt">Bayburt</option><option value="Bilecik">Bilecik</option><option value="Bingöl">Bingöl</option><option value="Bitlis">Bitlis</option><option value="Bolu">Bolu</option><option value="Burdur">Burdur</option><option value="Bursa">Bursa</option><option value="Çanakkale">Çanakkale</option><option value="Çankırı">Çankırı</option><option value="Çorum">Çorum</option><option value="Denizli">Denizli</option><optionNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                            <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option><option value="Ağrı">Ağrı</option><option value="Aksaray">Aksaray</option><option value="Amasya">Amasya</option><option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Ardahan">Ardahan</option><option value="Artvin">Artvin</option><option value="Aydın">Aydın</option><option value="Balıkesir">Balıkesir</option><option value="Bartın">Bartın</option><option value="Batman">Batman</option><option value="Bayburt">Bayburt</option><option value="Bilecik">Bilecik</option><option value="Bingöl">Bingöl</option><option value="Bitlis">Bitlis</option><option value="Bolu">Bolu</option><option value="Burdur">Burdur</option><option value="Bursa">Bursa</option><option value="Çanakkale">Çanakkale</option><option value="Çankırı">Çankırı</option><option value="Çorum">Çorum</option><option value="Denizli">Denizli</option><option value="DNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
