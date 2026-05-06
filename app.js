@@ -10,7 +10,7 @@ import { auth } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { googleIleGiris, sistemdenCikis, eDevletBelgesiOku, gercekSmsGonder, gercekSmsDogrula } from './auth.js';
 import { VIP } from './vip.js'; 
-import { STADYUM } from './stadyum.js'; // <--- STADYUM MOTORU EKLENDİ
+import { STADYUM } from './stadium.js'; // <--- HATA BURADAYDI: stadyum.js yerine stadium.js OLARAK DÜZELTİLDİ
 
 // ======================================================
 // 1. EVRENSEL MECLİS KALEMİ (GEMINI AI - YAKINDA)
@@ -493,7 +493,7 @@ function şantiyeyiBaslat() {
         }
         
         UI.renderProfile();
-        STADYUM.baslat(); // <--- YENİ STADYUM MOTORU BURADA ATEŞLENİYOR
+        STADYUM.baslat(); 
         if (typeof window.loadTribunLigiData === "function") window.loadTribunLigiData();
     });
 }
