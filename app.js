@@ -271,6 +271,33 @@ export const Me26VotingSystem = {
 function şantiyeyiBaslat() {
     Me26VotingSystem.init();
 
+    // ---------------------------------------------------------
+    // TRİBÜN LİGİ SİMÜLASYONU (Supabase city_leaderboard'a hazır)
+    // ---------------------------------------------------------
+    window.loadTribunLigiData = async () => {
+        // İleride backend'den alınacak verinin yapısı (Gerçek tabloya geçince buralar Supabase'den çekilecek)
+        const demoCityData = [
+            { city: 'Ankara', icmimar: 426, ogrenci: 180, onerge: 54, oy: 2100, katki: 340, weeklyGrowthPoints: 210, weeklyGrowthPercent: 12 },
+            { city: 'İstanbul', icmimar: 389, ogrenci: 210, onerge: 42, oy: 1850, katki: 410, weeklyGrowthPoints: 180, weeklyGrowthPercent: 8 },
+            { city: 'İzmir', icmimar: 211, ogrenci: 95, onerge: 28, oy: 940, katki: 180, weeklyGrowthPoints: 120, weeklyGrowthPercent: 15 },
+            { city: 'Eskişehir', icmimar: 85, ogrenci: 140, onerge: 12, oy: 520, katki: 95, weeklyGrowthPoints: 90, weeklyGrowthPercent: 22 },
+            { city: 'Antalya', icmimar: 156, ogrenci: 45, onerge: 18, oy: 610, katki: 120, weeklyGrowthPoints: 60, weeklyGrowthPercent: 5 },
+            { city: 'Bursa', icmimar: 134, ogrenci: 60, onerge: 15, oy: 580, katki: 85, weeklyGrowthPoints: 40, weeklyGrowthPercent: 7 }, // Growth<50 olduğu için ivmede elenir
+            { city: 'Konya', icmimar: 92, ogrenci: 55, onerge: 8, oy: 340, katki: 60, weeklyGrowthPoints: 30, weeklyGrowthPercent: 4 },
+            { city: 'Mersin', icmimar: 78, ogrenci: 35, onerge: 6, oy: 290, katki: 45, weeklyGrowthPoints: 55, weeklyGrowthPercent: 9 },
+            { city: 'Diyarbakır', icmimar: 65, ogrenci: 25, onerge: 4, oy: 210, katki: 30, weeklyGrowthPoints: 80, weeklyGrowthPercent: 18 },
+            { city: 'Samsun', icmimar: 88, ogrenci: 40, onerge: 7, oy: 310, katki: 55, weeklyGrowthPoints: 25, weeklyGrowthPercent: 6 },
+            { city: 'Trabzon', icmimar: 72, ogrenci: 30, onerge: 5, oy: 260, katki: 40, weeklyGrowthPoints: 15, weeklyGrowthPercent: 3 },
+            { city: 'Kocaeli', icmimar: 110, ogrenci: 50, onerge: 11, oy: 420, katki: 75, weeklyGrowthPoints: 75, weeklyGrowthPercent: 11 }
+        ];
+        
+        if (typeof UI.renderTribunLigi === "function") {
+            UI.renderTribunLigi(demoCityData);
+        }
+    };
+    
+    window.loadTribunLigiData();
+
     const bind = (id, event, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(event, fn); };
 
     // Giriş Butonları
@@ -303,6 +330,9 @@ function şantiyeyiBaslat() {
             STATE.updateUser('city', selectedCity); 
             UI.renderProfile(); 
             UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
+            
+            // KULLANICI ŞEHRİNİ SEÇTİĞİNDE LİGİ VE WHATSAPP BUTONUNU ANINDA GÜNCELLE!
+            if (typeof window.loadTribunLigiData === "function") window.loadTribunLigiData();
             
             const locked = document.getElementById('locked-state');
             const grid = document.getElementById('manifesto-grid');
@@ -420,7 +450,10 @@ function şantiyeyiBaslat() {
             STATE.user = null; 
             UI.showView('landing'); 
         }
+        
         UI.renderProfile();
+        // Sayfa yüklendiğinde ve kullanıcı geldiğinde tribün ligini güncel durumuyla tetikle
+        if (typeof window.loadTribunLigiData === "function") window.loadTribunLigiData();
     });
 }
 
