@@ -3,6 +3,8 @@
 // ============================================================================
 
 import { supabase } from './supabase.js';
+import { auth } from './config.js'; // Firebase yetkisini içeri alıyoruz
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 let aktifQaSekme = 'bekleyenler';
 let aktifKullanici = null;
@@ -11,7 +13,7 @@ let aktifSoruId = null;
 // ==========================================
 // 1. BAŞLANGIÇ VE KİMLİK KONTROLÜ
 // ==========================================
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Sekme butonları
     document.getElementById('btn-qa-bekleyenler')?.addEventListener('click', () => qaSekmeDegistir('bekleyenler'));
     document.getElementById('btn-qa-kutuphane')?.addEventListener('click', () => qaSekmeDegistir('kutuphane'));
@@ -24,22 +26,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-submit-qa')?.addEventListener('click', qaSoruGonder);
     document.getElementById('btn-qa-ai-fix')?.addEventListener('click', qaGeminiIleDuzelt);
 
-    // Kullanıcı oturumunu kontrol et ve verilerini al
-    await kullaniciBilgileriniAl();
-    
-    // İlk yüklemede soruları getir
-    qaSorulariGetir();
+    // KİMLİK KONTROLÜ (Doğru Sistem: Firebase)
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            await kullaniciBilgileriniAl(user.uid);
+        } else {
+            aktifKullanici = null;
+        }
+        // Kullanıcı durumu netleşince listeyi getir
+        qaSorulariGetir();
+    });
 });
 
-async function kullaniciBilgileriniAl() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
+async function kullaniciBilgileriniAl(uid) {
     // Kullanıcının dijital kimliğini (d_kod) ve mesleki durumunu users tablosundan çekiyoruz
     const { data, error } = await supabase
         .from('users')
         .select('id, d_kod, mesleki_durum')
-        .eq('id', session.user.id)
+        .eq('id', uid)
         .single();
         
     if (!error && data) {
@@ -215,20 +219,6 @@ async function qaGeminiIleDuzelt() {
     btn.disabled = true;
 
     try {
-        /*
-        BURASI EDGE FUNCTION (BACKEND) BAĞLANTI NOKTASIDIR.
-        Frontend üzerinden doğrudan API Key ifşa edilmez. Supabase Edge Functions'a bir POST isteği atılır.
-        
-        Örnek Bağlantı:
-        const { data, error } = await supabase.functions.invoke('gemini-duzeltici', {
-            body: { text: metin }
-        });
-        
-        if(data && data.duzeltilmisMetin) {
-            icerikKutusu.value = data.duzeltilmisMetin;
-        }
-        */
-
         // Şimdilik API entegrasyonu kurulana kadar simülasyon:
         await new Promise(resolve => setTimeout(resolve, 1500));
         alert("Sistem Hazır! Supabase Edge Function (Gemini API) bağlandığında metniniz otomatik olarak profesyonel Türkçeye çevrilecektir.");
@@ -427,8 +417,6 @@ window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
     }
 
     // Hedef tablodaki (sorular veya cevaplar) sikayet_sayisi kolonunu 1 artır.
-    // Güvenlik için Supabase RPC (Stored Procedure) kullanmak daha iyidir ama 
-    // sistemde RPC kurmadıysak, okuyup +1 ekleyerek güncelleyeceğiz.
     const tablo = hedefTipi === 'soru' ? 'me26_sorular' : 'me26_cevaplar';
     
     const { data: mevcutVeri } = await supabase.from(tablo).select('sikayet_sayisi').eq('id', hedefId).single();
