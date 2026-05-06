@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 ORTAK AKIL KÜTÜPHANESİ (Soru - Cevap Modülü Motoru)
-   qa.js - KUSURSUZ MONTAJ SIRASI VE TANK MODU
+   qa.js - Canlı Yayın (Production) Sürümü
    ========================================================================== */
 
 import { supabase } from './supabase.js';
@@ -13,14 +13,15 @@ let aktifQaSekme = 'bekleyenler';
 let aktifSoruId = null;
 
 // ==========================================
-// 1. MOTOR PARÇALARI (ÖNCE FONKSİYONLAR TANIMLANIR)
+// 1. MOTOR PARÇALARI
 // ==========================================
 
 function aktifKullaniciyiAl() {
     if (!STATE.isLoggedIn() || !STATE.user) return null;
 
-    let rol = 'İçmimar';
-    if(STATE.user.role && STATE.user.role.toLowerCase().includes('öğrenci')) rol = 'Öğrenci';
+    // Rolleri yeni terminolojiye (İçmimarlık Mezunu / Öğrencisi) göre çekiyoruz
+    let rol = 'İçmimarlık Mezunu';
+    if(STATE.user.role && STATE.user.role.toLowerCase().includes('öğrenci')) rol = 'İçmimarlık Öğrencisi';
 
     let dijitalId = 'TR-IA-BEKLEYEN';
     if(STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN') dijitalId = `TR-IA-${STATE.user.userNo}`;
@@ -56,7 +57,6 @@ window.qaSorulariGetir = async function() {
     listelemeAlani.innerHTML = '<div class="text-center text-kaos text-sm py-10 font-bold uppercase tracking-widest animate-pulse">Meclis Kayıtları Okunuyor...</div>';
 
     try {
-        // TANK MODU: Supabase filtrelerini JavaScript ile aşıyoruz
         const { data, error } = await supabase.from('me26_sorular').select('*');
 
         if (error) throw error;
@@ -69,14 +69,12 @@ window.qaSorulariGetir = async function() {
         const isAuthorized = UI.triggerVerificationGate(true);
         const secilenSekmeCozulduMu = (aktifQaSekme === 'kutuphane');
 
-        // Güvenli Filtreleme
         const filtrelenmisData = data.filter(soru => {
             const soruCozulduMu = (soru.cozuldu_mu === true);
             const sikayet = soru.sikayet_sayisi || 0;
             return (soruCozulduMu === secilenSekmeCozulduMu) && (sikayet < 10);
         });
 
-        // Güvenli Sıralama
         filtrelenmisData.sort((a, b) => {
             const dateA = a.olusturma_tarihi ? new Date(a.olusturma_tarihi).getTime() : 0;
             const dateB = b.olusturma_tarihi ? new Date(b.olusturma_tarihi).getTime() : 0;
@@ -90,7 +88,6 @@ window.qaSorulariGetir = async function() {
 
         listelemeAlani.innerHTML = ''; 
 
-        // Ekrana Basma
         filtrelenmisData.forEach(soru => {
             let tarihStr = "Tarih Yok";
             if (soru.olusturma_tarihi) {
@@ -98,8 +95,8 @@ window.qaSorulariGetir = async function() {
             }
             
             let kitleEtiketi = '';
-            if(soru.hedef_kitle === 'Sadece İçmimarlar') kitleEtiketi = '<span class="bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Usta Kalemi</span>';
-            else if(soru.hedef_kitle === 'Sadece Öğrenciler') kitleEtiketi = '<span class="bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Çırak Kalemi</span>';
+            if(soru.hedef_kitle === 'Sadece İçmimarlık Mezunları') kitleEtiketi = '<span class="bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Usta Kalemi</span>';
+            else if(soru.hedef_kitle === 'Sadece İçmimarlık Öğrencileri') kitleEtiketi = '<span class="bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Çırak Kalemi</span>';
             else kitleEtiketi = '<span class="bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-globe mr-1"></i> Ortak Kürsü</span>';
 
             const rozet = soru.cozuldu_mu ? '<span class="absolute top-0 right-0 bg-green-500 text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">✓ ÇÖZÜLDÜ</span>' : '';
@@ -216,13 +213,13 @@ window.qaSoruDetayAc = async function(soruId) {
     let cevapYetkisiVar = true;
     let yetkisizlikMesaji = '';
 
-    if (soru.hedef_kitle === 'Sadece İçmimarlar' && kullanici.rol !== 'İçmimar') {
+    if (soru.hedef_kitle === 'Sadece İçmimarlık Mezunları' && kullanici.rol !== 'İçmimarlık Mezunu') {
         cevapYetkisiVar = false;
-        yetkisizlikMesaji = 'Bu soruya sadece Mezunlar cevap verebilir. (Tribün İzleyicisisiniz)';
+        yetkisizlikMesaji = 'Bu soruya sadece İçmimarlık Mezunları cevap verebilir. (Tribün İzleyicisisiniz)';
     }
-    if (soru.hedef_kitle === 'Sadece Öğrenciler' && kullanici.rol !== 'Öğrenci') {
+    if (soru.hedef_kitle === 'Sadece İçmimarlık Öğrencileri' && kullanici.rol !== 'İçmimarlık Öğrencisi') {
         cevapYetkisiVar = false;
-        yetkisizlikMesaji = 'Bu soruya sadece Öğrenciler cevap verebilir. (Tribün İzleyicisisiniz)';
+        yetkisizlikMesaji = 'Bu soruya sadece İçmimarlık Öğrencileri cevap verebilir. (Tribün İzleyicisisiniz)';
     }
 
     let cevapYazmaAlani = '';
@@ -233,11 +230,7 @@ window.qaSoruDetayAc = async function(soruId) {
                     <label class="block text-[10px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><i class="fas fa-pen-nib"></i> Kürsüde Söz Al</label>
                     <textarea id="input-qa-answer" placeholder="Çözümünüzü veya fikrinizi detaylıca belirtin (Min 20 Karakter)..." class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl outline-none text-sm font-medium h-24 resize-none custom-scrollbar focus:border-kaos transition mb-2"></textarea>
                     
-                    <button id="btn-ai-answer" onclick="evrenselGeminiDuzelt('input-qa-answer', 'btn-ai-answer')" class="text-[9px] font-black uppercase tracking-widest text-kaos hover:text-white transition mb-4 flex items-center gap-1">
-                        <i class="fas fa-magic"></i> ✨ Meclis Kalemi ile Düzelt
-                    </button>
-
-                    <button onclick="qaCevapGonder()" id="btn-submit-answer" class="w-full bg-slate-800 text-white hover:text-kaos hover:border-kaos border border-slate-600 font-black py-3 rounded-xl uppercase tracking-widest transition shadow-md text-xs">Cevabı Gönder</button>
+                    <button onclick="qaCevapGonder()" id="btn-submit-answer" class="w-full bg-slate-800 text-white hover:text-kaos hover:border-kaos border border-slate-600 font-black py-3 rounded-xl uppercase tracking-widest transition shadow-md text-xs mt-4">Cevabı Gönder</button>
                 </div>
             `;
         } else {
