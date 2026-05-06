@@ -93,12 +93,11 @@ export const DB = {
         return data;
     },
 
-    // 8. DESTEK VERME MOTORU
+    // 8. DESTEK VERME MOTORU (Eski Sistem)
     destekVer: async (uid, onergeId) => {
         const { error } = await supabase.rpc('me26_destek_ver', { p_onerge_id: onergeId, p_uid: uid });
         
         if (error) {
-            // Eğer daha önce destek vermişse (unique constraint hatası) özel bir hata fırlat
             if (error.message.includes('unique constraint') || error.code === '23505') {
                 throw new Error('already_supported');
             }
@@ -106,7 +105,42 @@ export const DB = {
         }
     },
 
-    // 9. CANLI TRİBÜN LİGİ SAYIMI
+    // 9. GERÇEK OYLAMA MOTORU (YENİ ÇELİK MİMARİ)
+    oyKullan: async (uid, onergeId, kullanilanOy, oyGucu) => {
+        // me26_oylar tablosuna oyu yazıyoruz. UNIQUE constraint sayesinde aynı adam 2. kez atamaz.
+        const { data, error } = await supabase
+            .from('me26_oylar')
+            .insert([
+                { 
+                    onerge_id: String(onergeId), 
+                    user_id: String(uid), 
+                    kullanilan_oy: String(kullanilanOy), // 'yes', 'no', 'abstain'
+                    oy_gucu: Number(oyGucu) 
+                }
+            ]);
+
+        if (error) {
+            // UNIQUE KİLİDİ DEVREYE GİRERSE (Adam daha önce oy vermişse)
+            if (error.message.includes('unique constraint') || error.code === '23505') {
+                throw new Error('already_voted');
+            }
+            throw error;
+        }
+        return data;
+    },
+
+    // 10. BİR ÖNERGENİN OY SONUÇLARINI GETİRME (YENİ ÇELİK MİMARİ)
+    oySonuclariniGetir: async (onergeId) => {
+        const { data, error } = await supabase
+            .from('me26_oylar')
+            .select('kullanilan_oy, oy_gucu')
+            .eq('onerge_id', String(onergeId));
+
+        if (error) throw error;
+        return data; // Oyların ham listesini döner
+    },
+
+    // 11. CANLI TRİBÜN LİGİ SAYIMI
     tribunLigiGetir: async () => {
         const { data: users, error: userError } = await supabase.from('users').select('id, sehir, mesleki_durum');
         if (userError) throw userError;
