@@ -308,6 +308,9 @@
                 <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800">
                     <i class="fas fa-bullhorn w-5 text-center"></i> Meclis Kürsüsü
                 </button>
+                <button data-target="view-stadyum" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800">
+                    <i class="fas fa-futbol w-5 text-center"></i> Canlı Stadyum
+                </button>
                 <button data-target="view-tribun-ligi" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800">
                     <i class="fas fa-trophy w-5 text-center"></i> Tribün Ligi
                 </button>
@@ -372,6 +375,58 @@
                     <div class="bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl">
                         <h3 class="text-blue-400 text-xs font-black tracking-widest uppercase mb-3"><i class="fas fa-info-circle mr-2"></i> Sistem Durumu</h3>
                         <p id="ui-sistem-durumu" class="text-sm text-gray-300 leading-relaxed">Seninle birlikte sistem inşa ediliyor. Şu an Kurucu Oylamalar aktif. Profilinden mesleki belgeni incelemeye göndererek tam erişim kazanabilir ve kendi önergelerini sunabilirsin.</p>
+                    </div>
+                </section>
+
+                <!-- YENİ EKLENEN 2.6. CANLI STADYUM -->
+                <section id="view-stadyum" class="view-section hidden animate-fadeIn">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest">Canlı <span class="text-kaos">Stadyum</span></h2>
+                        <div class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-lg shadow-md flex items-center gap-3">
+                            <span class="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest"><span class="w-2 h-2 rounded-full bg-kaos animate-pulse"></span> Mezun</span>
+                            <span class="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest"><span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Öğrenci</span>
+                        </div>
+                    </div>
+
+                    <!-- Skor Tabelası -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="stadyum-skor-board">
+                        <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center shadow-inner">
+                            <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Şu An Stadyumda</div>
+                            <div class="text-2xl font-black text-white" id="stat-total-online">0</div>
+                        </div>
+                        <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center shadow-inner">
+                            <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Mezun Koltuğu</div>
+                            <div class="text-2xl font-black text-kaos" id="stat-mezun-online">0</div>
+                        </div>
+                        <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center shadow-inner">
+                            <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Öğrenci Koltuğu</div>
+                            <div class="text-2xl font-black text-blue-500" id="stat-ogrenci-online">0</div>
+                        </div>
+                        <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center shadow-inner">
+                            <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Lider Tribün</div>
+                            <div class="text-xl font-black text-white truncate mt-1" id="stat-lider-tribun">Bekleniyor</div>
+                        </div>
+                    </div>
+
+                    <!-- Kuşbakışı Saha ve Tribünler -->
+                    <div class="bg-slate-900 border border-slate-700 p-4 md:p-8 rounded-3xl shadow-2xl relative">
+                        <!-- Merkez Saha -->
+                        <div class="w-full max-w-md mx-auto h-32 md:h-48 bg-black border-2 border-slate-600 rounded-full mb-8 relative flex items-center justify-center shadow-[0_0_50px_rgba(246,193,4,0.1)]">
+                            <div class="w-16 h-16 md:w-24 md:h-24 border border-slate-700 rounded-full flex items-center justify-center">
+                                <div class="text-center">
+                                    <i class="fas fa-microphone text-gray-600 text-2xl md:text-3xl mb-1"></i>
+                                    <div class="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-widest">Saha Boş</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 81 İl Tribün Izgarası -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2" id="stadyum-tribunler">
+                            <!-- Javascript (stadyum.js) burayı 81 il ile dolduracak -->
+                            <div class="text-center py-10 col-span-full border border-dashed border-slate-700 rounded-xl text-gray-500 text-sm font-bold tracking-widest uppercase">
+                                Stadyum Kapıları Açılıyor...
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -533,19 +588,23 @@
 
         <!-- MOBİL ALT MENÜ (BOTTOM NAV) -->
         <nav class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 flex justify-around items-center py-3 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.3)] pb-safe">
-            <button data-target="view-lobi" class="nav-menu-btn active text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-lobi" class="nav-menu-btn active text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-landmark text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Lobi</span>
             </button>
-            <button data-target="view-sandik" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-stadyum" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
+                <i class="fas fa-futbol text-lg"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Stadyum</span>
+            </button>
+            <button data-target="view-sandik" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-vote-yea text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Sandık</span>
             </button>
-            <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-bullhorn text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Kürsü</span>
             </button>
-            <button data-target="view-profil" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-profil" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-id-card text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Profil</span>
             </button>
@@ -711,6 +770,7 @@
     <div id="recaptcha-container"></div>
     <script type="module" src="app.js"></script>
     <script type="module" src="qa.js"></script>
+    <script type="module" src="stadyum.js"></script>
     
     <style>
         .animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
