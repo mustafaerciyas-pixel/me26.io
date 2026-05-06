@@ -4,7 +4,8 @@
 
 import { supabase } from './supabase.js';
 import { auth } from './config.js'; 
-import { STATE } from './state.js'; // GÜVENLİK DUVARI İÇİN STATE EKLENDİ
+import { STATE } from './state.js'; 
+import { UI } from './ui.js'; // GÜVENLİK KAPISI İÇİN UI IMPORT EDİLDİ
 
 let aktifQaSekme = 'bekleyenler';
 let aktifSoruId = null;
@@ -66,13 +67,8 @@ function qaSekmeDegistir(sekme) {
 }
 
 function qaModaliAc() {
-    const kullanici = aktifKullaniciyiAl();
-    if (!kullanici) return alert("Soru sorabilmek için sisteme giriş yapmalısınız.");
-    
-    // GÜVENLİK DUVARI: KÜRSÜYE ÇIKMA
-    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
-        return alert("Kürsüde soru sorabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.");
-    }
+    // GÜVENLİK DUVARI BOUNCER KONTROLÜ
+    if (!UI.triggerVerificationGate()) return;
     
     const modal = document.getElementById('qa-modal');
     if (modal) {
@@ -90,7 +86,7 @@ function qaModaliKapat() {
 }
 
 // ==========================================
-// 3. SORULARI LİSTELEME
+// 3. SORULARI LİSTELEME (BUZLU CAM)
 // ==========================================
 async function qaSorulariGetir() {
     const listelemeAlani = document.getElementById('qa-listesi');
@@ -119,6 +115,9 @@ async function qaSorulariGetir() {
 
     listelemeAlani.innerHTML = ''; 
 
+    // YETKİ KONTROLÜ (Sessiz mod: true/false)
+    const isAuthorized = UI.triggerVerificationGate(true);
+
     data.forEach(soru => {
         const tarih = new Date(soru.olusturma_tarihi).toLocaleDateString('tr-TR');
         
@@ -129,28 +128,40 @@ async function qaSorulariGetir() {
 
         const rozet = soru.cozuldu_mu ? '<span class="absolute top-0 right-0 bg-green-500 text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">✓ ÇÖZÜLDÜ</span>' : '';
 
+        // Buzlu Cam Efektleri ve Kilit
+        const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
+        const yazarId = isAuthorized ? soru.yazar_dijital_id : 'TR-IA-****';
+        const overlay = isAuthorized ? '' : `
+            <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer mt-12 rounded-2xl" onclick="UI.triggerVerificationGate()">
+                <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
+                    <i class="fas fa-lock text-kaos"></i> <span class="text-[10px] font-black text-white uppercase tracking-widest">Söz Hakkı Yok</span>
+                </div>
+            </div>
+        `;
+
         const soruKarti = document.createElement('div');
         soruKarti.className = 'bg-black/40 border border-slate-700 p-6 rounded-2xl relative shadow-md hover:border-slate-500 transition-colors group';
         soruKarti.innerHTML = `
             ${rozet}
+            ${overlay}
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center border border-slate-600 text-gray-400 text-xs">
+                    <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center border border-slate-600 text-gray-400 text-xs ${blurClass}">
                         <i class="fas fa-user-astronaut"></i>
                     </div>
-                    <div>
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${soru.yazar_dijital_id}</div>
+                    <div class="${blurClass}">
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${yazarId}</div>
                         <div class="text-[9px] text-gray-500">${tarih}</div>
                     </div>
                 </div>
                 ${kitleEtiketi}
             </div>
             <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${soru.baslik}</h4>
-            <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2">${soru.icerik}</p>
+            <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${soru.icerik}</p>
             
-            <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto">
-                <button onclick="qaSoruDetayAc('${soru.id}')" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
-                    Kürsüye Git <i class="fas fa-arrow-right"></i>
+            <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto relative z-10">
+                <button onclick="${isAuthorized ? `qaSoruDetayAc('${soru.id}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
+                    ${isAuthorized ? 'Kürsüye Git <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> KİLİDİ AÇ'}
                 </button>
                 <button onclick="qaUygunsuzBildir('${soru.id}', 'soru')" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
                     <i class="fas fa-flag"></i> Uygunsuz
@@ -165,14 +176,9 @@ async function qaSorulariGetir() {
 // 4. YENİ SORU GÖNDERME
 // ==========================================
 async function qaSoruGonder() {
+    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI KONTROLÜ
+    
     const kullanici = aktifKullaniciyiAl();
-    if (!kullanici) return alert("Soru sorabilmek için sisteme giriş yapmalısınız.");
-
-    // GÜVENLİK DUVARI: KÜRSÜYE ÇIKMA KONTROLÜ
-    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
-        return alert("Güvenlik Duvarı: Kürsüye çıkabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.");
-    }
-
     const kitle = document.getElementById('input-qa-audience').value;
     const baslik = document.getElementById('input-qa-title').value.trim();
     const icerik = document.getElementById('input-qa-content').value.trim();
@@ -263,8 +269,9 @@ async function qaGeminiIleDuzelt() {
 // 6. SORU DETAYI VE DİNAMİK MODAL
 // ==========================================
 window.qaSoruDetayAc = async function(soruId) {
+    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
+    
     const kullanici = aktifKullaniciyiAl();
-    if (!kullanici) return alert("İçeriği okumak için sisteme giriş yapmalısınız.");
     
     const { data: soru, error: soruError } = await supabase.from('me26_sorular').select('*').eq('id', soruId).single();
     if (soruError) return alert("Soru bulunamadı.");
@@ -311,22 +318,16 @@ window.qaSoruDetayAc = async function(soruId) {
         cevaplarHTML = '<div class="text-center text-gray-500 text-xs py-8 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl mt-4">Henüz kürsüde söz alan olmadı.</div>';
     }
 
-    // GÜVENLİK DUVARI VE ROL KONTROLÜ
     let cevapYetkisiVar = true;
     let yetkisizlikMesaji = '';
 
-    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
+    if (soru.hedef_kitle === 'Sadece İçmimarlar' && kullanici.rol !== 'İçmimar') {
         cevapYetkisiVar = false;
-        yetkisizlikMesaji = 'Kürsüde söz alabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.';
-    } else {
-        if (soru.hedef_kitle === 'Sadece İçmimarlar' && kullanici.rol !== 'İçmimar') {
-            cevapYetkisiVar = false;
-            yetkisizlikMesaji = 'Bu soruya sadece Mezunlar cevap verebilir. (Tribün İzleyicisisiniz)';
-        }
-        if (soru.hedef_kitle === 'Sadece Öğrenciler' && kullanici.rol !== 'Öğrenci') {
-            cevapYetkisiVar = false;
-            yetkisizlikMesaji = 'Bu soruya sadece Öğrenciler cevap verebilir. (Tribün İzleyicisisiniz)';
-        }
+        yetkisizlikMesaji = 'Bu soruya sadece Mezunlar cevap verebilir. (Tribün İzleyicisisiniz)';
+    }
+    if (soru.hedef_kitle === 'Sadece Öğrenciler' && kullanici.rol !== 'Öğrenci') {
+        cevapYetkisiVar = false;
+        yetkisizlikMesaji = 'Bu soruya sadece Öğrenciler cevap verebilir. (Tribün İzleyicisisiniz)';
     }
 
     let cevapYazmaAlani = '';
@@ -377,13 +378,8 @@ window.qaSoruDetayAc = async function(soruId) {
 // 7. CEVAP GÖNDERME
 // ==========================================
 window.qaCevapGonder = async function() {
+    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
     const kullanici = aktifKullaniciyiAl();
-    if (!kullanici) return alert("Cevap verebilmek için sisteme giriş yapmalısınız.");
-
-    // GÜVENLİK DUVARI: CEVAP YAZMA KONTROLÜ
-    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
-        return alert("Güvenlik Duvarı: Kürsüde söz alabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.");
-    }
 
     const icerik = document.getElementById('input-qa-answer').value.trim();
     if (icerik.length < 20 || icerik.length > 4000) return alert("Cevabınız 20 ile 4000 karakter arasında olmalıdır.");
@@ -415,6 +411,7 @@ window.qaCevapGonder = async function() {
 // 8. ÇÖZÜM OLARAK İŞARETLEME (KİLİTLEME)
 // ==========================================
 window.qaCozumİsaretle = async function(cevapId, soruId) {
+    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
     if(!confirm("Bu cevabı çözüm olarak işaretlerseniz soru kilitlenecek ve arşivlenecektir. Onaylıyor musunuz?")) return;
 
     await supabase.from('me26_cevaplar').update({ is_cozum: true }).eq('id', cevapId);
@@ -430,8 +427,9 @@ window.qaCozumİsaretle = async function(cevapId, soruId) {
 // 9. TOPLULUK DENETİMİ
 // ==========================================
 window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
+    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
     const kullanici = aktifKullaniciyiAl();
-    if (!kullanici) return alert("Şikayet edebilmek için sisteme giriş yapmalısınız.");
+    
     if(!confirm("Bu içeriğin mesleki kurallara uymadığını teyit ediyor musunuz? (10 şikayette içerik otomatik silinecektir)")) return;
 
     const { error } = await supabase.from('me26_sikayetler').insert([{
