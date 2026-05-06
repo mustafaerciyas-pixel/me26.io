@@ -5,11 +5,11 @@
 
 import { STATE } from './state.js'; 
 import { auth } from './config.js';
-import { supabase } from './supabase.js'; 
+import { DB, supabase } from './supabase.js'; // DÜZELTME: DB motorunu içeri aldık
 import { signInWithPopup, GoogleAuthProvider, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-let confirmationResult = null; // SMS kodunu aklında tutan geçici hafıza
-let me26Recaptcha = null; // Ben robot değilim testinin motoru
+let confirmationResult = null; 
+let me26Recaptcha = null; 
 
 // 1. GOOGLE İLE GİRİŞ MOTORU
 export async function googleIleGiris() {
@@ -18,7 +18,6 @@ export async function googleIleGiris() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
 
-        // Adamın Google'dan gelen bilgilerini küçük bir pakete koyuyoruz
         const gizliPaket = {
             uid: user.uid, 
             g_isim: user.displayName || 'İsimsiz', 
@@ -30,7 +29,6 @@ export async function googleIleGiris() {
             ref: null 
         };
 
-        // Paketi Supabase'deki karanlık odaya (Çelik Arşive) gönderiyoruz
         const { data, error } = await supabase.rpc('me26_sistem_giris', { p_payload: gizliPaket });
         if (error) { alert("Giriş veritabanı hatası!"); return null; }
         return data; 
@@ -41,7 +39,7 @@ export async function googleIleGiris() {
 export async function sistemdenCikis() {
     try { 
         await signOut(auth); 
-        STATE.clearSession(); // Çıkarken hafıza defterini de temizle
+        STATE.clearSession(); 
         window.location.reload(); 
     } catch (error) { console.error(error); }
 }
@@ -53,7 +51,6 @@ export async function gercekSmsGonder(phoneNumber) {
             throw new Error("Oturum bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.");
         }
 
-        // Telefon numarasını temizle (Boşlukları vs. at, sadece rakam kalsın)
         let cleanedPhone = phoneNumber.replace(/\D/g, ''); 
         
         if (cleanedPhone.startsWith('90')) cleanedPhone = cleanedPhone.substring(2);
@@ -65,7 +62,6 @@ export async function gercekSmsGonder(phoneNumber) {
 
         const formattedPhone = `+90${cleanedPhone}`;
 
-        // Eskiden kalma Recaptcha varsa temizle, yenisini kur
         if (me26Recaptcha) {
             try { me26Recaptcha.clear(); } catch(e) {}
             me26Recaptcha = null;
@@ -80,8 +76,6 @@ export async function gercekSmsGonder(phoneNumber) {
         }
 
         me26Recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-
-        // Adamın Google hesabına bu telefon numarasını bağla ve SMS at
         confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, me26Recaptcha);
         return true;
 
@@ -91,7 +85,6 @@ export async function gercekSmsGonder(phoneNumber) {
         let errorMsg = error.message || String(error);
         const errCode = error.code || '';
 
-        // Hataları Türkçe'ye çevirip kullanıcıya söyle
         if (errCode === 'auth/too-many-requests') {
             errorMsg = "Çok fazla deneme yapıldı. Lütfen biraz sonra tekrar deneyin.";
         } else if (errCode === 'auth/invalid-phone-number') {
@@ -113,22 +106,11 @@ export async function gercekSmsDogrula(code, uid, phoneValue) {
     try {
         if (!confirmationResult) throw new Error("Önce SMS gönderilmelidir.");
 
-        // Telefona gelen kodu Firebase'e sor
         await confirmationResult.confirm(code);
         
-        // Kod doğruysa Çelik Arşive (Supabase) kaydet
-        const updatePayload = {
-            telefon: phoneValue,
-            hasPhone: true,
-            has_phone: true,
-            authStage: 'phone_verified',
-            auth_stage: 'phone_verified'
-        };
+        // DÜZELTME: Doğrudan tabloyu güncellemek yerine Karanlık Oda (RPC) Robotumuzu kullanıyoruz!
+        await DB.telefonuOnayla(uid, phoneValue);
 
-        const { error } = await supabase.from('users').update(updatePayload).eq('id', uid);
-        if (error) console.error("Supabase telefon kayıt hatası:", error);
-
-        // Kasadaki hafıza defterini (STATE) de güncelle
         STATE.updateUser('hasPhone', true);
         STATE.updateUser('authStage', 'phone_verified');
 
@@ -145,7 +127,6 @@ export async function eDevletBelgesiOku(file, userUid) {
         const reader = new FileReader();
         reader.onload = async function() {
             try {
-                // PDF.js ile dosyayı aç ve içindeki yazıları metne dök
                 const typedarray = new Uint8Array(this.result);
                 const pdf = await pdfjsLib.getDocument(typedarray).promise;
                 let fullText = '';
@@ -157,11 +138,9 @@ export async function eDevletBelgesiOku(file, userUid) {
                 
                 const cleanText = fullText.replace(/\s+/g, ' ');
 
-                // Metnin içindeki bilgileri cımbızla çek (Düzenli İfadeler - Regex)
                 const tcMatch = cleanText.match(/(?:T\.C\.|Kimlik)[\s\S]*?(?:Numarası|No)[\s|:.-]*(\d{11})/i) || cleanText.match(/(\d{11})/);
                 const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
 
-                // Diğer alanlara kaymayı engelleyen bariyer
                 const regexDuvar = "(?=Baba\\s*Ad|Anne\\s*Ad|Doğum\\s*Tarihi|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu|Diploma|Mezuniyet|Durum|İLGİLİ)";
                 
                 const ad_soyad_raw = (cleanText.match(new RegExp(`Adı\\s*Soyadı[\\s|:.-]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1] || 'Bulunamadı';
@@ -203,15 +182,12 @@ export async function eDevletBelgesiOku(file, userUid) {
                 const mezuniyet_tarihi = (cleanText.match(/Mezuniyet\s*Tarihi[\s|:.-]*(\d{2}\.\d{2}\.\d{4})/i) || [])[1] || 'Bulunamadı';
                 const durum = (cleanText.match(/Durum[\s|:.-]*([a-zA-ZÇĞİÖŞÜçğıöşü]+)/i) || [])[1] || 'Bulunamadı';
                 
-                // En önemli yer: E-devlet Barkodu
                 const barkod = (cleanText.match(/YOK[A-Z0-9]{10,}/i) || cleanText.match(/[A-Z0-9]{12,}/i) || ['Bulunamadı'])[0];
                 const tumTarihler = cleanText.match(/\d{2}\.\d{2}\.\d{4}/g) || [];
                 const belge_tarihi = tumTarihler.length > 0 ? tumTarihler[tumTarihler.length - 1] : 'Bulunamadı'; 
 
-                // Bulunan verileri paketle
                 const belgeData = { tc, ad_soyad, baba_adi, anne_adi, dogum_tarihi, uni, fakulte, bolum, diploma_no, diploma_notu, mezuniyet_tarihi, durum, barkod, belge_tarihi, belge_durumu: "Onay Bekliyor" };
 
-                // Supabase'deki çelik arşive yolla
                 const { error } = await supabase.rpc('me26_belge_yukle', { p_uid: userUid, p_data: belgeData });
                 if (error) reject("Belge kaydedilemedi."); else resolve(belgeData);
             } catch (error) { reject("PDF okunamadı."); }
