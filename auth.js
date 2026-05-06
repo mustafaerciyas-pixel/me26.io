@@ -2,6 +2,7 @@
 // ME26 SİSTEMİ - KİMLİK DOĞRULAMA, SMS VE BELGE DEŞİFRE MOTORU (auth.js)
 // ============================================================================
 
+import { STATE } from './state.js'; // Frontend State güncellemesi için eklendi
 import { auth } from './config.js';
 import { supabase } from './supabase.js'; 
 import { signInWithPopup, GoogleAuthProvider, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -32,34 +33,102 @@ export async function sistemdenCikis() {
 
 export async function gercekSmsGonder(phoneNumber) {
     try {
-        if (!me26Recaptcha) {
-            if (!document.getElementById('izole-recaptcha-odasi')) {
-                const div = document.createElement('div');
-                div.id = 'izole-recaptcha-odasi';
-                document.body.appendChild(div);
-            }
-            me26Recaptcha = new RecaptchaVerifier(auth, 'izole-recaptcha-odasi', { 
-                'size': 'invisible' 
-            });
+        // 1. OTURUM KONTROLÜ
+        if (!auth.currentUser) {
+            throw new Error("Google oturumu bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.");
         }
 
-        let formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+90' + phoneNumber.replace(/^0/, '');
+        // 2. TELEFON NUMARASI NORMALİZASYONU (Sanitizer)
+        let cleanedPhone = phoneNumber.replace(/\D/g, ''); // Sadece rakamları bırak
+        
+        if (cleanedPhone.startsWith('90')) cleanedPhone = cleanedPhone.substring(2);
+        if (cleanedPhone.startsWith('0')) cleanedPhone = cleanedPhone.substring(1);
+
+        // 3. GSM KONTROLÜ
+        if (cleanedPhone.length !== 10 || !cleanedPhone.startsWith('5')) {
+            throw new Error("Telefon numarası 5 ile başlayan 10 haneli GSM numarası olmalı.");
+        }
+
+        const formattedPhone = `+90${cleanedPhone}`;
+
+        // 4. RECAPTCHA SIFIRLAMA VE YENİDEN KURMA
+        if (me26Recaptcha) {
+            try { me26Recaptcha.clear(); } catch(e) {}
+            me26Recaptcha = null;
+        }
+
+        let recaptchaDiv = document.getElementById('recaptcha-container');
+        if (!recaptchaDiv) {
+            recaptchaDiv = document.createElement('div');
+            recaptchaDiv.id = 'recaptcha-container';
+            recaptchaDiv.style.display = 'none'; // Gizli tut
+            document.body.appendChild(recaptchaDiv);
+        }
+
+        me26Recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', { 
+            'size': 'invisible' 
+        });
+
+        // 5. YENİ YÖNTEM: MEVCUT HESABA TELEFONU BAĞLA
         confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, me26Recaptcha);
         return true;
 
     } catch (error) {
         console.error("SMS Hatası Detayı:", error);
-        throw error; 
+        
+        // 6. KULLANICI DOSTU HATA YAKALAYICI
+        let errorMsg = error.message || String(error);
+        const errCode = error.code || '';
+
+        if (errCode === 'auth/too-many-requests') {
+            errorMsg = "Çok fazla deneme yapıldı. Lütfen biraz sonra tekrar deneyin.";
+        } else if (errCode === 'auth/invalid-phone-number') {
+            errorMsg = "Telefon numarası geçersiz.";
+        } else if (errCode === 'auth/captcha-check-failed') {
+            errorMsg = "Güvenlik doğrulaması başarısız oldu. Sayfayı yenileyip tekrar deneyin.";
+        } else if (errCode === 'auth/provider-already-linked' || errCode === 'auth/credential-already-in-use') {
+            errorMsg = "Bu hesaba telefon doğrulaması zaten bağlı görünüyor.";
+        } else if (!error.message.includes("Google") && !error.message.includes("GSM")) {
+            // Eğer fırlattığımız özel bir hata değilse genel hata ver
+            errorMsg = "SMS gönderilemedi. Lütfen tekrar deneyin.";
+        }
+
+        throw new Error(errorMsg); 
     }
 }
 
 export async function gercekSmsDogrula(code, uid, phoneValue) {
     try {
+        if (!confirmationResult) {
+            throw new Error("Önce SMS gönderilmelidir.");
+        }
+
+        // 1. Firebase OTP Onayı
         await confirmationResult.confirm(code);
-        await supabase.from('users').update({ telefon: phoneValue }).eq('id', uid);
+        
+        // 2. Supabase Güncellemesi (Hem camelCase hem snake_case formatlarını destekle)
+        const updatePayload = {
+            telefon: phoneValue,
+            hasPhone: true,
+            has_phone: true,
+            authStage: 'phone_verified',
+            auth_stage: 'phone_verified'
+        };
+
+        const { error } = await supabase.from('users').update(updatePayload).eq('id', uid);
+        if (error) {
+            console.error("Supabase telefon kayıt hatası:", error);
+            // Sadece logla, Firebase onayı geçtiyse işlemi durdurma
+        }
+
+        // 3. Frontend STATE Güncellemesi
+        STATE.updateUser('hasPhone', true);
+        STATE.updateUser('authStage', 'phone_verified');
+
         return true;
     } catch (error) {
-        console.error("Doğrulama Hatası:", error); throw error;
+        console.error("Doğrulama Hatası:", error); 
+        throw error;
     }
 }
 
