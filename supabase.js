@@ -109,17 +109,62 @@ export const DB = {
         return data;
     },
 
-    // =========================================================
     // 8. EKSİK OLAN MOTOR: DESTEK VERME MOTORU
-    // =========================================================
     destekVer: async (uid, onergeId) => {
         const { error } = await supabase.rpc('me26_destek_ver', { p_onerge_id: onergeId, p_uid: uid });
         if (error) {
-            // "unique constraint" hatası veriyorsa, adam bu önergeye zaten destek olmuştur.
             if (error.message.includes('unique constraint') || error.code === '23505') {
                 throw new Error('already_supported');
             }
             throw error;
         }
+    },
+
+    // =========================================================
+    // 9. CANLI TRİBÜN LİGİ SAYIMI (YENİ EKLENDİ)
+    // =========================================================
+    tribunLigiGetir: async () => {
+        const { data: users, error: userError } = await supabase.from('users').select('id, sehir, mesleki_durum');
+        if (userError) throw userError;
+
+        const { data: onergeler } = await supabase.from('onergeler').select('yazar_uid');
+        const { data: sorular } = await supabase.from('me26_sorular').select('yazar_uid');
+        const { data: cevaplar } = await supabase.from('me26_cevaplar').select('yazar_uid');
+
+        const cityMap = {};
+        const userCityMap = {}; 
+
+        users.forEach(u => {
+            const city = u.sehir;
+            userCityMap[u.id] = city; 
+
+            if (!city || city === 'Belirsiz' || city === 'Seçilmedi') return;
+            
+            if (!cityMap[city]) {
+                cityMap[city] = { city: city, icmimar: 0, ogrenci: 0, onerge: 0, oy: 0, katki: 0, weeklyGrowthPoints: 0, weeklyGrowthPercent: 0 };
+            }
+
+            const role = (u.mesleki_durum || '').toLowerCase();
+            if (role.includes('öğrenci')) {
+                cityMap[city].ogrenci += 1;
+            } else {
+                cityMap[city].icmimar += 1; 
+            }
+        });
+
+        if (onergeler) {
+            onergeler.forEach(o => {
+                const city = userCityMap[o.yazar_uid];
+                if (city && cityMap[city]) cityMap[city].onerge += 1;
+            });
+        }
+
+        const katkilar = [...(sorular || []), ...(cevaplar || [])];
+        katkilar.forEach(k => {
+            const city = userCityMap[k.yazar_uid];
+            if (city && cityMap[city]) cityMap[city].katki += 1;
+        });
+
+        return Object.values(cityMap);
     }
 };
