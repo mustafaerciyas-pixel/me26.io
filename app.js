@@ -1,6 +1,6 @@
-/* ========================================================================== 
+/* ==========================================================================
    ME26 AĞI - ANA MOTOR VE SAAS MENÜ YÖNLENDİRİCİSİ (app.js)
-   Temizlenmiş Production Sürümü
+   Canlı Production Sürümü
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -69,6 +69,20 @@ const syncCityGate = () => {
     if (proposalsContainer) proposalsContainer.classList.remove('hidden');
 };
 
+const isValidPhoneNumber = (phoneValue) => {
+    const digits = String(phoneValue || '').replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 15;
+};
+
+const isPdfFile = (file) => {
+    if (!file) return false;
+
+    const fileName = String(file.name || '').toLowerCase();
+    const fileType = String(file.type || '').toLowerCase();
+
+    return fileType === 'application/pdf' || fileName.endsWith('.pdf');
+};
+
 // ======================================================
 // 1. EVRENSEL MECLİS KALEMİ - ŞİMDİLİK PASİF
 // ======================================================
@@ -87,6 +101,7 @@ window.ortakKursuGonder = async function () {
     if (!UI.triggerVerificationGate()) return;
 
     const user = STATE.getUser();
+
     if (!user || !user.uid) {
         UI.showToast('Güvenlik Hatası: Oturum kimliği doğrulanamadı.', 'error');
         return;
@@ -121,9 +136,11 @@ window.ortakKursuGonder = async function () {
             }
 
             await DB.onergeGonder(user.uid, baslik, sorun, cozum, hedefKitle, sure);
+
             UI.showToast('Önergeniz başarıyla meclise sunuldu!', 'success');
 
             await Me26VotingSystem.loadProposals();
+
             UI.closeModal('ortak-kursu-modal');
             UI.switchSaasTab('view-sandik');
         }
@@ -146,10 +163,14 @@ window.ortakKursuGonder = async function () {
             };
 
             const { error } = await supabase.from('me26_sorular').insert([yeniSoru]);
+
             if (error) throw new Error('Soru gönderilemedi.');
 
             UI.showToast('Sorunuz ortak akla başarıyla iletildi!', 'success');
-            if (typeof window.qaSorulariGetir === 'function') window.qaSorulariGetir();
+
+            if (typeof window.qaSorulariGetir === 'function') {
+                window.qaSorulariGetir();
+            }
 
             UI.closeModal('ortak-kursu-modal');
             UI.switchSaasTab('view-kursu');
@@ -221,11 +242,18 @@ export const AUTH = {
 
     verifyPhone: async () => {
         const phoneValue = safeValue('input-phone-number', '');
+
+        if (!isValidPhoneNumber(phoneValue)) {
+            UI.showToast('Lütfen geçerli bir telefon numarası girin.', 'error');
+            return;
+        }
+
         const btn = $('btn-submit-phone');
         const oldText = setButtonLoading(btn, 'BAĞLANIYOR...');
 
         try {
             await gercekSmsGonder(phoneValue);
+
             UI.showToast('Kod gönderildi! Lütfen ekrana girin.', 'success');
 
             const step1 = $('phone-step-1');
@@ -259,10 +287,26 @@ export const AUTH = {
         const oldText = setButtonLoading(btn, 'DOĞRULANIYOR...');
 
         try {
+            const user = STATE.getUser();
+
+            if (!user || !user.uid) {
+                UI.showToast('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                restoreButton(btn, oldText || 'KODU ONAYLA');
+                return;
+            }
+
             const phoneValue = safeValue('input-phone-number', '');
-            await gercekSmsDogrula(otpValue, STATE.getUser().uid, phoneValue);
+
+            if (!isValidPhoneNumber(phoneValue)) {
+                UI.showToast('Telefon numarası okunamadı. Lütfen işlemi yeniden başlatın.', 'error');
+                restoreButton(btn, oldText || 'KODU ONAYLA');
+                return;
+            }
+
+            await gercekSmsDogrula(otpValue, user.uid, phoneValue);
 
             UI.showToast('Telefon başarıyla onaylandı!', 'success');
+
             UI.closeModal('phone-modal');
             UI.renderProfile();
         } catch (error) {
@@ -272,8 +316,6 @@ export const AUTH = {
     },
 
     verifyPdf: async () => {
-        // ÖNEMLİ: Genel input[type="file"] kullanılmıyor.
-        // Çünkü Koruma Hattı'nda da ayrı dosya input'u var.
         const fileInput = $('input-pdf-file');
 
         if (!fileInput || !fileInput.files || !fileInput.files[0]) {
@@ -281,7 +323,25 @@ export const AUTH = {
             return;
         }
 
+        const selectedFile = fileInput.files[0];
+
+        if (!isPdfFile(selectedFile)) {
+            UI.showToast('Lütfen yalnızca PDF formatında belge yükleyin.', 'error');
+            return;
+        }
+
+        if (selectedFile.size > 10 * 1024 * 1024) {
+            UI.showToast('PDF dosyası 10 MB’dan küçük olmalıdır.', 'error');
+            return;
+        }
+
         const user = STATE.getUser();
+
+        if (!user || !user.uid) {
+            UI.showToast('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+            return;
+        }
+
         const btn = $('btn-submit-pdf');
         const isTerfi = user && user.authStage === 'pdf_verified';
         const oldText = setButtonLoading(
@@ -290,7 +350,7 @@ export const AUTH = {
         );
 
         try {
-            await eDevletBelgesiOku(fileInput.files[0], user?.uid);
+            await eDevletBelgesiOku(selectedFile, user.uid);
 
             if (isTerfi) {
                 UI.showToast('Belgeniz incelemeye alındı. Onay sonrası unvanınız güncellenecektir.', 'success');
@@ -299,10 +359,13 @@ export const AUTH = {
             }
 
             UI.closeModal('pdf-modal');
-            setTimeout(() => window.location.reload(), 1500);
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } catch (error) {
             UI.showToast(error.message || 'Bir hata oluştu.', 'error');
-            restoreButton(btn, oldText || 'MESLEKİ BELGEYİ GÖNDER');
+            restoreButton(btn, oldText || 'BELGE İNCELEME BAŞVURUSU GÖNDER');
         }
     }
 };
@@ -318,6 +381,7 @@ export const Me26VotingSystem = {
     loadProposals: async function () {
         try {
             const onergeler = await DB.onergeleriGetir();
+
             UI.renderProposals(onergeler);
 
             if (!onergeler || onergeler.length === 0) return;
@@ -348,8 +412,13 @@ export const Me26VotingSystem = {
 
         const user = STATE.getUser();
 
+        if (!user || !user.uid) {
+            UI.showToast('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+            return;
+        }
+
         if (!user.hasPhone) {
-            UI.showToast('Oy kullanmadan önce Profil sekmesinden Telefonunuzu onaylatmalısınız.', 'error');
+            UI.showToast('Oy kullanmadan önce Profil sekmesinden telefonunuzu onaylatmalısınız.', 'error');
             return;
         }
 
@@ -359,6 +428,7 @@ export const Me26VotingSystem = {
         }
 
         const container = btnEl.closest('.vote-buttons-container');
+
         if (!container) {
             UI.showToast('Oylama alanı bulunamadı.', 'error');
             return;
@@ -378,6 +448,7 @@ export const Me26VotingSystem = {
         }
 
         const currentPower = getVotePowerNumber(user);
+
         if (currentPower <= 0) {
             UI.showToast('Profil panelinden mesleki belgenizi yükleyip tam erişim almalısınız.', 'error');
             return;
@@ -392,6 +463,7 @@ export const Me26VotingSystem = {
         }
 
         const originalHtml = btnEl.innerHTML;
+
         btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btnEl.disabled = true;
 
@@ -399,6 +471,7 @@ export const Me26VotingSystem = {
             await DB.oyKullan(user.uid, onergeId, choice, currentPower);
 
             const allButtons = container.querySelectorAll('.vote-btn');
+
             allButtons.forEach((button) => {
                 button.disabled = true;
                 button.classList.remove(
@@ -436,6 +509,7 @@ export const Me26VotingSystem = {
 
             if (error.message === 'already_voted') {
                 UI.showToast('Bu önergeye zaten oy verdiniz. Sistem ikinci oyu engeller.', 'info');
+
                 container.querySelectorAll('.vote-btn').forEach((button) => {
                     button.disabled = true;
                     button.classList.add('opacity-30', 'cursor-not-allowed');
@@ -462,6 +536,7 @@ export const Me26VotingSystem = {
         });
 
         const totalPower = totalYesPower + totalNoPower + totalAbstainPower;
+
         let pY = 0;
         let pN = 0;
         let pA = 0;
@@ -497,6 +572,7 @@ function tribunLigiFonksiyonunuKur() {
     window.loadTribunLigiData = async () => {
         try {
             const realCityData = await DB.tribunLigiGetir();
+
             if (typeof UI.renderTribunLigi === 'function') {
                 UI.renderTribunLigi(realCityData);
             }
@@ -510,19 +586,28 @@ function tribunLigiFonksiyonunuKur() {
 // 6. STATİK BUTON DİNLEYİCİLERİ
 // ======================================================
 function statikDinleyicileriBagla() {
-    ['btn-register-hero', 'btn-register-nav', 'btn-login-hero', 'btn-login-nav'].forEach((id) => {
+    [
+        'btn-register-hero',
+        'btn-register-nav',
+        'btn-login-hero',
+        'btn-login-nav'
+    ].forEach((id) => {
         bind(id, 'click', AUTH.loginWithGoogle);
     });
 
     document.querySelectorAll('.nav-menu-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
             const targetId = e.currentTarget.getAttribute('data-target');
+
             if (!targetId) return;
 
             UI.switchSaasTab(targetId);
 
             if (window.innerWidth < 768) {
-                document.querySelectorAll('.nav-menu-btn i').forEach((icon) => icon.classList.remove('text-kaos'));
+                document.querySelectorAll('.nav-menu-btn i').forEach((icon) => {
+                    icon.classList.remove('text-kaos');
+                });
+
                 e.currentTarget.querySelector('i')?.classList.add('text-kaos');
             }
         });
@@ -538,13 +623,17 @@ function statikDinleyicileriBagla() {
 
         try {
             await DB.sehirGuncelle(STATE.getUser().uid, selectedCity);
+
             STATE.setCity(selectedCity);
             UI.renderProfile();
             syncCityGate();
 
             UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
 
-            if (typeof window.loadTribunLigiData === 'function') window.loadTribunLigiData();
+            if (typeof window.loadTribunLigiData === 'function') {
+                window.loadTribunLigiData();
+            }
+
             await Me26VotingSystem.loadProposals();
         } catch (error) {
             UI.showToast('Şehir kaydedilemedi.', 'error');
@@ -552,12 +641,21 @@ function statikDinleyicileriBagla() {
     });
 
     bind('btn-standart-numara', 'click', async () => {
+        const user = STATE.getUser();
+
+        if (!user || !user.uid) {
+            UI.showToast('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+            return;
+        }
+
         if (!confirm('Sıradaki boş numarayı otomatik almak istediğine emin misin?')) return;
 
         try {
-            const yeniNo = await DB.standartNumaraAl(STATE.getUser().uid);
+            const yeniNo = await DB.standartNumaraAl(user.uid);
+
             STATE.setStandardNumber(yeniNo);
             UI.renderProfile();
+
             UI.showToast(`Numaran atandı: TR-IA-${yeniNo}`, 'success');
         } catch (error) {
             UI.showToast('Numara alınamadı.', 'error');
@@ -585,10 +683,9 @@ function statikDinleyicileriBagla() {
     });
 
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
+
     bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
     bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
-    bind('btn-logout', 'click', AUTH.logout);
-
     bind('btn-submit-pdf', 'click', AUTH.verifyPdf);
 
     bind('btn-open-vip-modal', 'click', () => {
@@ -600,6 +697,8 @@ function statikDinleyicileriBagla() {
     bind('btn-claim-vip-number', 'click', VIP.claimNumber);
     bind('btn-whatsapp-share', 'click', () => VIP.handleShare(true));
     bind('btn-copy-invite', 'click', () => VIP.handleShare(false));
+
+    bind('btn-logout', 'click', AUTH.logout);
 }
 
 // ======================================================
@@ -610,6 +709,7 @@ function dinamikDinleyicileriBagla() {
     document.body.addEventListener('click', (e) => {
         const target = e.target;
         const clickedEl = target instanceof Element ? target : null;
+
         if (!clickedEl) return;
 
         const phoneSubmitBtn = clickedEl.closest('#btn-submit-phone');
@@ -650,9 +750,14 @@ async function handleDestekle(destekBtn) {
 
     const user = STATE.getUser();
 
+    if (!user || !user.uid) {
+        UI.showToast('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+        return;
+    }
+
     if (!user.hasPhone || user.authStage !== 'pdf_verified') {
         UI.showToast(
-            'Önergeyi destekleyebilmek için Profil sekmesinden Telefon ve Mesleki Belge onaylarınızı tamamlamalısınız.',
+            'Önergeyi destekleyebilmek için Profil sekmesinden telefon ve mesleki belge onaylarınızı tamamlamalısınız.',
             'error'
         );
         return;
@@ -666,21 +771,26 @@ async function handleDestekle(destekBtn) {
     }
 
     const originalText = destekBtn.innerHTML;
+
     destekBtn.innerHTML = '...';
     destekBtn.disabled = true;
 
     try {
         await DB.destekVer(user.uid, onergeId);
+
         UI.showToast('Önergeye destek verdiniz!', 'success');
+
         await Me26VotingSystem.loadProposals();
     } catch (error) {
         if (error.message === 'already_supported') {
             UI.showToast('Bu önergeyi zaten desteklediniz.', 'info');
+
             destekBtn.innerHTML = 'DESTEKLENDİ';
             destekBtn.classList.remove('bg-slate-800', 'border-slate-500', 'hover:bg-slate-700');
             destekBtn.classList.add('bg-green-900/50', 'text-green-400', 'border-green-500');
         } else {
             UI.showToast('Bir hata oluştu.', 'error');
+
             destekBtn.innerHTML = originalText;
             destekBtn.disabled = false;
         }
@@ -763,6 +873,7 @@ let me26AppStarted = false;
 
 function santiyeyiBaslat() {
     if (me26AppStarted) return;
+
     me26AppStarted = true;
 
     tribunLigiFonksiyonunuKur();
@@ -774,7 +885,9 @@ function santiyeyiBaslat() {
     }
 
     try {
-        if (KORUMA && typeof KORUMA.baslat === 'function') KORUMA.baslat();
+        if (KORUMA && typeof KORUMA.baslat === 'function') {
+            KORUMA.baslat();
+        }
     } catch (error) {
         console.error('Koruma Hattı başlatılamadı:', error);
     }
