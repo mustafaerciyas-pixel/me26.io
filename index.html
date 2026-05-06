@@ -48,6 +48,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- PDF.js eklendi (E-devlet belgesi deşifresi için) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
 <body id="ana-body" class="antialiased bg-zemin text-white h-screen overflow-hidden flex transition-colors duration-1000">
@@ -60,7 +61,7 @@
     <div id="landing-view" class="w-full h-full overflow-y-auto custom-scrollbar relative z-50 flex flex-col">
         
         <!-- SABİT DIŞ NAVBAR -->
-        <nav class="bg-zemin text-white py-5 shadow-xl relative border-b border-slate-800 w-full shrink-0">
+        <nav class="bg-zemin text-white py-5 shadow-xl relative border-b border-slate-800 w-full shrink-0 z-50">
             <div class="max-w-6xl mx-auto px-4 flex justify-between items-center relative">
                 <button type="button" class="nav-landing-btn text-2xl font-black tracking-widest flex items-center hover:opacity-80 transition" data-target="view-landing-home">
                     <div class="w-1.5 h-6 bg-kaos mr-2"></div><span><span class="text-kaos">ME26</span> AĞI</span>
@@ -256,7 +257,7 @@
         </div>
 
         <!-- SABİT DIŞ FOOTER -->
-        <footer id="ana-footer" class="mt-auto bg-[#050810] border-t border-slate-800 text-gray-500 py-8 text-center shrink-0">
+        <footer id="ana-footer" class="mt-auto bg-[#050810] border-t border-slate-800 text-gray-500 py-8 text-center shrink-0 z-50">
             <div class="flex justify-center space-x-6 mb-4 text-[10px] font-bold uppercase tracking-widest text-gray-500">
                 <button type="button" class="nav-landing-btn hover:text-kaos transition" data-target="view-landing-dao">Ne Yapacağız?</button>
                 <button type="button" class="nav-landing-btn hover:text-kaos transition" data-target="view-landing-kurallar">Kurallarımız</button>
