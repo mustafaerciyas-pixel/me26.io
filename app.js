@@ -65,6 +65,9 @@ window.ortakKursuGonder = async function() {
             UI.showToast('Önergeniz başarıyla meclise sunuldu!', 'success');
             Me26VotingSystem.loadProposals(); // Önerge listesini yenile
 
+            // SİHİRLİ DOKUNUŞ 1: Önerge verilince adamı otomatik Sandık Odasına götür
+            UI.switchSaasTab('view-sandik');
+
         } else if (mod === 'soru') {
             const icerik = document.getElementById('input-kursu-content').value.trim();
             if (icerik.length < 50 || icerik.length > 3000) throw new Error("İçerik 50 ile 3000 karakter arasında olmalıdır.");
@@ -86,6 +89,9 @@ window.ortakKursuGonder = async function() {
             
             // qa.js'deki fonksiyonu çağırıp listeyi yenile
             if (typeof window.qaSorulariGetir === "function") window.qaSorulariGetir(); 
+
+            // SİHİRLİ DOKUNUŞ 2: Soru sorulunca adamı otomatik Kürsü Odasına götür
+            UI.switchSaasTab('view-kursu');
         }
 
         // Başarılı olursa modalı temizle ve kapat
