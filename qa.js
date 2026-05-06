@@ -20,7 +20,6 @@ function qaMotorunuBaslat() {
     document.getElementById('btn-qa-bekleyenler')?.addEventListener('click', () => qaSekmeDegistir('bekleyenler'));
     document.getElementById('btn-qa-kutuphane')?.addEventListener('click', () => qaSekmeDegistir('kutuphane'));
     
-    // Eski Soru Sorma ve Modal tuş dinleyicileri (app.js'e taşındığı için) silindi.
     window.qaSorulariGetir();
 }
 
@@ -30,7 +29,6 @@ if (document.readyState === 'loading') {
     qaMotorunuBaslat(); 
 }
 
-// Güvenli Kimlik Alma Motoru (Ekrana güvenmek yerine doğrudan STATE'ten çeker)
 function aktifKullaniciyiAl() {
     if (!STATE.isLoggedIn() || !STATE.user) return null;
 
@@ -68,16 +66,22 @@ function qaSekmeDegistir(sekme) {
 }
 
 // ==========================================
-// 3. SORULARI LİSTELEME (BUZLU CAM / VİTRİN)
+// 3. SORULARI LİSTELEME (TEŞHİS MOTORU EKLENDİ)
 // ==========================================
 window.qaSorulariGetir = async function() {
+    console.log("🛠️ qa.js Tetiklendi! Sekme:", aktifQaSekme);
+    
     const listelemeAlani = document.getElementById('qa-listesi');
-    if(!listelemeAlani) return;
+    if(!listelemeAlani) {
+        console.error("🔥 HATA: 'qa-listesi' HTML elementi bulunamadı!");
+        return;
+    }
 
     listelemeAlani.innerHTML = '<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest animate-pulse">Meclis Kayıtları Okunuyor...</div>';
 
     const cozulmeDurumu = aktifQaSekme === 'kutuphane';
 
+    // SUPABASE'DEN VERİ ÇEKME İŞLEMİ
     const { data, error } = await supabase
         .from('me26_sorular')
         .select('*')
@@ -85,13 +89,22 @@ window.qaSorulariGetir = async function() {
         .lt('sikayet_sayisi', 10)
         .order('olusturma_tarihi', { ascending: false });
 
+    console.log("🔍 Supabase Veri Dönüşü:", data);
+    console.log("🚨 Supabase Hata Dönüşü:", error);
+
+    // EĞER HATA VARSA, EKRANA BAĞIRA BAĞIRA YAZDIR
     if (error) {
-        listelemeAlani.innerHTML = '<div class="text-center text-red-500 text-sm py-10 font-bold uppercase tracking-widest">Kayıtlar çekilirken bir hata oluştu.</div>';
+        listelemeAlani.innerHTML = `
+            <div class="bg-red-900/30 border border-red-500 p-6 rounded-xl text-center">
+                <div class="text-red-500 font-black text-lg mb-2">🔥 BAĞLANTI HATASI 🔥</div>
+                <div class="text-white font-mono text-sm">${error.message}</div>
+                <div class="text-gray-400 text-xs mt-2">Hata Kodu: ${error.code}</div>
+            </div>`;
         return;
     }
 
-    if (data.length === 0) {
-        listelemeAlani.innerHTML = '<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest">Burada henüz bir kayıt yok.</div>';
+    if (!data || data.length === 0) {
+        listelemeAlani.innerHTML = '<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl">Burada henüz bir kayıt yok.</div>';
         return;
     }
 
@@ -101,7 +114,10 @@ window.qaSorulariGetir = async function() {
     const isAuthorized = UI.triggerVerificationGate(true);
 
     data.forEach(soru => {
-        const tarih = new Date(soru.olusturma_tarihi).toLocaleDateString('tr-TR');
+        let tarihStr = "Tarih Yok";
+        if (soru.olusturma_tarihi) {
+            tarihStr = new Date(soru.olusturma_tarihi).toLocaleDateString('tr-TR');
+        }
         
         let kitleEtiketi = '';
         if(soru.hedef_kitle === 'Sadece İçmimarlar') kitleEtiketi = '<span class="bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Usta Kalemi</span>';
@@ -112,7 +128,7 @@ window.qaSorulariGetir = async function() {
 
         // Buzlu Cam Efektleri ve Kilit
         const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
-        const yazarId = isAuthorized ? soru.yazar_dijital_id : 'TR-IA-****';
+        const yazarId = isAuthorized ? (soru.yazar_dijital_id || 'TR-IA-????') : 'TR-IA-****';
         const overlay = isAuthorized ? '' : `
             <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer mt-12 rounded-2xl" onclick="UI.triggerVerificationGate()">
                 <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
@@ -133,13 +149,13 @@ window.qaSorulariGetir = async function() {
                     </div>
                     <div class="${blurClass}">
                         <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${yazarId}</div>
-                        <div class="text-[9px] text-gray-500">${tarih}</div>
+                        <div class="text-[9px] text-gray-500">${tarihStr}</div>
                     </div>
                 </div>
                 ${kitleEtiketi}
             </div>
-            <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${soru.baslik}</h4>
-            <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${soru.icerik}</p>
+            <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${soru.baslik || 'Başlıksız Soru'}</h4>
+            <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${soru.icerik || 'İçerik bulunamadı.'}</p>
             
             <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto relative z-10">
                 <button onclick="${isAuthorized ? `qaSoruDetayAc('${soru.id}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
@@ -158,7 +174,7 @@ window.qaSorulariGetir = async function() {
 // 4. SORU DETAYI VE DİNAMİK MODAL
 // ==========================================
 window.qaSoruDetayAc = async function(soruId) {
-    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
+    if (!UI.triggerVerificationGate()) return; 
     
     const kullanici = aktifKullaniciyiAl();
     if (!kullanici) return UI.showToast("İşlem yapmak için giriş yapmalısınız.", "error");
@@ -273,7 +289,7 @@ window.qaSoruDetayAc = async function(soruId) {
 // 5. CEVAP GÖNDERME
 // ==========================================
 window.qaCevapGonder = async function() {
-    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
+    if (!UI.triggerVerificationGate()) return; 
     const kullanici = aktifKullaniciyiAl();
     if (!kullanici) return UI.showToast("Cevap verebilmek için giriş yapmalısınız.", "error");
 
@@ -289,8 +305,8 @@ window.qaCevapGonder = async function() {
         yazar_uid: kullanici.uid,
         yazar_dijital_id: kullanici.dijital_id,
         icerik: icerik,
-        is_cozum: false,   // <-- HAYALET CEVAP FİLTRESİNİ AŞAN ANAHTAR
-        sikayet_sayisi: 0  // <-- HAYALET CEVAP FİLTRESİNİ AŞAN ANAHTAR
+        is_cozum: false,   
+        sikayet_sayisi: 0  
     };
 
     const { error } = await supabase.from('me26_cevaplar').insert([yeniCevap]);
@@ -309,7 +325,7 @@ window.qaCevapGonder = async function() {
 // 6. ÇÖZÜM OLARAK İŞARETLEME (KİLİTLEME)
 // ==========================================
 window.qaCozumİsaretle = async function(cevapId, soruId) {
-    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
+    if (!UI.triggerVerificationGate()) return; 
     if(!confirm("Bu cevabı çözüm olarak işaretlerseniz soru kilitlenecek ve arşivlenecektir. Onaylıyor musunuz?")) return;
 
     await supabase.from('me26_cevaplar').update({ is_cozum: true }).eq('id', cevapId);
@@ -325,7 +341,7 @@ window.qaCozumİsaretle = async function(cevapId, soruId) {
 // 7. TOPLULUK DENETİMİ
 // ==========================================
 window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
-    if (!UI.triggerVerificationGate()) return; // GÜVENLİK DUVARI
+    if (!UI.triggerVerificationGate()) return; 
     const kullanici = aktifKullaniciyiAl();
     
     if(!confirm("Bu içeriğin mesleki kurallara uymadığını teyit ediyor musunuz? (10 şikayette içerik otomatik silinecektir)")) return;
