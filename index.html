@@ -53,9 +53,6 @@
 
     <div id="toast-container" class="fixed bottom-20 md:bottom-6 right-6 z-[90000] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- ========================================== -->
-    <!-- 1. GİRİŞ EKRANI (LANDING VIEW) -->
-    <!-- ========================================== -->
     <div id="landing-view" class="w-full h-full overflow-y-auto custom-scrollbar relative z-50 flex flex-col">
         <nav class="bg-zemin text-white py-5 shadow-xl relative border-b border-slate-800 w-full shrink-0 z-50">
             <div class="max-w-6xl mx-auto px-4 flex justify-between items-center relative">
@@ -119,13 +116,9 @@
         </footer>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 2. SAAS DASHBOARD (İÇ SİSTEM) -->
-    <!-- ========================================== -->
     <div id="saas-view" class="w-full h-full flex hidden">
         
-        <!-- YENİ GENİŞLİK: w-72 (288px) -> Satır taşmaları önlendi -->
-        <aside class="w-72 bg-slate-900 border-r border-slate-800 flex-col hidden md:flex h-full shadow-2xl relative z-40 shrink-0">
+        <aside class="w-80 bg-slate-900 border-r border-slate-800 flex-col hidden md:flex h-full shadow-2xl relative z-40 shrink-0">
             <div class="p-6 border-b border-slate-800 flex items-center gap-3">
                 <div class="w-2 h-8 bg-kaos"></div>
                 <div><h1 class="text-xl font-black tracking-widest text-white">ME26</h1><p class="text-[9px] text-kaos font-bold uppercase tracking-widest">Dijital Meclis</p></div>
@@ -144,16 +137,16 @@
                 </div>
             </div>
             <nav class="flex-grow flex flex-col gap-2 p-4 overflow-y-auto custom-scrollbar">
-                <button data-target="view-lobi" class="nav-menu-btn active bg-slate-800 text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-700"><i class="fas fa-landmark w-5 text-center"></i> İçmimar Lobisi</button>
-                <button data-target="view-sandik" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800"><i class="fas fa-vote-yea w-5 text-center"></i> Ortak Sandık</button>
-                <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800"><i class="fas fa-bullhorn w-5 text-center"></i> Söz Sende</button>
-                <button data-target="view-stadyum" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800"><i class="fas fa-futbol w-5 text-center"></i> Canlı Stadyum</button>
-                <button data-target="view-tribun-ligi" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800"><i class="fas fa-users w-5 text-center"></i> Tribün</button>
-                <button data-target="view-koruma" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800"><i class="fas fa-shield-alt w-5 text-center"></i> İçmimar Koruma Hattı</button>
-                <button data-target="view-profil" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800"><i class="fas fa-id-card w-5 text-center"></i> Sicilim & Ayarlarım</button>
+                <button data-target="view-lobi" class="nav-menu-btn active bg-slate-800 text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-700 whitespace-nowrap text-left"><i class="fas fa-landmark w-5 text-center shrink-0"></i> İçmimar Lobisi</button>
+                <button data-target="view-sandik" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800 whitespace-nowrap text-left"><i class="fas fa-vote-yea w-5 text-center shrink-0"></i> Ortak Sandık</button>
+                <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800 whitespace-nowrap text-left"><i class="fas fa-bullhorn w-5 text-center shrink-0"></i> Söz Sende</button>
+                <button data-target="view-stadyum" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800 whitespace-nowrap text-left"><i class="fas fa-futbol w-5 text-center shrink-0"></i> Canlı Stadyum</button>
+                <button data-target="view-tribun-ligi" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800 whitespace-nowrap text-left"><i class="fas fa-users w-5 text-center shrink-0"></i> Tribün</button>
+                <button data-target="view-koruma" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800 whitespace-nowrap text-left"><i class="fas fa-shield-alt w-5 text-center shrink-0"></i> İçmimar Koruma Hattı</button>
+                <button data-target="view-profil" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800 whitespace-nowrap text-left"><i class="fas fa-id-card w-5 text-center shrink-0"></i> Sicilim & Ayarlarım</button>
             </nav>
             <div class="p-4 border-t border-slate-800">
-                <button id="btn-logout" class="text-red-500 hover:text-red-400 w-full flex items-center gap-3 px-4 py-2 rounded-lg text-xs font-bold tracking-widest uppercase transition hover:bg-red-900/20"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</button>
+                <button id="btn-logout" class="text-red-500 hover:text-red-400 w-full flex items-center gap-3 px-4 py-2 rounded-lg text-xs font-bold tracking-widest uppercase transition hover:bg-red-900/20 whitespace-nowrap text-left"><i class="fas fa-sign-out-alt w-5 text-center shrink-0"></i> Çıkış Yap</button>
             </div>
         </aside>
 
@@ -165,7 +158,6 @@
 
             <div class="p-4 md:p-8 max-w-5xl mx-auto">
                 
-                <!-- LOBİ (İÇMİMAR LOBİSİ) -->
                 <section id="view-lobi" class="view-section block animate-fadeIn">
                     <h2 class="text-2xl md:text-3xl font-black text-white mb-6 uppercase tracking-widest">İçmimar <span class="text-kaos">Lobisi</span></h2>
                     <div class="bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl">
@@ -174,7 +166,6 @@
                     </div>
                 </section>
 
-                <!-- ORTAK SANDIK -->
                 <section id="view-sandik" class="view-section hidden animate-fadeIn">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest">Ortak <span class="text-kaos">Sandık</span></h2>
@@ -187,7 +178,6 @@
                     <div id="gundem-container" class="flex flex-col gap-4 mb-10"></div>
                 </section>
 
-                <!-- SÖZ SENDE -->
                 <section id="view-kursu" class="view-section hidden animate-fadeIn">
                     <h2 class="text-2xl md:text-3xl font-black text-white mb-6 uppercase tracking-widest">Söz <span class="text-kaos">Sende</span></h2>
                     <div id="qa-container">
@@ -201,7 +191,6 @@
                     </div>
                 </section>
 
-                <!-- CANLI STADYUM -->
                 <section id="view-stadyum" class="view-section hidden animate-fadeIn">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest">Canlı <span class="text-kaos">Stadyum</span></h2>
@@ -222,7 +211,6 @@
                     </div>
                 </section>
 
-                <!-- TRİBÜN -->
                 <section id="view-tribun-ligi" class="view-section hidden animate-fadeIn">
                     <div class="text-center mb-8">
                         <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest mb-2"><i class="fas fa-users text-kaos mr-2"></i> Tribün</h2>
@@ -242,7 +230,6 @@
                     </div>
                 </section>
 
-                <!-- İÇMİMAR KORUMA HATTI -->
                 <section id="view-koruma" class="view-section hidden animate-fadeIn">
                     <div class="mb-8">
                         <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest flex items-center gap-3">
@@ -286,7 +273,6 @@
                                     </button>
                                 </div>
 
-                                <!-- Form Alanı -->
                                 <div id="koruma-form-alan" class="hidden bg-slate-900 border border-slate-700 rounded-xl p-5 md:p-8 animate-fadeIn">
                                     <h4 class="text-sm font-black text-white uppercase tracking-widest mb-6 border-b border-slate-700 pb-3">Bildirim Dosyası Hazırla</h4>
                                     
@@ -323,7 +309,6 @@
                                             <input type="file" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition cursor-pointer bg-black border border-slate-600 rounded-lg p-1 outline-none">
                                         </div>
 
-                                        <!-- İSTEĞE BAĞLI ALANLAR -->
                                         <div class="border-t border-slate-800 pt-4 mt-4">
                                             <p class="text-[9px] text-yellow-500/80 mb-3 font-medium flex items-start gap-2">
                                                 <i class="fas fa-info-circle mt-0.5"></i> Sistem ME26 Kimliğinizi (TR-IA-...) referans alır. Aşağıdaki alanları boş bırakarak kurum içi dahi %100 anonim kalabilirsiniz.
@@ -360,7 +345,6 @@
                     </div>
                 </section>
 
-                <!-- SİCİLİM & AYARLARIM -->
                 <section id="view-profil" class="view-section hidden animate-fadeIn">
                     <h2 class="text-2xl md:text-3xl font-black text-white mb-6 uppercase tracking-widest">Sicilim & <span class="text-kaos">Ayarlarım</span></h2>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -386,7 +370,6 @@
                                 </div>
                             </div>
                             
-                            <!-- YENİ: TEMA RENGİ SABİTLEME -->
                             <div class="bg-black/40 border border-slate-700 p-6 rounded-2xl shadow-lg relative overflow-hidden">
                                 <h3 class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-4 border-b border-slate-800 pb-2 flex items-center gap-2"><i class="fas fa-palette text-kaos"></i> Sistem Teması</h3>
                                 <p class="text-[10px] text-gray-400 leading-relaxed mb-4">Sistemin her girişte renk değiştirmesini (Kaos Modu) istemiyorsanız, kendi renginizi seçip sabitleyebilirsiniz.</p>
@@ -459,7 +442,6 @@
         </nav>
     </div>
 
-    <!-- MODALLAR -->
     <div id="ortak-kursu-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100000] flex-col items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-600 p-6 rounded-3xl w-full max-w-2xl relative shadow-[0_0_50px_rgba(0,0,0,0.8)] max-h-[90vh] flex flex-col">
             <button type="button" id="btn-close-kursu-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white transition w-8 h-8 bg-black rounded-full flex items-center justify-center border border-slate-700 shadow-md z-10">✕</button>
@@ -493,7 +475,6 @@
     <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden"><div class="bg-slate-900 border border-green-500 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative"><button type="button" id="btn-close-pdf-modal" class="mt-5 text-gray-500">Kapat</button></div></div>
     <div id="vip-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[99999] flex-col items-center justify-center p-4 hidden"><div class="bg-slate-900 border border-kaos p-8 md:p-10 rounded-3xl max-w-3xl w-full text-center relative"><button type="button" id="btn-close-vip-modal" class="absolute top-6 right-6 text-gray-400">✕</button></div></div>
 
-    <!-- UI VE MENTÖRLÜK / TEMA RENGİ LOKAL SCRİPTİ -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
