@@ -531,9 +531,10 @@
             
             <div id="phone-step-1" class="flex flex-col gap-4 block">
                 <p class="text-xs text-gray-400 mb-2 leading-relaxed">Sisteme güvenli erişim ve çoklu hesap engellemesi için lütfen telefon numaranızı girin.</p>
+                
                 <div class="flex gap-2">
-                    <select id="input-country-code" class="bg-black border border-slate-600 text-white px-2 py-4 rounded-xl text-center text-lg tracking-widest focus:border-kaos outline-none transition font-mono shrink-0 cursor-pointer">
-                        <option value="+90" data-max="10">+90</option>
+                    <select id="input-country-code" class="bg-black border border-slate-600 text-white px-2 py-4 rounded-xl text-center text-sm md:text-lg tracking-widest focus:border-kaos outline-none transition font-mono shrink-0 cursor-pointer">
+                        <option value="+90" data-max="10" selected>+90</option>
                         <option value="+1" data-max="10">+1</option>
                         <option value="+49" data-max="11">+49</option>
                         <option value="+44" data-max="10">+44</option>
@@ -544,7 +545,13 @@
                     </select>
                     <input type="tel" id="input-phone-number" placeholder="5XX XXX XX XX" maxlength="10" class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl text-center text-lg tracking-widest focus:border-kaos outline-none transition font-mono">
                 </div>
-                <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:opacity-90">Kodu Gönder</button>
+
+                <p class="text-[10px] text-gray-400 bg-slate-800/50 p-3 rounded-lg border border-slate-700 leading-relaxed text-left flex items-start gap-2">
+                    <i class="fas fa-user-shield text-kaos mt-0.5"></i>
+                    <span>Gerçek kimlik sistem tarafından doğrulanır; topluluk içinde yalnızca Global ID görünür. Böylece hem güvenlik hem özgür katılım korunur.</span>
+                </p>
+
+                <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:opacity-90 mt-2">SMS GÖNDER</button>
             </div>
 
             <div id="phone-step-2" class="flex flex-col gap-4 hidden">
@@ -707,12 +714,20 @@
             const phoneNumberInput = document.getElementById('input-phone-number');
             if(countryCodeSelect && phoneNumberInput) {
                 countryCodeSelect.addEventListener('change', function() {
-                    const maxLen = this.options[this.selectedIndex].getAttribute('data-max');
+                    const maxLen = parseInt(this.options[this.selectedIndex].getAttribute('data-max'));
                     phoneNumberInput.setAttribute('maxlength', maxLen);
-                    phoneNumberInput.value = ''; // Ülke değişince hatalı girişi önlemek için temizle
+                    // Ülke kodu değiştiğinde mevcut girilmiş rakamlar yeni sınırdan uzunsa fazlasını kes:
+                    phoneNumberInput.value = phoneNumberInput.value.slice(0, maxLen);
                 });
                 phoneNumberInput.addEventListener('input', function(e) {
-                    this.value = this.value.replace(/\D/g, ''); // Sadece rakam girişine izin ver
+                    // Önce sadece rakamları al
+                    this.value = this.value.replace(/\D/g, ''); 
+                    
+                    // Ardından JS ile anlık maksimum karakter sınırını ZORLA (Tarayıcı maxlength'i atlamasın diye)
+                    const maxLen = parseInt(phoneNumberInput.getAttribute('maxlength')) || 10;
+                    if (this.value.length > maxLen) {
+                        this.value = this.value.slice(0, maxLen);
+                    }
                 });
             }
         });
