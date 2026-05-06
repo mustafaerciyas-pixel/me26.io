@@ -40,24 +40,16 @@
             theme: {
                 extend: {
                     colors: { kaos: aktifRenk, zemin: '#0f172a', panel: '#151e32' },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    boxShadow: { 'kaos': '0 0 15px rgba(var(--neon-rgb), 0.4)', 'kaos-lg': '0 0 40px rgba(var(--neon-rgb), 0.5)' }
                 }
             }
         };
-
-        // Mobil Menü Fonksiyonları (Landing için)
-        function mobilMenuAc() { document.getElementById('mobile-menu').classList.remove('menu-closed'); }
-        function mobilMenuKapat() { document.getElementById('mobile-menu').classList.add('menu-closed'); }
     </script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-
-    <style>
-        .menu-closed { opacity: 0; pointer-events: none; transform: translateY(-10px); transition: all 0.3s ease; }
-        #mobile-menu:not(.menu-closed) { opacity: 1; pointer-events: auto; transform: translateY(0); transition: all 0.3s ease; }
-    </style>
 </head>
 <body id="ana-body" class="antialiased bg-zemin text-white h-screen overflow-hidden flex transition-colors duration-1000">
 
@@ -67,40 +59,24 @@
     <!-- 1. GİRİŞ EKRANI (LANDING VIEW - DIŞ KAPI) -->
     <!-- ========================================== -->
     <div id="landing-view" class="w-full h-full overflow-y-auto relative z-50 flex flex-col">
-        
-        <!-- Dış Kapı Mobil Menü -->
-        <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100000] flex flex-col items-center justify-center space-y-8 pt-10 menu-closed">
-            <button onclick="mobilMenuKapat()" class="absolute top-16 right-6 text-white hover:text-kaos transition">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <a href="dao-nedir.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Ne Yapacağız?</a>
-            <a href="kurallar.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Kurallarımız</a>
-            <a href="gizlilik.html" class="text-2xl font-black text-white hover:text-kaos transition uppercase tracking-widest">Gizlilik Zırhı</a>
-        </div>
-
         <nav class="bg-zemin text-white py-5 shadow-xl relative border-b border-slate-800 w-full z-20">
             <div class="max-w-6xl mx-auto px-4 flex justify-between items-center relative">
                 <div class="text-2xl font-black tracking-widest flex items-center">
                     <div class="w-1.5 h-6 bg-kaos mr-2"></div><span><span class="text-kaos">ME26</span> AĞI</span>
                 </div>
-                
-                <!-- Dış Kapı Masaüstü Linkleri -->
-                <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide items-center mr-auto ml-12">
-                    <a href="dao-nedir.html" class="hover:opacity-80 transition text-gray-300 hover:text-white">Birlikte Ne Yapacağız?</a>
-                    <a href="kurallar.html" class="hover:opacity-80 transition text-gray-300 hover:text-white">Kurallarımız</a>
-                </div>
-
-                <div class="flex space-x-3 text-sm font-semibold tracking-wide items-center">
-                    <button type="button" id="btn-register-nav" class="hidden md:block bg-kaos text-slate-900 px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer tracking-widest text-xs md:text-sm">KAYIT OL</button>
+                <div class="flex space-x-6 text-sm font-semibold tracking-wide items-center">
+                    <div class="hidden md:flex space-x-6 mr-4">
+                        <a href="dao-nedir.html" class="hover:text-kaos transition uppercase">Ne Yapacağız?</a>
+                        <a href="kurallar.html" class="hover:text-kaos transition uppercase">Kurallar</a>
+                    </div>
+                    <button type="button" id="btn-register-nav" class="bg-kaos text-slate-900 px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-bold hover:opacity-90 transition shadow-kaos cursor-pointer tracking-widest text-xs md:text-sm">KAYIT OL</button>
                     <button type="button" id="btn-login-nav" class="bg-slate-800 text-white border border-slate-600 px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-bold hover:bg-slate-700 transition cursor-pointer tracking-widest shadow-md text-xs md:text-sm">GİRİŞ YAP</button>
-                    <button onclick="mobilMenuAc()" class="md:hidden flex items-center text-white hover:text-kaos transition p-2 ml-2">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
                 </div>
             </div>
         </nav>
 
-        <header class="text-center px-4 pt-16 pb-12 relative">
+        <header class="text-center px-4 pt-16 pb-12 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-5 bg-radial-kaos-lg"></div>
             <div class="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
                 <h1 class="text-4xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tighter drop-shadow-lg">
                     11.000 kişi içeride.<br>95.000 kişi dışarıda.<br><span class="text-kaos">Sistemi yeniden kuruyoruz.</span>
@@ -136,16 +112,14 @@
                 </div>
             </div>
         </main>
-        
-        <footer id="ana-footer" class="mt-auto bg-[#050810] border-t border-slate-800 text-gray-500 py-6 text-center text-xs font-mono">
-            <div class="flex flex-wrap justify-center gap-4 mb-4 uppercase tracking-widest font-bold text-[10px] md:text-xs">
+        <footer id="ana-footer" class="mt-auto bg-[#050810] border-t border-slate-800 text-gray-500 py-6 text-center text-xs font-mono relative z-10">
+            <div class="flex justify-center space-x-6 mb-4 uppercase tracking-widest font-bold">
                 <a href="kurallar.html" class="hover:text-kaos transition">Kurallarımız</a>
-                <span class="text-slate-700">|</span>
                 <a href="dao-nedir.html" class="hover:text-kaos transition">Ne Yapacağız?</a>
-                <span class="text-slate-700">|</span>
                 <a href="gizlilik.html" class="hover:text-kaos transition">Gizlilik ve Hukuk</a>
             </div>
-            &copy; 2026 ME26 A.Ş. İNSAN YÖNETİCİ YOK. KURALLAR VAR.
+            <p class="opacity-50 text-kaos mb-1">İNSAN YÖNETİCİ YOK. LİYAKAT VE KURALLAR VAR.</p>
+            &copy; 2026 ME26 Teknoloji A.Ş. • TÜM HAKLARI SAKLIDIR.
         </footer>
     </div>
 
@@ -226,32 +200,15 @@
                     <div class="text-xs text-yellow-500 font-black uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fas fa-map-marker-alt"></i> GÖREV 1: TRİBÜNÜNÜ SEÇ</div>
                     <p class="text-sm text-gray-300 mb-4 font-medium">Sandıkları görmek ve mesleki gücünü aktifleştirmek için bulunduğun şehri seçmelisin.</p>
                     <div class="flex gap-2 items-stretch max-w-md">
+                        <!-- 81 İL LİSTESİ -->
                         <select id="input-profile-city" class="flex-grow bg-slate-900 border border-slate-600 text-white px-3 py-3 rounded-xl outline-none text-sm font-bold focus:border-kaos transition custom-scrollbar">
                             <option value="" disabled selected>Şehrini Seç...</option>
-                            <option value="Adana">Adana</option>
-                            <option value="Adıyaman">Adıyaman</option>
-                            <option value="Afyonkarahisar">Afyonkarahisar</option>
-                            <option value="Ağrı">Ağrı</option>
-                            <option value="Aksaray">Aksaray</option>
-                            <option value="Amasya">Amasya</option>
-                            <option value="Ankara">Ankara</option>
-                            <option value="Antalya">Antalya</option>
-                            <option value="Ardahan">Ardahan</option>
-                            <option value="Artvin">Artvin</option>
-                            <option value="Aydın">Aydın</option>
-                            <option value="Balıkesir">Balıkesir</option>
-                            <option value="Bartın">Bartın</option>
-                            <option value="Batman">Batman</option>
-                            <option value="Bayburt">Bayburt</option>
-                            <option value="Bilecik">Bilecik</option>
-                            <option value="Bingöl">Bingöl</option>
-                            <option value="Bitlis">Bitlis</option>
-                            <option value="Bolu">Bolu</option>
-                            <option value="Burdur">Burdur</option>
-                            <option value="Bursa">Bursa</option>
-                            <option value="Çanakkale">Çanakkale</option>
-                            <option value="Çankırı">Çankırı</option>
-                            <option value="Çorum">Çorum</option>
-                            <option value="Denizli">Denizli</option>
-                            <option value="Diyarbakır">Diyarbakır</option>
-                            <option value="Düzce">Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                            <option value="Adana">Adana</option><option value="Adıyaman">Adıyaman</option><option value="Afyonkarahisar">Afyonkarahisar</option>
+                            <option value="Ağrı">Ağrı</option><option value="Aksaray">Aksaray</option><option value="Amasya">Amasya</option>
+                            <option value="Ankara">Ankara</option><option value="Antalya">Antalya</option><option value="Ardahan">Ardahan</option>
+                            <option value="Artvin">Artvin</option><option value="Aydın">Aydın</option><option value="Balıkesir">Balıkesir</option>
+                            <option value="Bartın">Bartın</option><option value="Batman">Batman</option><option value="Bayburt">Bayburt</option>
+                            <option value="Bilecik">Bilecik</option><option value="Bingöl">Bingöl</option><option value="Bitlis">Bitlis</option>
+                            <option value="Bolu">Bolu</option><option value="Burdur">Burdur</option><option value="Bursa">Bursa</option>
+                            <option value="Çanakkale">Çanakkale</option><option value="Çankırı">Çankırı</option><option value="Çorum">Çorum</option>
+                            <option value="Denizli">Denizli</option><option value="Diyarbakır">Diyarbakır</option><option value="Düzce">DüzceNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
