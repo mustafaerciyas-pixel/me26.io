@@ -203,6 +203,37 @@ export const UI = {
             if (idBadge) { idBadge.textContent = 'Aday Kurucu'; idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold'; }
         }
 
+        // ==========================================
+        // YENİ EKLENEN: SİSTEM DURUMU (LOBİ KUTUSU) DİNAMİK GÜNCELLEME
+        // ==========================================
+        const sistemDurumuEl = document.getElementById('ui-sistem-durumu');
+        if (sistemDurumuEl) {
+            const containerBox = sistemDurumuEl.parentElement;
+            const titleBox = sistemDurumuEl.previousElementSibling;
+
+            if (user.authStage === 'pdf_verified') {
+                sistemDurumuEl.innerHTML = 'Tebrikler! Kimlik onayın tamamlandı ve <strong class="text-white">1.0x Tam Yetki</strong> kazandın. Artık otonom sandıklarda oy kullanabilir ve meclise kendi önergelerini sunabilirsin.';
+                containerBox.className = "bg-green-900/20 border border-green-500/30 p-6 rounded-2xl"; 
+                titleBox.className = "text-green-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Sistem Durumu: Tam Yetki';
+            } else if (user.authStage === 'document_pending') {
+                sistemDurumuEl.innerHTML = 'Mesleki belgen şu an <strong>inceleme kuyruğunda</strong> bekliyor. Onaylandığında 1.0x tam yetkiye sahip olacaksın.';
+                containerBox.className = "bg-yellow-900/20 border border-yellow-500/30 p-6 rounded-2xl";
+                titleBox.className = "text-yellow-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-hourglass-half mr-2"></i> Sistem Durumu: İncelemede';
+            } else if (user.hasPhone) {
+                sistemDurumuEl.innerHTML = 'Telefon doğrulaman tamamlandı (Bot koruması aktif). Tam yetki (1.0x) almak ve önerge verebilmek için profilinden <strong class="text-white">E-devlet belgeni</strong> yüklemelisin.';
+                containerBox.className = "bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl";
+                titleBox.className = "text-blue-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Sistem Durumu: Eksik Yetki';
+            } else {
+                sistemDurumuEl.innerHTML = 'Seninle birlikte sistem inşa ediliyor. Şu an Kurucu Oylamalar aktif. Profilinden E-devlet onayı yaparak yetkini 1.0x\'e çıkarabilir ve kendi önergelerini sunabilirsin.';
+                containerBox.className = "bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl";
+                titleBox.className = "text-gray-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Sistem Durumu: Kayıtlı İzleyici';
+            }
+        }
+
         // --- SAĞ PANEL (AĞI BÜYÜT & VIP) MANTIĞI ---
         const inviteCount = user.inviteCount || 0;
         setEl('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
