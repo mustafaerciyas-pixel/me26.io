@@ -288,7 +288,9 @@ window.qaCevapGonder = async function() {
         soru_id: aktifSoruId,
         yazar_uid: kullanici.uid,
         yazar_dijital_id: kullanici.dijital_id,
-        icerik: icerik
+        icerik: icerik,
+        is_cozum: false,   // <-- HAYALET CEVAP FİLTRESİNİ AŞAN ANAHTAR
+        sikayet_sayisi: 0  // <-- HAYALET CEVAP FİLTRESİNİ AŞAN ANAHTAR
     };
 
     const { error } = await supabase.from('me26_cevaplar').insert([yeniCevap]);
