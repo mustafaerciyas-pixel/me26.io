@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE SAAS MENÜ YÖNLENDİRİCİSİ (app.js)
-   SaaS Mimarisi + Öğrenci Terfi Motoru + Katı Güvenlik Duvarları
+   Tüm modülleri birbirine bağlayan Ana Şalter Kutusu
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -9,9 +9,10 @@ import { DB, supabase } from './supabase.js';
 import { auth } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { googleIleGiris, sistemdenCikis, eDevletBelgesiOku, gercekSmsGonder, gercekSmsDogrula } from './auth.js';
+import { VIP } from './vip.js'; 
 
 // ======================================================
-// EVRENSEL MECLİS KALEMİ (GEMINI AI - PLACEHOLDER)
+// 1. EVRENSEL MECLİS KALEMİ (GEMINI AI YER TUTUCU)
 // ======================================================
 window.evrenselGeminiDuzelt = function(kutuId, butonId) {
     const metin = document.getElementById(kutuId).value.trim();
@@ -19,19 +20,19 @@ window.evrenselGeminiDuzelt = function(kutuId, butonId) {
         UI.showToast("Meclis Kalemi'nin düzeltebilmesi için lütfen biraz daha detay yazın.", "info");
         return;
     }
-    // GÜVENLİK KURALI: API KEY FRONTEND'E YAZILMADI!
+    // GÜVENLİK KURALI: API KEY FRONTEND'E (AÇIĞA) YAZILMADI!
     UI.showToast("Meclis Kalemi yakında aktif olacak. API bağlantısı güvenli backend üzerinden kurulacak.", "info");
 };
 
 // ======================================================
-// ORTAK KÜRSÜ MERKEZİ DAĞITIM MOTORU (ÖNERGE + SORU)
+// 2. ORTAK KÜRSÜ MERKEZİ DAĞITIM MOTORU (ÖNERGE + SORU)
 // ======================================================
 window.ortakKursuGonder = async function() {
     // 1. ÇİFTE GÜVENLİK KONTROLÜ
     if (!UI.triggerVerificationGate()) return;
 
-    // Kullanıcı verisini güvenilir kaynaktan alıyoruz (HTML'den değil)
-    const user = STATE.user;
+    // Kullanıcı verisini güvenilir kaynaktan alıyoruz
+    const user = STATE.getUser();
     if (!user || !user.uid) return UI.showToast("Güvenlik Hatası: Oturum kimliği doğrulanamadı.", "error");
 
     const mod = STATE.aktifKursuModu || 'onerge';
@@ -41,7 +42,7 @@ window.ortakKursuGonder = async function() {
     const hedefKitle = document.getElementById('input-kursu-audience').value;
     const sorumlulukOnay = document.getElementById('input-kursu-responsibility').checked;
 
-    if (!sorumlulukOnay) return UI.showToast("Sorumluluk beyanını onaylamanız gerekmektedir.", "error");
+    if (!sorumulukOnay) return UI.showToast("Sorumluluk beyanını onaylamanız gerekmektedir.", "error");
     if (baslik.length < 15 || baslik.length > 150) return UI.showToast("Başlık 15 ile 150 karakter arasında olmalıdır.", "error");
 
     const btn = document.getElementById('btn-submit-kursu');
@@ -57,7 +58,7 @@ window.ortakKursuGonder = async function() {
 
             if (!sorun || !cozum) throw new Error("Lütfen sorun ve çözüm alanlarını eksiksiz doldurun.");
 
-            // DB onergeGonder fonksiyonuna yolla
+            // Çelik Arşive Gönder (DB onergeGonder)
             await DB.onergeGonder(user.uid, baslik, sorun, cozum, hedefKitle, sure);
             UI.showToast('Önergeniz başarıyla meclise sunuldu!', 'success');
             Me26VotingSystem.loadProposals(); // Önerge listesini yenile
@@ -68,7 +69,7 @@ window.ortakKursuGonder = async function() {
 
             const yeniSoru = {
                 yazar_uid: user.uid,
-                yazar_dijital_id: `TR-IA-${user.userNo}`, // Güvenli kaynaktan oluştur
+                yazar_dijital_id: `TR-IA-${user.userNo}`, 
                 hedef_kitle: hedefKitle,
                 baslik: baslik,
                 icerik: icerik
@@ -79,7 +80,7 @@ window.ortakKursuGonder = async function() {
             
             UI.showToast('Sorunuz ortak akla başarıyla iletildi!', 'success');
             
-            // Eğer qa.js'deki fonksiyon window'a bağlıysa çağır (değilse sayfa yenilendiğinde zaten gelir)
+            // qa.js'deki fonksiyonu çağırıp listeyi yenile
             if (typeof window.qaSorulariGetir === "function") window.qaSorulariGetir(); 
         }
 
@@ -99,6 +100,9 @@ window.ortakKursuGonder = async function() {
     }
 };
 
+// ======================================================
+// 3. KİMLİK DOĞRULAMA (AUTH) KÖPRÜSÜ
+// ======================================================
 export const AUTH = {
     loginWithGoogle: async () => {
         const userData = await googleIleGiris();
@@ -106,9 +110,6 @@ export const AUTH = {
     },
     logout: sistemdenCikis,
     
-    // ======================================================
-    // SMS VE PDF ONAY MOTORLARI
-    // ======================================================
     resetPhoneModal: () => {
         const step1 = document.getElementById('phone-step-1');
         const step2 = document.getElementById('phone-step-2');
@@ -141,7 +142,7 @@ export const AUTH = {
             if (step1) { step1.style.display = 'none'; step1.classList.add('hidden'); }
             if (step2) { step2.style.display = 'block'; step2.classList.remove('hidden'); }
         } catch (error) {
-            UI.showToast('Hata! Lütfen tekrar deneyin.', 'error');
+            UI.showToast(error.message || 'Hata! Lütfen tekrar deneyin.', 'error');
             if(btn) { btn.innerHTML = 'SMS GÖNDER'; btn.disabled = false; }
         } 
     },
@@ -159,9 +160,8 @@ export const AUTH = {
         try {
             const phoneInput = document.getElementById('input-phone-number');
             const phoneValue = phoneInput ? phoneInput.value : '';
-            await gercekSmsDogrula(otpValue, STATE.user.uid, phoneValue);
+            await gercekSmsDogrula(otpValue, STATE.getUser().uid, phoneValue);
             UI.showToast('Telefon başarıyla onaylandı!', 'success');
-            STATE.updateUser('hasPhone', true);
             UI.closeModal('phone-modal');
             UI.renderProfile();
         } catch (error) {
@@ -175,13 +175,12 @@ export const AUTH = {
         if (!fileInput || !fileInput.files[0]) { UI.showToast('Önce PDF seçin.', 'error'); return; }
         
         const btn = document.getElementById('btn-submit-pdf');
-        // AKILLI KONTROL: Kullanıcı zaten onaylıysa (Öğrenci terfisi yapıyorsa)
-        const isTerfi = STATE.user && STATE.user.authStage === 'pdf_verified';
+        const isTerfi = STATE.getUser() && STATE.getUser().authStage === 'pdf_verified';
 
         if(btn) { btn.innerHTML = isTerfi ? 'UNVAN GÜNCELLENİYOR...' : 'DEŞİFRE EDİLİYOR...'; btn.disabled = true; }
         
         try {
-            await eDevletBelgesiOku(fileInput.files[0], STATE.user?.uid);
+            await eDevletBelgesiOku(fileInput.files[0], STATE.getUser()?.uid);
             
             if (isTerfi) {
                 UI.showToast('Mezuniyet belgen onaylandı! İçmimar unvanına terfi ettiriliyorsun.', 'success');
@@ -199,11 +198,8 @@ export const AUTH = {
     }
 };
 
-window.loginWithGoogle = AUTH.loginWithGoogle;
-window.AUTH = AUTH;
-
 // ======================================================
-// OYLAMA VE ÖNERGE SİSTEMİ
+// 4. OTONOM SANDIK (OYLAMA) MOTORU
 // ======================================================
 export const Me26VotingSystem = {
     init: function() { this.loadProposals(); },
@@ -218,18 +214,19 @@ export const Me26VotingSystem = {
     handleVote: async function(btnEl) {
         if (!STATE.isLoggedIn()) { UI.showToast('Oy kullanmak için giriş yapmalısın!', 'error'); return; }
 
-        // --- GÜVENLİK DUVARI 1: OY KULLANMA ---
-        if (!STATE.user.hasPhone) { UI.showToast('Oy kullanmadan önce Profil sekmesinden Telefonunuzu onaylatmalısınız (Bot Koruması).', 'error'); return; }
-        if (STATE.user.authStage !== 'pdf_verified') { UI.showToast('Oy kullanabilmek için E-Devlet belgenizi yükleyip yetki almalısınız.', 'error'); return; }
+        const user = STATE.getUser();
+        // --- GÜVENLİK DUVARI: OY KULLANMA ---
+        if (!user.hasPhone) { UI.showToast('Oy kullanmadan önce Profil sekmesinden Telefonunuzu onaylatmalısınız (Bot Koruması).', 'error'); return; }
+        if (user.authStage !== 'pdf_verified') { UI.showToast('Oy kullanabilmek için E-Devlet belgenizi yükleyip yetki almalısınız.', 'error'); return; }
         
-        const userRole = (STATE.user && STATE.user.role) ? STATE.user.role.toLowerCase() : '';
+        const userRole = user.role ? user.role.toLowerCase() : '';
         const container = btnEl.closest('.vote-buttons-container');
         const requiredAuth = container.getAttribute('data-auth'); 
         
         if (requiredAuth === 'icmimar' && !userRole.includes('içmimar') && !userRole.includes('mimar')) { UI.showToast('Bu sandığı sadece İçmimarlar oylayabilir.', 'error'); return; }
         if (requiredAuth === 'ogrenci' && !userRole.includes('öğrenci')) { UI.showToast('Bu sandık sadece Öğrenciler içindir.', 'error'); return; }
         
-        const currentPower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
+        const currentPower = parseFloat((user.votePower || "0").replace('x', ''));
         if (currentPower === 0) { UI.showToast('Profil panelinden e-devlet belgenizi yükleyip yetki almalısınız.', 'error'); return; }
         
         const choice = btnEl.getAttribute('data-vote');
@@ -266,52 +263,43 @@ export const Me26VotingSystem = {
 };
 
 // ======================================================
-// BAŞLATMA VE DİNLEYİCİLER (ŞALTERLER)
+// 5. BAŞLATMA VE DİNLEYİCİLER (ŞALTERLERİ AÇMA)
 // ======================================================
 function şantiyeyiBaslat() {
     Me26VotingSystem.init();
 
     // ---------------------------------------------------------
-    // TRİBÜN LİGİ SİMÜLASYONU (Supabase city_leaderboard'a hazır)
+    // TRİBÜN LİGİ SİMÜLASYONU
     // ---------------------------------------------------------
     window.loadTribunLigiData = async () => {
-        // İleride backend'den alınacak verinin yapısı (Gerçek tabloya geçince buralar Supabase'den çekilecek)
         const demoCityData = [
             { city: 'Ankara', icmimar: 426, ogrenci: 180, onerge: 54, oy: 2100, katki: 340, weeklyGrowthPoints: 210, weeklyGrowthPercent: 12 },
             { city: 'İstanbul', icmimar: 389, ogrenci: 210, onerge: 42, oy: 1850, katki: 410, weeklyGrowthPoints: 180, weeklyGrowthPercent: 8 },
             { city: 'İzmir', icmimar: 211, ogrenci: 95, onerge: 28, oy: 940, katki: 180, weeklyGrowthPoints: 120, weeklyGrowthPercent: 15 },
             { city: 'Eskişehir', icmimar: 85, ogrenci: 140, onerge: 12, oy: 520, katki: 95, weeklyGrowthPoints: 90, weeklyGrowthPercent: 22 },
             { city: 'Antalya', icmimar: 156, ogrenci: 45, onerge: 18, oy: 610, katki: 120, weeklyGrowthPoints: 60, weeklyGrowthPercent: 5 },
-            { city: 'Bursa', icmimar: 134, ogrenci: 60, onerge: 15, oy: 580, katki: 85, weeklyGrowthPoints: 40, weeklyGrowthPercent: 7 }, // Growth<50 olduğu için ivmede elenir
+            { city: 'Bursa', icmimar: 134, ogrenci: 60, onerge: 15, oy: 580, katki: 85, weeklyGrowthPoints: 40, weeklyGrowthPercent: 7 },
             { city: 'Konya', icmimar: 92, ogrenci: 55, onerge: 8, oy: 340, katki: 60, weeklyGrowthPoints: 30, weeklyGrowthPercent: 4 },
-            { city: 'Mersin', icmimar: 78, ogrenci: 35, onerge: 6, oy: 290, katki: 45, weeklyGrowthPoints: 55, weeklyGrowthPercent: 9 },
-            { city: 'Diyarbakır', icmimar: 65, ogrenci: 25, onerge: 4, oy: 210, katki: 30, weeklyGrowthPoints: 80, weeklyGrowthPercent: 18 },
-            { city: 'Samsun', icmimar: 88, ogrenci: 40, onerge: 7, oy: 310, katki: 55, weeklyGrowthPoints: 25, weeklyGrowthPercent: 6 },
-            { city: 'Trabzon', icmimar: 72, ogrenci: 30, onerge: 5, oy: 260, katki: 40, weeklyGrowthPoints: 15, weeklyGrowthPercent: 3 },
             { city: 'Kocaeli', icmimar: 110, ogrenci: 50, onerge: 11, oy: 420, katki: 75, weeklyGrowthPoints: 75, weeklyGrowthPercent: 11 }
         ];
-        
-        if (typeof UI.renderTribunLigi === "function") {
-            UI.renderTribunLigi(demoCityData);
-        }
+        if (typeof UI.renderTribunLigi === "function") { UI.renderTribunLigi(demoCityData); }
     };
     
     window.loadTribunLigiData();
 
+    // Kolaylaştırıcı Fonksiyon
     const bind = (id, event, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(event, fn); };
 
-    // Giriş Butonları
+    // --- DIŞ KAPI BUTONLARI ---
     ['btn-register-hero', 'btn-register-nav', 'btn-login-hero', 'btn-login-nav'].forEach(id => { 
-        const btn = document.getElementById(id); if (btn) btn.onclick = AUTH.loginWithGoogle; 
+        bind(id, 'click', AUTH.loginWithGoogle); 
     });
 
-    // SAAS MENÜSÜ GEÇİŞLERİ
+    // --- SAAS İÇ MENÜ GEÇİŞLERİ ---
     document.querySelectorAll('.nav-menu-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const targetId = e.currentTarget.getAttribute('data-target');
             UI.switchSaasTab(targetId);
-            
-            // Eğer mobildeysek ve menüye tıklandıysa, görsel aktifleştirmeyi yap
             if(window.innerWidth < 768) {
                 document.querySelectorAll('.nav-menu-btn i').forEach(icon => icon.classList.remove('text-kaos'));
                 e.currentTarget.querySelector('i').classList.add('text-kaos');
@@ -319,19 +307,18 @@ function şantiyeyiBaslat() {
         });
     });
 
-    // Profil Görevleri (Şehir, VIP, Kopya)
+    // --- PROFİL VE GÖREV BUTONLARI ---
     bind('btn-save-profile-city', 'click', async () => {
         const citySelect = document.getElementById('input-profile-city');
         const selectedCity = citySelect ? citySelect.value : null;
         if (!selectedCity) { UI.showToast('Tribün seçimi yapmalısınız.', 'error'); return; }
         
         try {
-            await DB.sehirGuncelle(STATE.user.uid, selectedCity); 
+            await DB.sehirGuncelle(STATE.getUser().uid, selectedCity); 
             STATE.updateUser('city', selectedCity); 
             UI.renderProfile(); 
             UI.showToast(`Harika! ${selectedCity} tribününe katıldın.`, 'success');
             
-            // KULLANICI ŞEHRİNİ SEÇTİĞİNDE LİGİ VE WHATSAPP BUTONUNU ANINDA GÜNCELLE!
             if (typeof window.loadTribunLigiData === "function") window.loadTribunLigiData();
             
             const locked = document.getElementById('locked-state');
@@ -341,26 +328,29 @@ function şantiyeyiBaslat() {
         } catch (error) { UI.showToast('Şehir kaydedilemedi.', 'error'); } 
     });
 
-    const copyLinkToClipboard = async () => {
-        const link = document.getElementById('ui-invite-link')?.textContent || 'https://me26.org';
-        try { await navigator.clipboard.writeText(link); UI.showToast('Davet linkin kopyalandı!', 'success'); } 
-        catch(e) { UI.showToast('Link kopyalanamadı.', 'error'); }
-    };
-    bind('btn-copy-invite', 'click', copyLinkToClipboard);
-    bind('ui-invite-link', 'click', copyLinkToClipboard);
-    bind('btn-whatsapp-share', 'click', () => { window.open(`https://wa.me/?text=Sadece İçmimarların Girebildiği Dijital Stadyuma Katıl: ${document.getElementById('ui-invite-link')?.textContent || 'https://me26.org'}`, '_blank'); });
-
-    // Standart Numara Alma
     bind('btn-standart-numara', 'click', async () => {
         if (!confirm('Sıradaki boş numarayı otomatik almak istediğine emin misin?')) return;
         try {
-            const yeniNo = await DB.standartNumaraAl(STATE.user.uid);
+            const yeniNo = await DB.standartNumaraAl(STATE.getUser().uid);
             STATE.updateUser('userNo', yeniNo); STATE.updateUser('isVip', false);
             UI.renderProfile(); UI.showToast(`Numaran atandı: TR-IA-${yeniNo}`, 'success');
         } catch(e) { UI.showToast('Numara alınamadı.', 'error'); } 
     });
 
-    // Modallar
+    // --- MODALLAR VE KÜRSÜ ---
+    bind('btn-open-proposal-modal', 'click', () => { UI.openKursuModal(); UI.switchKursuTab('onerge'); });
+    bind('btn-open-qa-modal', 'click', () => { UI.openKursuModal(); UI.switchKursuTab('soru'); });
+    bind('btn-close-kursu-modal', 'click', () => UI.closeModal('ortak-kursu-modal'));
+    bind('tab-btn-onerge', 'click', () => UI.switchKursuTab('onerge'));
+    bind('tab-btn-soru', 'click', () => UI.switchKursuTab('soru'));
+    bind('btn-submit-kursu', 'click', window.ortakKursuGonder);
+    
+    // AI Butonları
+    bind('btn-ai-problem', 'click', () => window.evrenselGeminiDuzelt('input-kursu-problem', 'btn-ai-problem'));
+    bind('btn-ai-solution', 'click', () => window.evrenselGeminiDuzelt('input-kursu-solution', 'btn-ai-solution'));
+    bind('btn-ai-content', 'click', () => window.evrenselGeminiDuzelt('input-kursu-content', 'btn-ai-content'));
+
+    // Profil Modalları
     bind('btn-open-phone-modal', 'click', () => { AUTH.resetPhoneModal(); UI.openModal('phone-modal'); });
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
     bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
@@ -373,6 +363,13 @@ function şantiyeyiBaslat() {
         btnSubmitPdf.parentNode.replaceChild(newBtn, btnSubmitPdf);
         newBtn.addEventListener('click', AUTH.verifyPdf);
     }
+
+    // --- VIP VE PAYLAŞIM ---
+    bind('btn-open-vip-modal', 'click', () => { UI.openModal('vip-modal'); VIP.updateModalState(); });
+    bind('btn-close-vip-modal', 'click', () => UI.closeModal('vip-modal'));
+    bind('btn-claim-vip-number', 'click', VIP.claimNumber);
+    bind('btn-whatsapp-share', 'click', () => VIP.handleShare(true));
+    bind('btn-copy-invite', 'click', () => VIP.handleShare(false));
 
     // ======================================================
     // DİNAMİK BUTON DİNLEYİCİLERİ (Destekle, Oyla, SMS)
@@ -390,8 +387,8 @@ function şantiyeyiBaslat() {
             e.preventDefault();
             if (!STATE.isLoggedIn()) { UI.showToast('Destek vermek için giriş yapmalısınız.', 'error'); return; }
             
-            // --- GÜVENLİK DUVARI 2: DESTEK VERME ---
-            if (!STATE.user.hasPhone || STATE.user.authStage !== 'pdf_verified') {
+            const user = STATE.getUser();
+            if (!user.hasPhone || user.authStage !== 'pdf_verified') {
                 UI.showToast('Önergeyi destekleyebilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.', 'error');
                 return;
             }
@@ -400,7 +397,7 @@ function şantiyeyiBaslat() {
             const originalText = destekBtn.innerHTML;
             destekBtn.innerHTML = '...'; destekBtn.disabled = true;
 
-            DB.destekVer(STATE.user.uid, onergeId).then(() => {
+            DB.destekVer(user.uid, onergeId).then(() => {
                 UI.showToast('Önergeye destek verdiniz!', 'success');
                 Me26VotingSystem.loadProposals(); 
             }).catch(err => {
@@ -417,13 +414,14 @@ function şantiyeyiBaslat() {
         }
     });
 
+    // ======================================================
     // YETKİ KONTROL VE ANA YÖNLENDİRME (ROUTER)
+    // ======================================================
     onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser) {
             const { data: dbUser } = await supabase.from('users').select('*').eq('id', firebaseUser.uid).maybeSingle(); 
             if (dbUser) {
-                // VERİTABANI BAĞLANTILARI BURADA TAMAMLANDI (inviteCount ve isVip Eklendi)
-                STATE.user = { 
+                STATE.setUser({ 
                     uid: dbUser.id, name: dbUser.isim, email: dbUser.email, photo: dbUser.foto, 
                     city: dbUser.sehir || 'Belirsiz', role: dbUser.mesleki_durum || 'Belirsiz', 
                     votePower: dbUser.oy_gucu + "x", userNo: dbUser.vip_kurucu_no || 'BEKLEYEN', 
@@ -431,14 +429,14 @@ function şantiyeyiBaslat() {
                     authStage: dbUser.belge_durumu === 'Onaylandı' ? 'pdf_verified' : (dbUser.belge_durumu === 'Onay Bekliyor' ? 'document_pending' : 'registered'),
                     inviteCount: dbUser.davet_edilen_kisi_sayisi || 0,
                     isVip: dbUser.is_vip || false
-                };
+                });
                 
                 UI.showView('saas');
                 UI.switchSaasTab('view-lobi');
 
                 const locked = document.getElementById('locked-state');
                 const grid = document.getElementById('manifesto-grid');
-                if (STATE.user.city === 'Belirsiz' || STATE.user.city === 'Seçilmedi') {
+                if (STATE.getUser().city === 'Belirsiz' || STATE.getUser().city === 'Seçilmedi') {
                     if(locked) { locked.classList.remove('hidden'); locked.classList.add('flex'); }
                     if(grid) grid.classList.add('hidden');
                 } else {
@@ -447,15 +445,15 @@ function şantiyeyiBaslat() {
                 }
             }
         } else { 
-            STATE.user = null; 
+            STATE.clearSession();
             UI.showView('landing'); 
         }
         
         UI.renderProfile();
-        // Sayfa yüklendiğinde ve kullanıcı geldiğinde tribün ligini güncel durumuyla tetikle
         if (typeof window.loadTribunLigiData === "function") window.loadTribunLigiData();
     });
 }
 
+// Şantiyeyi Çalıştır
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', şantiyeyiBaslat); } 
 else { şantiyeyiBaslat(); }
