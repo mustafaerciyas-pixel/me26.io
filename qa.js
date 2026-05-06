@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 ORTAK AKIL KÜTÜPHANESİ (Soru - Cevap Modülü Motoru)
-   qa.js
+   qa.js - TANK MODU (FİLTRELERİ JAVASCRIPT İLE ZORLA AŞAN VERSİYON)
    ========================================================================== */
 
 import { supabase } from './supabase.js';
@@ -66,108 +66,113 @@ function qaSekmeDegistir(sekme) {
 }
 
 // ==========================================
-// 3. SORULARI LİSTELEME (TEŞHİS MOTORU EKLENDİ)
+// 3. SORULARI LİSTELEME (TANK MODU - ZORLA ÇEKİM)
 // ==========================================
 window.qaSorulariGetir = async function() {
-    console.log("🛠️ qa.js Tetiklendi! Sekme:", aktifQaSekme);
-    
     const listelemeAlani = document.getElementById('qa-listesi');
-    if(!listelemeAlani) {
-        console.error("🔥 HATA: 'qa-listesi' HTML elementi bulunamadı!");
-        return;
-    }
+    if(!listelemeAlani) return;
 
-    listelemeAlani.innerHTML = '<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest animate-pulse">Meclis Kayıtları Okunuyor...</div>';
+    listelemeAlani.innerHTML = '<div class="text-center text-kaos text-sm py-10 font-bold uppercase tracking-widest animate-pulse">Meclis Kayıtları Okunuyor...</div>';
 
-    const cozulmeDurumu = aktifQaSekme === 'kutuphane';
+    try {
+        // TANK MODU: Supabase'deki tüm filtreleri ve sıralamaları iptal ettik. 
+        // Tabloda ne varsa hepsini filtresiz ve ham olarak çekiyoruz.
+        const { data, error } = await supabase.from('me26_sorular').select('*');
 
-    // SUPABASE'DEN VERİ ÇEKME İŞLEMİ
-    const { data, error } = await supabase
-        .from('me26_sorular')
-        .select('*')
-        .eq('cozuldu_mu', cozulmeDurumu)
-        .lt('sikayet_sayisi', 10)
-        .order('olusturma_tarihi', { ascending: false });
+        if (error) throw error;
 
-    console.log("🔍 Supabase Veri Dönüşü:", data);
-    console.log("🚨 Supabase Hata Dönüşü:", error);
+        if (!data || data.length === 0) {
+            listelemeAlani.innerHTML = '<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl">Kürsü tamamen boş. Hiç kayıt yok.</div>';
+            return;
+        }
 
-    // EĞER HATA VARSA, EKRANA BAĞIRA BAĞIRA YAZDIR
-    if (error) {
+        const isAuthorized = UI.triggerVerificationGate(true);
+        const secilenSekmeCozulduMu = (aktifQaSekme === 'kutuphane'); // Bekleyenler = false, Kütüphane = true
+
+        // FİLTRELEME İŞLEMİNİ SUPABASE'E BIRAKMADAN TARAYICIDA (JAVASCRIPT İLE) YAPIYORUZ
+        const filtrelenmisData = data.filter(soru => {
+            const soruCozulduMu = (soru.cozuldu_mu === true); // Null/Undefined riskini sıfıra indirir
+            const sikayet = soru.sikayet_sayisi || 0;
+            return (soruCozulduMu === secilenSekmeCozulduMu) && (sikayet < 10);
+        });
+
+        // SIRALAMA İŞLEMİNİ DE JAVASCRIPT İLE YAPIYORUZ
+        filtrelenmisData.sort((a, b) => {
+            const dateA = a.olusturma_tarihi ? new Date(a.olusturma_tarihi).getTime() : 0;
+            const dateB = b.olusturma_tarihi ? new Date(b.olusturma_tarihi).getTime() : 0;
+            return dateB - dateA; // En yeniler en üstte
+        });
+
+        if (filtrelenmisData.length === 0) {
+            listelemeAlani.innerHTML = `<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl">Bu sekmede gösterilecek kayıt yok.</div>`;
+            return;
+        }
+
+        listelemeAlani.innerHTML = ''; 
+
+        // VERİLERİ EKRANA BASMA
+        filtrelenmisData.forEach(soru => {
+            let tarihStr = "Tarih Yok";
+            if (soru.olusturma_tarihi) {
+                tarihStr = new Date(soru.olusturma_tarihi).toLocaleDateString('tr-TR');
+            }
+            
+            let kitleEtiketi = '';
+            if(soru.hedef_kitle === 'Sadece İçmimarlar') kitleEtiketi = '<span class="bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Usta Kalemi</span>';
+            else if(soru.hedef_kitle === 'Sadece Öğrenciler') kitleEtiketi = '<span class="bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Çırak Kalemi</span>';
+            else kitleEtiketi = '<span class="bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-globe mr-1"></i> Ortak Kürsü</span>';
+
+            const rozet = soru.cozuldu_mu ? '<span class="absolute top-0 right-0 bg-green-500 text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">✓ ÇÖZÜLDÜ</span>' : '';
+
+            const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
+            const yazarId = isAuthorized ? (soru.yazar_dijital_id || 'TR-IA-????') : 'TR-IA-****';
+            const overlay = isAuthorized ? '' : `
+                <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer mt-12 rounded-2xl" onclick="UI.triggerVerificationGate()">
+                    <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
+                        <i class="fas fa-lock text-kaos"></i> <span class="text-[10px] font-black text-white uppercase tracking-widest">Söz Hakkı Yok</span>
+                    </div>
+                </div>
+            `;
+
+            const soruKarti = document.createElement('div');
+            soruKarti.className = 'bg-black/40 border border-slate-700 p-6 rounded-2xl relative shadow-md hover:border-slate-500 transition-colors group';
+            soruKarti.innerHTML = `
+                ${rozet}
+                ${overlay}
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center border border-slate-600 text-gray-400 text-xs ${blurClass}">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                        <div class="${blurClass}">
+                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${yazarId}</div>
+                            <div class="text-[9px] text-gray-500">${tarihStr}</div>
+                        </div>
+                    </div>
+                    ${kitleEtiketi}
+                </div>
+                <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${soru.baslik || 'Başlıksız Soru'}</h4>
+                <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${soru.icerik || 'İçerik bulunamadı.'}</p>
+                
+                <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto relative z-10">
+                    <button onclick="${isAuthorized ? `qaSoruDetayAc('${soru.id}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
+                        ${isAuthorized ? 'Kürsüye Git <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> KİLİDİ AÇ'}
+                    </button>
+                    <button onclick="qaUygunsuzBildir('${soru.id}', 'soru')" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
+                        <i class="fas fa-flag"></i> Uygunsuz
+                    </button>
+                </div>
+            `;
+            listelemeAlani.appendChild(soruKarti);
+        });
+
+    } catch (err) {
         listelemeAlani.innerHTML = `
             <div class="bg-red-900/30 border border-red-500 p-6 rounded-xl text-center">
                 <div class="text-red-500 font-black text-lg mb-2">🔥 BAĞLANTI HATASI 🔥</div>
-                <div class="text-white font-mono text-sm">${error.message}</div>
-                <div class="text-gray-400 text-xs mt-2">Hata Kodu: ${error.code}</div>
+                <div class="text-white font-mono text-xs">${err.message || 'Bilinmeyen bir hata oluştu'}</div>
             </div>`;
-        return;
     }
-
-    if (!data || data.length === 0) {
-        listelemeAlani.innerHTML = '<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl">Burada henüz bir kayıt yok.</div>';
-        return;
-    }
-
-    listelemeAlani.innerHTML = ''; 
-
-    // YETKİ KONTROLÜ (Sessiz mod: true/false)
-    const isAuthorized = UI.triggerVerificationGate(true);
-
-    data.forEach(soru => {
-        let tarihStr = "Tarih Yok";
-        if (soru.olusturma_tarihi) {
-            tarihStr = new Date(soru.olusturma_tarihi).toLocaleDateString('tr-TR');
-        }
-        
-        let kitleEtiketi = '';
-        if(soru.hedef_kitle === 'Sadece İçmimarlar') kitleEtiketi = '<span class="bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Usta Kalemi</span>';
-        else if(soru.hedef_kitle === 'Sadece Öğrenciler') kitleEtiketi = '<span class="bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Çırak Kalemi</span>';
-        else kitleEtiketi = '<span class="bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-globe mr-1"></i> Ortak Kürsü</span>';
-
-        const rozet = soru.cozuldu_mu ? '<span class="absolute top-0 right-0 bg-green-500 text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">✓ ÇÖZÜLDÜ</span>' : '';
-
-        // Buzlu Cam Efektleri ve Kilit
-        const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
-        const yazarId = isAuthorized ? (soru.yazar_dijital_id || 'TR-IA-????') : 'TR-IA-****';
-        const overlay = isAuthorized ? '' : `
-            <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer mt-12 rounded-2xl" onclick="UI.triggerVerificationGate()">
-                <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
-                    <i class="fas fa-lock text-kaos"></i> <span class="text-[10px] font-black text-white uppercase tracking-widest">Söz Hakkı Yok</span>
-                </div>
-            </div>
-        `;
-
-        const soruKarti = document.createElement('div');
-        soruKarti.className = 'bg-black/40 border border-slate-700 p-6 rounded-2xl relative shadow-md hover:border-slate-500 transition-colors group';
-        soruKarti.innerHTML = `
-            ${rozet}
-            ${overlay}
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center border border-slate-600 text-gray-400 text-xs ${blurClass}">
-                        <i class="fas fa-user-astronaut"></i>
-                    </div>
-                    <div class="${blurClass}">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${yazarId}</div>
-                        <div class="text-[9px] text-gray-500">${tarihStr}</div>
-                    </div>
-                </div>
-                ${kitleEtiketi}
-            </div>
-            <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${soru.baslik || 'Başlıksız Soru'}</h4>
-            <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${soru.icerik || 'İçerik bulunamadı.'}</p>
-            
-            <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto relative z-10">
-                <button onclick="${isAuthorized ? `qaSoruDetayAc('${soru.id}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
-                    ${isAuthorized ? 'Kürsüye Git <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> KİLİDİ AÇ'}
-                </button>
-                <button onclick="qaUygunsuzBildir('${soru.id}', 'soru')" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
-                    <i class="fas fa-flag"></i> Uygunsuz
-                </button>
-            </div>
-        `;
-        listelemeAlani.appendChild(soruKarti);
-    });
 }
 
 // ==========================================
@@ -182,13 +187,21 @@ window.qaSoruDetayAc = async function(soruId) {
     const { data: soru, error: soruError } = await supabase.from('me26_sorular').select('*').eq('id', soruId).single();
     if (soruError) return alert("Soru bulunamadı.");
 
-    const { data: cevaplar, error: cevaplarError } = await supabase
-        .from('me26_cevaplar')
-        .select('*')
-        .eq('soru_id', soruId)
-        .lt('sikayet_sayisi', 10)
-        .order('is_cozum', { ascending: false })
-        .order('olusturma_tarihi', { ascending: true });
+    // CEVAPLAR İÇİN DE TANK MODU (Filtreler JavaScript'te)
+    const { data: hamCevaplar, error: cevaplarError } = await supabase.from('me26_cevaplar').select('*').eq('soru_id', soruId);
+
+    let cevaplar = [];
+    if (hamCevaplar && !cevaplarError) {
+        cevaplar = hamCevaplar.filter(c => (c.sikayet_sayisi || 0) < 10);
+        cevaplar.sort((a, b) => {
+            if (a.is_cozum === b.is_cozum) {
+                const dateA = a.olusturma_tarihi ? new Date(a.olusturma_tarihi).getTime() : 0;
+                const dateB = b.olusturma_tarihi ? new Date(b.olusturma_tarihi).getTime() : 0;
+                return dateA - dateB; // Eskiler üstte (kronolojik okuma)
+            }
+            return a.is_cozum ? -1 : 1; // Çözüm olanlar en üstte
+        });
+    }
 
     const mevcutModal = document.getElementById('dinamik-detay-modal');
     if(mevcutModal) mevcutModal.remove();
@@ -209,10 +222,10 @@ window.qaSoruDetayAc = async function(soruId) {
                 <div class="bg-black/60 border ${cevap.is_cozum ? 'border-green-500/50' : 'border-slate-700'} p-5 rounded-xl relative mt-4">
                     ${cozumRozeti}
                     <div class="flex justify-between items-start mb-3">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest"><i class="fas fa-comment-dots mr-1 text-slate-600"></i> ${cevap.yazar_dijital_id}</div>
-                        <div class="text-[9px] text-gray-500">${new Date(cevap.olusturma_tarihi).toLocaleDateString('tr-TR')}</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest"><i class="fas fa-comment-dots mr-1 text-slate-600"></i> ${cevap.yazar_dijital_id || 'TR-IA-????'}</div>
+                        <div class="text-[9px] text-gray-500">${cevap.olusturma_tarihi ? new Date(cevap.olusturma_tarihi).toLocaleDateString('tr-TR') : ''}</div>
                     </div>
-                    <p class="text-sm text-gray-300 font-medium leading-relaxed mb-4 whitespace-pre-wrap">${cevap.icerik}</p>
+                    <p class="text-sm text-gray-300 font-medium leading-relaxed mb-4 whitespace-pre-wrap">${cevap.icerik || ''}</p>
                     <div class="flex justify-between items-center border-t border-slate-700/50 pt-3">
                         ${cozumButonu}
                         <button onclick="qaUygunsuzBildir('${cevap.id}', 'cevap')" class="text-gray-600 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition ml-auto">Uygunsuz Bildir</button>
@@ -268,11 +281,11 @@ window.qaSoruDetayAc = async function(soruId) {
             <div class="overflow-y-auto custom-scrollbar flex-grow pr-2 pb-4">
                 <div class="mb-8 border-b border-slate-700 pb-6 mt-4">
                     <div class="flex items-center gap-2 mb-4">
-                        <span class="text-[10px] bg-slate-800 text-gray-300 border border-slate-600 px-2 py-1 rounded font-bold uppercase tracking-widest">Soran: ${soru.yazar_dijital_id}</span>
+                        <span class="text-[10px] bg-slate-800 text-gray-300 border border-slate-600 px-2 py-1 rounded font-bold uppercase tracking-widest">Soran: ${soru.yazar_dijital_id || 'TR-IA-????'}</span>
                         ${soru.cozuldu_mu ? '<span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded font-bold uppercase tracking-widest">ÇÖZÜLDÜ</span>' : ''}
                     </div>
-                    <h2 class="text-xl sm:text-2xl font-black text-white mb-4 leading-tight">${soru.baslik}</h2>
-                    <p class="text-sm sm:text-base text-gray-300 font-medium leading-relaxed bg-black/30 p-5 rounded-xl border border-slate-800 whitespace-pre-wrap">${soru.icerik}</p>
+                    <h2 class="text-xl sm:text-2xl font-black text-white mb-4 leading-tight">${soru.baslik || ''}</h2>
+                    <p class="text-sm sm:text-base text-gray-300 font-medium leading-relaxed bg-black/30 p-5 rounded-xl border border-slate-800 whitespace-pre-wrap">${soru.icerik || ''}</p>
                 </div>
 
                 <h3 class="text-xs font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fas fa-layer-group text-kaos"></i> Kürsü Kayıtları (${cevaplar ? cevaplar.length : 0})</h3>
