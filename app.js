@@ -10,6 +10,95 @@ import { auth } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { googleIleGiris, sistemdenCikis, eDevletBelgesiOku, gercekSmsGonder, gercekSmsDogrula } from './auth.js';
 
+// ======================================================
+// EVRENSEL MECLİS KALEMİ (GEMINI AI - PLACEHOLDER)
+// ======================================================
+window.evrenselGeminiDuzelt = function(kutuId, butonId) {
+    const metin = document.getElementById(kutuId).value.trim();
+    if(metin.length < 10) {
+        UI.showToast("Meclis Kalemi'nin düzeltebilmesi için lütfen biraz daha detay yazın.", "info");
+        return;
+    }
+    // GÜVENLİK KURALI: API KEY FRONTEND'E YAZILMADI!
+    UI.showToast("Meclis Kalemi yakında aktif olacak. API bağlantısı güvenli backend üzerinden kurulacak.", "info");
+};
+
+// ======================================================
+// ORTAK KÜRSÜ MERKEZİ DAĞITIM MOTORU (ÖNERGE + SORU)
+// ======================================================
+window.ortakKursuGonder = async function() {
+    // 1. ÇİFTE GÜVENLİK KONTROLÜ
+    if (!UI.triggerVerificationGate()) return;
+
+    // Kullanıcı verisini güvenilir kaynaktan alıyoruz (HTML'den değil)
+    const user = STATE.user;
+    if (!user || !user.uid) return UI.showToast("Güvenlik Hatası: Oturum kimliği doğrulanamadı.", "error");
+
+    const mod = STATE.aktifKursuModu || 'onerge';
+    
+    // Ortak verileri al
+    const baslik = document.getElementById('input-kursu-title').value.trim();
+    const hedefKitle = document.getElementById('input-kursu-audience').value;
+    const sorumlulukOnay = document.getElementById('input-kursu-responsibility').checked;
+
+    if (!sorumlulukOnay) return UI.showToast("Sorumluluk beyanını onaylamanız gerekmektedir.", "error");
+    if (baslik.length < 15 || baslik.length > 150) return UI.showToast("Başlık 15 ile 150 karakter arasında olmalıdır.", "error");
+
+    const btn = document.getElementById('btn-submit-kursu');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> İŞLENİYOR...';
+    btn.disabled = true;
+
+    try {
+        if (mod === 'onerge') {
+            const sorun = document.getElementById('input-kursu-problem').value.trim();
+            const cozum = document.getElementById('input-kursu-solution').value.trim();
+            const sure = document.getElementById('input-kursu-duration').value;
+
+            if (!sorun || !cozum) throw new Error("Lütfen sorun ve çözüm alanlarını eksiksiz doldurun.");
+
+            // DB onergeGonder fonksiyonuna yolla
+            await DB.onergeGonder(user.uid, baslik, sorun, cozum, hedefKitle, sure);
+            UI.showToast('Önergeniz başarıyla meclise sunuldu!', 'success');
+            Me26VotingSystem.loadProposals(); // Önerge listesini yenile
+
+        } else if (mod === 'soru') {
+            const icerik = document.getElementById('input-kursu-content').value.trim();
+            if (icerik.length < 50 || icerik.length > 3000) throw new Error("İçerik 50 ile 3000 karakter arasında olmalıdır.");
+
+            const yeniSoru = {
+                yazar_uid: user.uid,
+                yazar_dijital_id: `TR-IA-${user.userNo}`, // Güvenli kaynaktan oluştur
+                hedef_kitle: hedefKitle,
+                baslik: baslik,
+                icerik: icerik
+            };
+
+            const { error } = await supabase.from('me26_sorular').insert([yeniSoru]);
+            if (error) throw new Error("Soru gönderilemedi.");
+            
+            UI.showToast('Sorunuz ortak akla başarıyla iletildi!', 'success');
+            
+            // Eğer qa.js'deki fonksiyon window'a bağlıysa çağır (değilse sayfa yenilendiğinde zaten gelir)
+            if (typeof window.qaSorulariGetir === "function") window.qaSorulariGetir(); 
+        }
+
+        // Başarılı olursa modalı temizle ve kapat
+        document.getElementById('input-kursu-title').value = '';
+        if(document.getElementById('input-kursu-problem')) document.getElementById('input-kursu-problem').value = '';
+        if(document.getElementById('input-kursu-solution')) document.getElementById('input-kursu-solution').value = '';
+        if(document.getElementById('input-kursu-content')) document.getElementById('input-kursu-content').value = '';
+        document.getElementById('input-kursu-responsibility').checked = false;
+        UI.closeModal('ortak-kursu-modal');
+
+    } catch (error) {
+        UI.showToast(error.message || "Gönderim sırasında bir hata oluştu.", "error");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+};
+
 export const AUTH = {
     loginWithGoogle: async () => {
         const userData = await googleIleGiris();
@@ -97,7 +186,7 @@ export const AUTH = {
             if (isTerfi) {
                 UI.showToast('Mezuniyet belgen onaylandı! İçmimar unvanına terfi ettiriliyorsun.', 'success');
             } else {
-                UI.showToast('Belge okundu! Yönetim kurulundan onay bekleniyor.', 'success');
+                UI.showToast('Belge okundu! İnceleme kuyruğunda onay bekleniyor.', 'success');
             }
             
             UI.closeModal('pdf-modal');
@@ -246,8 +335,6 @@ function şantiyeyiBaslat() {
     bind('btn-close-phone-modal', 'click', () => UI.closeModal('phone-modal'));
     bind('btn-open-pdf-modal', 'click', () => UI.openModal('pdf-modal'));
     bind('btn-close-pdf-modal', 'click', () => UI.closeModal('pdf-modal'));
-    bind('btn-open-proposal-modal', 'click', () => UI.openModal('onerge-modal'));
-    bind('btn-close-proposal-modal', 'click', () => UI.closeModal('onerge-modal'));
     bind('btn-logout', 'click', AUTH.logout);
 
     const btnSubmitPdf = document.getElementById('btn-submit-pdf');
@@ -298,37 +385,6 @@ function şantiyeyiBaslat() {
                 }
             });
         }
-    });
-
-    // Önerge Gönderme
-    bind('btn-submit-proposal', 'click', async () => {
-        if (!STATE.isLoggedIn()) { UI.showToast('Önerge vermek için giriş yapmalısınız.', 'error'); return; }
-
-        // --- GÜVENLİK DUVARI 3: ÖNERGE GÖNDERME ---
-        if (!STATE.user.hasPhone || STATE.user.authStage !== 'pdf_verified') {
-            UI.showToast('Meclise önerge sunabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.', 'error');
-            return;
-        }
-
-        const baslik = document.getElementById('input-proposal-title').value.trim();
-        const sorun = document.getElementById('input-proposal-problem').value.trim();
-        const cozum = document.getElementById('input-proposal-solution').value.trim();
-        const hedefKitle = document.getElementById('input-proposal-audience').value;
-        const sure = document.getElementById('input-proposal-duration').value;
-
-        if (!baslik || !sorun || !cozum) { UI.showToast('Lütfen alanları eksiksiz doldurun.', 'error'); return; }
-
-        const btn = document.getElementById('btn-submit-proposal');
-        const originalText = btn.innerHTML; btn.innerHTML = 'İŞLENİYOR...'; btn.disabled = true;
-
-        try {
-            await DB.onergeGonder(STATE.user.uid, baslik, sorun, cozum, hedefKitle, sure);
-            UI.showToast('Önergeniz meclise sunuldu!', 'success');
-            document.getElementById('input-proposal-title').value = ''; document.getElementById('input-proposal-problem').value = ''; document.getElementById('input-proposal-solution').value = '';
-            UI.closeModal('onerge-modal');
-            Me26VotingSystem.loadProposals();
-        } catch (error) { UI.showToast('Önerge gönderilemedi.', 'error'); } 
-        finally { btn.innerHTML = originalText; btn.disabled = false; }
     });
 
     // YETKİ KONTROL VE ANA YÖNLENDİRME (ROUTER)
