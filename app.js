@@ -74,7 +74,9 @@ window.ortakKursuGonder = async function() {
                 yazar_dijital_id: `TR-IA-${user.userNo}`, 
                 hedef_kitle: hedefKitle,
                 baslik: baslik,
-                icerik: icerik
+                icerik: icerik,
+                cozuldu_mu: false, // <-- HAYALET SORU FİLTRESİNİ AŞAN ANAHTAR
+                sikayet_sayisi: 0  // <-- HAYALET SORU FİLTRESİNİ AŞAN ANAHTAR
             };
 
             const { error } = await supabase.from('me26_sorular').insert([yeniSoru]);
