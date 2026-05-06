@@ -341,7 +341,27 @@ export const UI = {
     // 7. TRİBÜN LİGİ (LEADERBOARD) MOTORU
     // ==========================================
     renderTribunLigi: (cityDataArray) => {
-        if (!cityDataArray || cityDataArray.length === 0) return;
+        if (!cityDataArray) return;
+
+        // KULLANICI ŞEHRİNİ LİSTEYE OTOMATİK EKLEME (Tüm Şehirler Mantığı)
+        const userCity = STATE.user?.city;
+        const validCity = userCity && userCity !== 'Belirsiz' && userCity !== 'Seçilmedi';
+
+        // Eğer kullanıcının şehri dizide yoksa, 0 puanla anında listeye ekle
+        if (validCity && !cityDataArray.find(c => c.city === userCity)) {
+            cityDataArray.push({
+                city: userCity,
+                icmimar: 0,
+                ogrenci: 0,
+                onerge: 0,
+                oy: 0,
+                katki: 0,
+                weeklyGrowthPoints: 0,
+                weeklyGrowthPercent: 0
+            });
+        }
+
+        if (cityDataArray.length === 0) return;
 
         // Puan Hesaplama Formülü
         const calculateCityPower = (city) => {
@@ -393,13 +413,14 @@ export const UI = {
 
         // --- 2. SENİN TRİBÜNÜN KARTI (Dinamik Motivasyon) ---
         const userCard = document.getElementById('tribun-user-card');
-        const userCity = STATE.user?.city;
         
         if (userCard) {
-            if (!userCity || userCity === 'Belirsiz' || userCity === 'Seçilmedi') {
+            if (!validCity) {
                 userCard.innerHTML = `<p class="text-xs font-bold text-gray-300 uppercase tracking-widest">📍 Tribün seçimi yapılmadı. Şehrini seçerek Liyakat Ligi’ne katıl.</p>`;
             } else {
+                // Artık userCityIndex'in bulunacağından eminiz (yukarıda ekledik)
                 const userCityIndex = processedData.findIndex(c => c.city === userCity);
+                
                 if (userCityIndex !== -1) {
                     const myCityData = processedData[userCityIndex];
                     const rank = userCityIndex + 1;
@@ -410,7 +431,7 @@ export const UI = {
                     } else {
                         const ustSehir = processedData[userCityIndex - 1];
                         const puanFarki = ustSehir.power - myCityData.power;
-                        motivasyonMesaji = `<span class="text-yellow-400">Üst sıradaki ${ustSehir.city}’i geçmek için ${puanFarki} puan lazım.</span>`;
+                        motivasyonMesaji = `<span class="text-yellow-400">Üst sıradaki ${ustSehir.city}’i geçmek için ${puanFarki > 0 ? puanFarki : 1} puan lazım.</span>`;
                     }
 
                     userCard.innerHTML = `
@@ -456,7 +477,7 @@ export const UI = {
         // --- 4. VİRAL WHATSAPP BUTONU ---
         const btnViral = document.getElementById('btn-tribun-whatsapp');
         if (btnViral) {
-            if (!userCity || userCity === 'Belirsiz' || userCity === 'Seçilmedi') {
+            if (!validCity) {
                 btnViral.innerHTML = '<i class="fas fa-map-marker-alt"></i> 📍 ÖNCE ŞEHRİNİ SEÇ';
                 btnViral.className = "relative z-10 w-full md:w-auto px-8 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 mx-auto";
                 btnViral.onclick = () => UI.switchSaasTab('view-profil');
