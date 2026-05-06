@@ -10,7 +10,8 @@ import { auth } from './config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { googleIleGiris, sistemdenCikis, eDevletBelgesiOku, gercekSmsGonder, gercekSmsDogrula } from './auth.js';
 import { VIP } from './vip.js'; 
-import { STADYUM } from './stadium.js'; // <--- HATA BURADAYDI: stadyum.js yerine stadium.js OLARAK DÜZELTİLDİ
+import { STADYUM } from './stadium.js'; 
+import { KORUMA } from './koruma.js'; // <--- İÇMİMAR KORUMA HATTI MOTORU EKLENDİ
 
 // ======================================================
 // 1. EVRENSEL MECLİS KALEMİ (GEMINI AI - YAKINDA)
@@ -318,6 +319,7 @@ export const Me26VotingSystem = {
 // ======================================================
 function şantiyeyiBaslat() {
     Me26VotingSystem.init();
+    KORUMA.baslat(); // <--- KORUMA HATTI BURADA ATEŞLENİYOR
 
     // ---------------------------------------------------------
     // TRİBÜN LİGİ CANLI VERİ ENTEGRASYONU 
