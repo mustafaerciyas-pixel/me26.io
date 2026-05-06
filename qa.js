@@ -9,31 +9,29 @@ let aktifQaSekme = 'bekleyenler';
 let aktifSoruId = null;
 
 // ==========================================
-// 1. BAŞLANGIÇ VE KONTROLLER
+// 1. BAŞLANGIÇ VE KONTROLLER (Kurşun Geçirmez Sürüm)
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    // Sekme butonları
+function qaMotorunuBaslat() {
     document.getElementById('btn-qa-bekleyenler')?.addEventListener('click', () => qaSekmeDegistir('bekleyenler'));
     document.getElementById('btn-qa-kutuphane')?.addEventListener('click', () => qaSekmeDegistir('kutuphane'));
-    
-    // Modal açma/kapatma butonları
     document.getElementById('btn-open-qa-modal')?.addEventListener('click', qaModaliAc);
     document.getElementById('btn-close-qa-modal')?.addEventListener('click', qaModaliKapat);
-    
-    // Gönderme ve AI Butonları
     document.getElementById('btn-submit-qa')?.addEventListener('click', qaSoruGonder);
     document.getElementById('btn-qa-ai-fix')?.addEventListener('click', qaGeminiIleDuzelt);
-
-    // Sayfa açıldığında doğrudan soruları çek (okumak için girişe gerek yok)
     qaSorulariGetir();
-});
+}
 
-// Anlık Kullanıcı Bilgisini Ekrandan Okuma Motoru (Dahice Çözüm)
+// Sayfa ne kadar hızlı yüklenirse yüklensin tuşları %100 yakalar
+if (document.readyState === 'loading') { 
+    document.addEventListener('DOMContentLoaded', qaMotorunuBaslat); 
+} else { 
+    qaMotorunuBaslat(); 
+}
+
 function aktifKullaniciyiAl() {
     const ekrandakiId = document.getElementById('ui-user-id')?.innerText;
     const ekrandakiRol = document.getElementById('ui-user-role')?.innerText;
 
-    // Eğer ekranda TR-IA-??? yazıyorsa adam giriş yapmamış demektir
     if (!ekrandakiId || ekrandakiId === 'TR-IA-???') return null;
 
     let rol = 'İçmimar';
@@ -56,11 +54,11 @@ function qaSekmeDegistir(sekme) {
     const btnKutuphane = document.getElementById('btn-qa-kutuphane');
     
     if (sekme === 'bekleyenler') {
-        btnBekleyenler.className = "bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-inner";
-        btnKutuphane.className = "bg-black/50 text-gray-500 border border-slate-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition hover:text-white";
+        btnBekleyenler.className = "bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition shadow-inner";
+        btnKutuphane.className = "bg-transparent text-gray-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition hover:text-white";
     } else {
-        btnKutuphane.className = "bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-inner";
-        btnBekleyenler.className = "bg-black/50 text-gray-500 border border-slate-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition hover:text-white";
+        btnKutuphane.className = "bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition shadow-inner";
+        btnBekleyenler.className = "bg-transparent text-gray-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition hover:text-white";
     }
     
     qaSorulariGetir();
@@ -70,11 +68,19 @@ function qaModaliAc() {
     const kullanici = aktifKullaniciyiAl();
     if (!kullanici) return alert("Soru sorabilmek için sisteme giriş yapmalısınız.");
     
-    document.getElementById('qa-modal').style.display = 'flex';
+    const modal = document.getElementById('qa-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
 }
 
 function qaModaliKapat() {
-    document.getElementById('qa-modal').style.display = 'none';
+    const modal = document.getElementById('qa-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 }
 
 // ==========================================
@@ -92,7 +98,7 @@ async function qaSorulariGetir() {
         .from('me26_sorular')
         .select('*')
         .eq('cozuldu_mu', cozulmeDurumu)
-        .lt('sikayet_sayisi', 10) // 10 şikayet alanları otomatik gizle
+        .lt('sikayet_sayisi', 10)
         .order('olusturma_tarihi', { ascending: false });
 
     if (error) {
@@ -110,7 +116,6 @@ async function qaSorulariGetir() {
     data.forEach(soru => {
         const tarih = new Date(soru.olusturma_tarihi).toLocaleDateString('tr-TR');
         
-        // Hedef kitleye göre renk ve etiket
         let kitleEtiketi = '';
         if(soru.hedef_kitle === 'Sadece İçmimarlar') kitleEtiketi = '<span class="bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Usta Kalemi</span>';
         else if(soru.hedef_kitle === 'Sadece Öğrenciler') kitleEtiketi = '<span class="bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Çırak Kalemi</span>';
@@ -238,19 +243,18 @@ async function qaGeminiIleDuzelt() {
         console.error("Gemini Hatası:", error);
         alert("Meclis Kalemi şu an meşgul. Lütfen tekrar deneyin.");
     } finally {
-        btn.innerHTML = '<i class="fas fa-magic"></i> Gemini AI ile Düzelt';
+        btn.innerHTML = '<i class="fas fa-magic"></i> Meclis Kalemi (AI) ile Düzelt';
         btn.disabled = false;
     }
 }
 
 // ==========================================
-// 6. SORU DETAYI (CEVAPLAR EKRANI) VE DİNAMİK MODAL
+// 6. SORU DETAYI VE DİNAMİK MODAL
 // ==========================================
 window.qaSoruDetayAc = async function(soruId) {
     const kullanici = aktifKullaniciyiAl();
     if (!kullanici) return alert("İçeriği okumak için sisteme giriş yapmalısınız.");
     
-    // Veritabanından soruyu ve ona ait cevapları çek
     const { data: soru, error: soruError } = await supabase.from('me26_sorular').select('*').eq('id', soruId).single();
     if (soruError) return alert("Soru bulunamadı.");
 
@@ -259,15 +263,14 @@ window.qaSoruDetayAc = async function(soruId) {
         .select('*')
         .eq('soru_id', soruId)
         .lt('sikayet_sayisi', 10)
-        .order('is_cozum', { ascending: false }) // Önce çözüm işaretlenen gelsin
+        .order('is_cozum', { ascending: false })
         .order('olusturma_tarihi', { ascending: true });
 
-    // Dinamik Modalı Hazırla
     const mevcutModal = document.getElementById('dinamik-detay-modal');
     if(mevcutModal) mevcutModal.remove();
 
     aktifSoruId = soruId;
-    const isOwner = kullanici.uid === soru.yazar_uid; // Soruyu soran kişi mi bakıyor?
+    const isOwner = kullanici.uid === soru.yazar_uid; 
 
     let cevaplarHTML = '';
     if(cevaplar && cevaplar.length > 0) {
@@ -322,16 +325,16 @@ window.qaSoruDetayAc = async function(soruId) {
     modalDiv.id = 'dinamik-detay-modal';
     modalDiv.className = 'fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100000] flex flex-col items-center justify-center p-2 sm:p-4';
     modalDiv.innerHTML = `
-        <div class="bg-slate-900 border border-slate-600 p-6 sm:p-10 rounded-3xl w-full max-w-3xl relative shadow-[0_0_50px_rgba(0,0,0,0.8)] max-h-screen overflow-hidden flex flex-col">
-            <button onclick="document.getElementById('dinamik-detay-modal').remove()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-black rounded-full flex items-center justify-center border border-slate-700 shadow-md">✕</button>
+        <div class="bg-slate-900 border border-slate-600 p-6 sm:p-10 rounded-3xl w-full max-w-3xl relative shadow-[0_0_50px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-hidden flex flex-col">
+            <button onclick="document.getElementById('dinamik-detay-modal').remove()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-black rounded-full flex items-center justify-center border border-slate-700 shadow-md z-10">✕</button>
             
             <div class="overflow-y-auto custom-scrollbar flex-grow pr-2 pb-4">
-                <div class="mb-8 border-b border-slate-700 pb-6">
+                <div class="mb-8 border-b border-slate-700 pb-6 mt-4">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="text-[10px] bg-slate-800 text-gray-300 border border-slate-600 px-2 py-1 rounded font-bold uppercase tracking-widest">Soran: ${soru.yazar_dijital_id}</span>
                         ${soru.cozuldu_mu ? '<span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded font-bold uppercase tracking-widest">ÇÖZÜLDÜ</span>' : ''}
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-white mb-4 leading-tight">${soru.baslik}</h2>
+                    <h2 class="text-xl sm:text-2xl font-black text-white mb-4 leading-tight">${soru.baslik}</h2>
                     <p class="text-sm sm:text-base text-gray-300 font-medium leading-relaxed bg-black/30 p-5 rounded-xl border border-slate-800 whitespace-pre-wrap">${soru.icerik}</p>
                 </div>
 
@@ -394,7 +397,7 @@ window.qaCozumİsaretle = async function(cevapId, soruId) {
 }
 
 // ==========================================
-// 9. TOPLULUK DENETİMİ (UYGUNSUZ BİLDİR / 10 KİŞİ KURALI)
+// 9. TOPLULUK DENETİMİ
 // ==========================================
 window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
     const kullanici = aktifKullaniciyiAl();
@@ -411,7 +414,6 @@ window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
         if(error.code === '23505') { 
             alert("Bu içeriği zaten daha önce şikayet ettiniz.");
         } else {
-            console.error(error);
             alert("Şikayet işlemi sırasında bir hata oluştu.");
         }
         return;
