@@ -2,10 +2,11 @@
    ME26 AĞI - SUPABASE VERİTABANI KÖPRÜSÜ (supabase.js)
    Canlı Production Sürümü
    --------------------------------------------------------------------------
-   NOT:
+   KRİTİK NOT:
    - Bu dosyada service_role key ASLA kullanılmaz.
-   - Frontend'de yalnızca Supabase publishable / anon key kullanılabilir.
-   - Gerçek güvenlik Supabase RLS + RPC politikalarıyla sağlanmalıdır.
+   - Frontend'de yalnızca Supabase anon / publishable key kullanılabilir.
+   - Gerçek güvenlik Supabase RLS + RPC fonksiyonlarıyla sağlanmalıdır.
+   - VIP numara, oy ve destek gibi işlemler veritabanında benzersiz kilitlenmelidir.
    ========================================================================== */
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -57,18 +58,57 @@ const cleanVoteChoice = (value) => {
 const normalizeDbError = (error, fallbackMessage = 'database_error') => {
     if (!error) return new Error(fallbackMessage);
 
-    if (error.code === '23505') {
+    const code = cleanString(error.code);
+    const message = cleanString(error.message).toLowerCase();
+    const details = cleanString(error.details).toLowerCase();
+
+    // PostgreSQL unique violation
+    if (code === '23505') {
         return new Error('duplicate_record');
     }
 
     if (
-        typeof error.message === 'string' &&
-        error.message.toLowerCase().includes('unique constraint')
+        message.includes('unique constraint') ||
+        message.includes('duplicate key') ||
+        details.includes('already exists')
     ) {
         return new Error('duplicate_record');
     }
 
-    return error;
+    // RPC tarafında özel hata mesajları dönerse yakala
+    if (
+        message.includes('already_voted') ||
+        message.includes('zaten oy') ||
+        message.includes('already voted')
+    ) {
+        return new Error('already_voted');
+    }
+
+    if (
+        message.includes('already_supported') ||
+        message.includes('zaten destek') ||
+        message.includes('already supported')
+    ) {
+        return new Error('already_supported');
+    }
+
+    if (
+        message.includes('vip_number_taken') ||
+        message.includes('vip numara') ||
+        message.includes('number taken')
+    ) {
+        return new Error('vip_number_taken');
+    }
+
+    if (
+        message.includes('missing_uid') ||
+        message.includes('invalid_vip_number') ||
+        message.includes('invalid_vote_power')
+    ) {
+        return new Error(message);
+    }
+
+    return error || new Error(fallbackMessage);
 };
 
 const safeRpc = async (rpcName, params = {}) => {
@@ -91,12 +131,23 @@ const safeSelect = async (query, fallback = []) => {
     return data || fallback;
 };
 
+const safeMaybeSingle = async (query) => {
+    const { data, error } = await query;
+
+    if (error) {
+        throw normalizeDbError(error, 'single_select_failed');
+    }
+
+    return data || null;
+};
+
 // ======================================================
 // DB MOTORU
 // ======================================================
 export const DB = {
     // --------------------------------------------------
     // 1. SİSTEME GİRİŞ
+    // Google giriş sonrası kullanıcıyı veritabanında bulur veya oluşturur.
     // --------------------------------------------------
     sistemeGiris: async (gizliPaket) => {
         if (!gizliPaket || !gizliPaket.uid) {
@@ -105,15 +156,17 @@ export const DB = {
 
         const uid = cleanString(gizliPaket.uid);
 
-        const { data: mevcutUser, error: selectError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', uid)
-            .maybeSingle();
-
-        if (selectError) {
-            throw normalizeDbError(selectError, 'user_lookup_failed');
+        if (!uid) {
+            throw new Error('missing_uid');
         }
+
+        const mevcutUser = await safeMaybeSingle(
+            supabase
+                .from('users')
+                .select('*')
+                .eq('id', uid)
+                .maybeSingle()
+        );
 
         if (mevcutUser) {
             return mevcutUser;
@@ -153,20 +206,26 @@ export const DB = {
 
     // --------------------------------------------------
     // 3. BELGE İNCELEME KUYRUĞU
+    // Fiziksel dosya yüklemez; belge başvurusunu inceleme kuyruğuna alır.
     // --------------------------------------------------
     belgeyiSirayaAl: async (uid, belgeData) => {
         const temizUid = cleanString(uid);
 
         if (!temizUid) throw new Error('missing_uid');
+
         if (!belgeData || typeof belgeData !== 'object') {
             throw new Error('missing_document_payload');
         }
 
         const temizBelge = {
-            dosya_adi: cleanString(belgeData.dosya_adi),
+            dosya_adi: cleanString(belgeData.dosya_adi).slice(0, 180),
             tur: cleanString(belgeData.tur, 'application/pdf'),
             belge_durumu: cleanString(belgeData.belge_durumu, 'Onay Bekliyor')
         };
+
+        if (!temizBelge.dosya_adi) {
+            throw new Error('missing_document_name');
+        }
 
         return await safeRpc('me26_belge_yukle', {
             p_uid: temizUid,
@@ -204,7 +263,39 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 6. ÖNERGE GÖNDERME
+    // 6. VIP NUMARA ALMA
+    // vip.js bu fonksiyonu kullanır.
+    // Veritabanında me26_vip_numara_al RPC fonksiyonu olmalıdır.
+    // Bu RPC aynı numarayı iki kişiye vermeyecek şekilde kilitlemelidir.
+    // --------------------------------------------------
+    vipNumaraAl: async (uid, vipNumber) => {
+        const temizUid = cleanString(uid);
+        const temizNo = cleanNumber(vipNumber, 0);
+
+        if (!temizUid) throw new Error('missing_uid');
+        if (temizNo <= 0) throw new Error('invalid_vip_number');
+
+        try {
+            return await safeRpc('me26_vip_numara_al', {
+                p_uid: temizUid,
+                p_vip_no: temizNo
+            });
+        } catch (error) {
+            const normalized = normalizeDbError(error, 'vip_claim_failed');
+
+            if (
+                normalized.message === 'duplicate_record' ||
+                normalized.message === 'vip_number_taken'
+            ) {
+                throw new Error('vip_number_taken');
+            }
+
+            throw normalized;
+        }
+    },
+
+    // --------------------------------------------------
+    // 7. ÖNERGE GÖNDERME
     // --------------------------------------------------
     onergeGonder: async (uid, baslik, sorun, cozum, hedefKitle, sure) => {
         const temizUid = cleanString(uid);
@@ -215,6 +306,7 @@ export const DB = {
 
         if (!temizUid) throw new Error('missing_uid');
         if (temizBaslik.length < 15) throw new Error('title_too_short');
+        if (temizBaslik.length > 150) throw new Error('title_too_long');
         if (!temizSorun) throw new Error('missing_problem');
         if (!temizCozum) throw new Error('missing_solution');
 
@@ -242,7 +334,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 7. ÖNERGELERİ GETİRME
+    // 8. ÖNERGELERİ GETİRME
     // --------------------------------------------------
     onergeleriGetir: async () => {
         return await safeSelect(
@@ -255,7 +347,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 8. ÖNERGEYE DESTEK VERME
+    // 9. ÖNERGEYE DESTEK VERME
     // --------------------------------------------------
     destekVer: async (uid, onergeId) => {
         const temizUid = cleanString(uid);
@@ -270,16 +362,21 @@ export const DB = {
                 p_uid: temizUid
             });
         } catch (error) {
-            if (error.message === 'duplicate_record') {
+            const normalized = normalizeDbError(error, 'support_failed');
+
+            if (
+                normalized.message === 'duplicate_record' ||
+                normalized.message === 'already_supported'
+            ) {
                 throw new Error('already_supported');
             }
 
-            throw error;
+            throw normalized;
         }
     },
 
     // --------------------------------------------------
-    // 9. OY KULLANMA
+    // 10. OY KULLANMA
     // --------------------------------------------------
     oyKullan: async (uid, onergeId, kullanilanOy, oyGucu) => {
         const temizUid = cleanString(uid);
@@ -305,7 +402,10 @@ export const DB = {
         if (error) {
             const normalized = normalizeDbError(error, 'vote_insert_failed');
 
-            if (normalized.message === 'duplicate_record') {
+            if (
+                normalized.message === 'duplicate_record' ||
+                normalized.message === 'already_voted'
+            ) {
                 throw new Error('already_voted');
             }
 
@@ -316,7 +416,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 10. OY SONUÇLARI
+    // 11. OY SONUÇLARI
     // --------------------------------------------------
     oySonuclariniGetir: async (onergeId) => {
         const temizOnergeId = cleanString(onergeId);
@@ -333,7 +433,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 11. TRİBÜN LİGİ
+    // 12. TRİBÜN LİGİ
     // --------------------------------------------------
     tribunLigiGetir: async () => {
         const users = await safeSelect(
@@ -347,6 +447,13 @@ export const DB = {
             supabase
                 .from('onergeler')
                 .select('yazar_uid'),
+            []
+        );
+
+        const oylar = await safeSelect(
+            supabase
+                .from('me26_oylar')
+                .select('user_id'),
             []
         );
 
@@ -404,6 +511,14 @@ export const DB = {
             }
         });
 
+        oylar.forEach((oy) => {
+            const city = userCityMap[oy.user_id];
+
+            if (city && cityMap[city]) {
+                cityMap[city].oy += 1;
+            }
+        });
+
         const katkilar = [
             ...(sorular || []),
             ...(cevaplar || [])
@@ -421,15 +536,17 @@ export const DB = {
             .values(cityMap)
             .sort((a, b) => {
                 const scoreA =
-                    a.icmimar * 3 +
-                    a.ogrenci * 2 +
-                    a.onerge * 5 +
+                    a.icmimar * 10 +
+                    a.ogrenci * 5 +
+                    a.onerge * 2 +
+                    a.oy * 1 +
                     a.katki * 2;
 
                 const scoreB =
-                    b.icmimar * 3 +
-                    b.ogrenci * 2 +
-                    b.onerge * 5 +
+                    b.icmimar * 10 +
+                    b.ogrenci * 5 +
+                    b.onerge * 2 +
+                    b.oy * 1 +
                     b.katki * 2;
 
                 return scoreB - scoreA;
@@ -437,9 +554,8 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 12. KORUMA HATTI BİLDİRİMİ
-    // Şimdilik koruma.js doğrudan supabase kullanıyor.
-    // Sonraki adımda koruma.js'i buraya bağlayacağız.
+    // 13. KORUMA HATTI BİLDİRİMİ
+    // koruma.js bu fonksiyonu kullanır.
     // --------------------------------------------------
     korumaBildir: async (payload) => {
         if (!payload || typeof payload !== 'object') {
