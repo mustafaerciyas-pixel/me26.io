@@ -19,14 +19,7 @@ const SEHIRLER = [
     "Düzce", "Yurtdışı"
 ];
 
-// OTONOM ARAMA MOTORU (KÜFÜR/HAKARET FİLTRESİ - ŞİFRELİ)
-// Not: Kaynak kodda profesyonelliği korumak adına kelimeler Hex (Makine) formatına çevrilmiştir.
-const YASAKLI_KELIMELER = [
-    "\x61\x6d\x6b", "\x61\x71", "\x73\x69\x6b", "\x73\x6f\x6b", "\x70\x69\xe7", 
-    "\x79\x61\x72\x72\x61\x6b", "\x6f\x72\x6f\x73\x70\x75", "\x67\x61\x76\x61\x74", 
-    "\x69\x62\x6e\x65", "\x70\x65\x7a\x65\x76\x65\x6e\x6b", "\x6b\x61\x68\x70\x65", 
-    "\x73\xfc\x72\x74\xfc\x6b", "\x61\x70\x74\x61\x6c", "\x73\x61\x6c\x61\x6b"
-];
+// DİKKAT: Yasaklı kelimeler listesi güvenlik sebebiyle Supabase (Backend) üzerine taşınmıştır.
 
 export const STADYUM = {
     kanal: null,
@@ -78,18 +71,12 @@ export const STADYUM = {
         }
     },
 
-    // Küfür Tarayıcı Motor
-    kufurVarMi: function(metin) {
-        // Noktalama işaretlerini boşalt, küçük harfe çevir, bitişik harfleri kontrol et
-        const temizMetin = metin.toLowerCase().replace(/[^a-zğüşıöç]/g, '');
-        return YASAKLI_KELIMELER.some(kelime => temizMetin.includes(kelime.toLowerCase()));
-    },
-
     // Tribün Akışı: Mesaj Gönderme
     mesajGonder: async function() {
         if (!STATE.isLoggedIn()) return UI.showToast("Tribüne seslenmek için giriş yapmalısın.", "error");
 
         const inputEl = document.getElementById('input-chat-mesaj');
+        const btnEl = document.getElementById('btn-chat-gonder');
         if (!inputEl) return;
 
         let mesaj = inputEl.value.trim();
@@ -102,36 +89,51 @@ export const STADYUM = {
             return UI.showToast("Tribüne tekrar seslenmek için 60 saniye beklemelisin.", "error");
         }
 
-        // Ahlak Polisi Kontrolü
-        if (this.kufurVarMi(mesaj)) {
-            return UI.showToast("SİSTEM UYARISI: Mesajınız ME26 Anayasasına aykırı kelimeler içeriyor. Gönderim reddedildi.", "error");
+        // Butonu geçici kilitle (Çift tıklamayı önlemek için)
+        if(btnEl) btnEl.disabled = true;
+
+        // AHLAK POLİSİ (SUPABASE BACKEND KONTROLÜ)
+        try {
+            const { data: kufurluMu, error } = await supabase.rpc('kufur_kontrol', { metin: mesaj });
+            
+            if (error) {
+                if(btnEl) btnEl.disabled = false;
+                return UI.showToast("Güvenlik kontrolü yapılamadı, lütfen tekrar deneyin.", "error");
+            }
+
+            if (kufurluMu) {
+                if(btnEl) btnEl.disabled = false;
+                return UI.showToast("SİSTEM UYARISI: Mesajınız ME26 Anayasasına aykırı. Gönderim reddedildi.", "error");
+            }
+
+        } catch (err) {
+            if(btnEl) btnEl.disabled = false;
+            return UI.showToast("Bağlantı hatası.", "error");
         }
 
+        // Kontrolden geçtiyse telsizle yayınla
         let myUserId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN' ? `TR-IA-${STATE.user.userNo}` : `TR-IA-ADAY`;
         const payloadData = { uid: myUserId, mesaj: mesaj };
 
         try {
-            // Telsiz yayını ile 81 ile fırlat
             await this.kanal.send({
                 type: 'broadcast',
                 event: 'chat_mesaji',
                 payload: payloadData
             });
 
-            // Kendi ekranımıza bas
             this.mesajiEkranaBas(payloadData);
 
-            // Sistemi kilitle ve temizle
             inputEl.value = '';
             this.sonMesajZamani = suAn;
             this.cooldownBaslat();
 
         } catch (error) {
+            if(btnEl) btnEl.disabled = false;
             UI.showToast("Mesaj iletilemedi, bağlantı hatası.", "error");
         }
     },
 
-    // Tribün Akışı: Kilit Ekranı (60s)
     cooldownBaslat: function() {
         const overlay = document.getElementById('chat-cooldown-overlay');
         const timerEl = document.getElementById('chat-cooldown-timer');
@@ -161,12 +163,10 @@ export const STADYUM = {
         }, 1000);
     },
 
-    // Tribün Akışı: Ekrana Render ve Uçuş (Fading)
     mesajiEkranaBas: function(data) {
         const container = document.getElementById('stadyum-chat-messages');
         if (!container) return;
 
-        // "Tribün sessiz" yazısını kaldır
         const placeholder = container.querySelector('.animate-pulse');
         if (placeholder) placeholder.remove();
 
@@ -177,14 +177,12 @@ export const STADYUM = {
         container.appendChild(msgDiv);
         container.scrollTop = container.scrollHeight;
 
-        // 15 saniye asılı kalsın, sonra buharlaşsın
         setTimeout(() => {
             msgDiv.classList.add('message-fade-out');
             setTimeout(() => msgDiv.remove(), 1500); 
         }, 15000);
     },
 
-    // Arayüzde Sahneyi (Mikrofon Alanını) Yönetme Modülü
     sahneyiGuncelle: function(kisiData) {
         this.sahnedekiKisi = kisiData;
         const dalgalar = document.getElementById('saha-dalgalar');
@@ -348,7 +346,6 @@ export const STADYUM = {
                     this.sahneyiGuncelle(null);
                 }
             })
-            // YENİ: CHAT MESAJLARINI DİNLE
             .on('broadcast', { event: 'chat_mesaji' }, (payload) => {
                 this.mesajiEkranaBas(payload.payload);
             })
