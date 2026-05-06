@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   Tüm Pencereler (Modallar) Aktif Sürüm
+   Akıllı Profil ve Terfi Motoru Entegre Edilmiş Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -48,9 +48,7 @@ export const UI = {
         });
     },
 
-    // ==========================================
-    // İŞTE EKSİK OLAN VE TUŞLARI BOZAN KISIM BURASIYDI!
-    // ==========================================
+    // 3. PENCERELER (MODALLAR)
     openModal: (modalId) => {
         const modal = document.getElementById(modalId);
         if (modal) {
@@ -66,9 +64,8 @@ export const UI = {
             modal.classList.remove('flex');
         }
     },
-    // ==========================================
 
-    // 3. BİLDİRİM (TOAST) MESAJLARI
+    // 4. BİLDİRİM (TOAST) MESAJLARI
     showToast: (message, type = 'success') => {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -95,13 +92,14 @@ export const UI = {
         }, 3000);
     },
 
-    // 4. PROFİL VERİLERİNİ EKRANA ÇİZME
+    // 5. AKILLI PROFİL MOTORU
     renderProfile: () => {
         if (!STATE.isLoggedIn()) return;
 
         const user = STATE.user;
         const setEl = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
+        // --- TEMEL BİLGİLER ---
         const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
         const displayRole = (user.role === 'Belirsiz' || !user.role) ? 'Kimlik Bekleniyor' : user.role;
         const displayPower = user.votePower || '0.0x';
@@ -113,14 +111,15 @@ export const UI = {
         setEl('sidebar-vote-power', displayPower);
 
         let userIdText = 'TR-IA-BEKLEYEN';
-        if (user.userNo && user.userNo !== 'BEKLEYEN') userIdText = `TR-IA-${user.userNo}`;
+        const numaraAlinmisMi = user.userNo && user.userNo !== 'BEKLEYEN';
+        if (numaraAlinmisMi) userIdText = `TR-IA-${user.userNo}`;
         
         setEl('ui-user-id', userIdText);
         setEl('sidebar-user-id', userIdText);
         setEl('mobile-user-id', userIdText);
 
         const idBadge = document.getElementById('ui-role-badge');
-        if (user.userNo && user.userNo !== 'BEKLEYEN') {
+        if (numaraAlinmisMi) {
             if (user.isVip) {
                 if (idBadge) { idBadge.textContent = 'VIP KURUCU'; idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos'; }
             } else {
@@ -130,33 +129,93 @@ export const UI = {
             if (idBadge) { idBadge.textContent = 'Aday Kurucu'; idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold'; }
         }
 
-        const citySelectors = document.querySelectorAll('#ui-city-selector-container');
-        citySelectors.forEach(el => {
-            if (!isCitySelected) el.classList.remove('hidden');
-            else el.classList.add('hidden');
-        });
-
+        // --- SAĞ PANEL (AĞI BÜYÜT & VIP) MANTIĞI ---
         const inviteCount = user.inviteCount || 0;
         setEl('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
         const progressBar = document.getElementById('ui-vip-progress-bar');
         if (progressBar) progressBar.style.width = `${Math.min((inviteCount / 3) * 100, 100)}%`;
 
+        const btnVipModal = document.getElementById('btn-open-vip-modal');
+        const btnStandartNum = document.getElementById('btn-standart-numara');
         const vipStatus = document.getElementById('ui-vip-status');
-        if (vipStatus) {
-            if (user.isVip) {
-                vipStatus.textContent = 'VIP AKTİF';
+
+        if (numaraAlinmisMi) {
+            // Numara alındıysa butonları yok et, sadece "Ağı Büyüt" kalsın
+            if (btnVipModal) btnVipModal.classList.add('hidden');
+            if (btnStandartNum) btnStandartNum.classList.add('hidden');
+            if (vipStatus) {
+                vipStatus.textContent = 'SİSTEM ELÇİSİ';
                 vipStatus.className = 'text-[9px] text-slate-900 font-black bg-kaos px-2 py-1 rounded border border-kaos shadow-kaos';
-            } else if (inviteCount >= 3) {
-                vipStatus.textContent = 'KİLİT AÇILDI';
-                vipStatus.className = 'text-[9px] text-green-400 font-bold bg-green-900/30 px-2 py-1 rounded border border-green-700';
-            } else {
-                vipStatus.textContent = 'KİLİTLİ';
-                vipStatus.className = 'text-[9px] text-gray-500 font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700';
+            }
+        } else {
+            // Numara alınmadıysa butonlar görünsün
+            if (btnVipModal) btnVipModal.classList.remove('hidden');
+            if (btnStandartNum) btnStandartNum.classList.remove('hidden');
+            if (vipStatus) {
+                if (inviteCount >= 3) {
+                    vipStatus.textContent = 'KİLİT AÇILDI';
+                    vipStatus.className = 'text-[9px] text-green-400 font-bold bg-green-900/30 px-2 py-1 rounded border border-green-700';
+                } else {
+                    vipStatus.textContent = 'KİLİTLİ';
+                    vipStatus.className = 'text-[9px] text-gray-500 font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700';
+                }
             }
         }
+
+        // --- SOL PANEL (GÖREVLER VE TERFİ) MANTIĞI ---
+        const btnPhone = document.getElementById('btn-open-phone-modal');
+        const btnPdf = document.getElementById('btn-open-pdf-modal');
+        const taskContainer = btnPhone ? btnPhone.parentElement : null;
+
+        // Eski dinamik rozetleri temizle (Sayfa yenilendiğinde üst üste binmesin)
+        document.querySelectorAll('.dynamic-task-badge').forEach(el => el.remove());
+
+        const addBadge = (html, extraClass = '') => {
+            if (!taskContainer) return;
+            const badge = document.createElement('div');
+            badge.className = `dynamic-task-badge w-full py-3 rounded-lg text-[10px] md:text-xs text-center uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2 border ${extraClass}`;
+            badge.innerHTML = html;
+            taskContainer.insertBefore(badge, taskContainer.firstChild);
+        };
+
+        // Telefon Görevi
+        if (user.hasPhone) {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            addBadge('<span>✅</span> TELEFON DOĞRULANDI (BOT KONTROLÜ)', 'bg-green-900/20 border-green-700/50 text-green-400');
+        } else {
+            if (btnPhone) btnPhone.classList.remove('hidden');
+        }
+
+        // E-Devlet Görevi ve Mezuniyet Terfisi
+        if (user.authStage === 'pdf_verified') {
+            if (btnPdf) btnPdf.classList.add('hidden');
+            addBadge('<span>🎓</span> E-DEVLET ONAYLI (1.0x TAM YETKİ)', 'bg-indigo-900/20 border-indigo-700/50 text-indigo-400');
+            
+            // Eğer Öğrenciyse "Unvan Güncelle" butonunu çıkar
+            if (user.role && user.role.toLowerCase().includes('öğrenci')) {
+                const terfiBtn = document.createElement('button');
+                terfiBtn.className = 'dynamic-task-badge w-full bg-kaos text-slate-900 hover:opacity-90 font-black py-3 rounded-lg text-[11px] uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 mt-2';
+                terfiBtn.innerHTML = '<i class="fas fa-graduation-cap text-lg"></i> Mezun Oldun Mu? Unvanını Güncelle';
+                terfiBtn.onclick = () => UI.openModal('pdf-modal');
+                if (taskContainer) taskContainer.appendChild(terfiBtn);
+            }
+
+        } else if (user.authStage === 'document_pending') {
+            if (btnPdf) btnPdf.classList.add('hidden');
+            addBadge('<span>⏳</span> YÖNETİCİ ONAYI BEKLENİYOR', 'bg-yellow-900/20 border-yellow-700/50 text-yellow-500');
+        } else {
+            if (btnPdf) btnPdf.classList.remove('hidden');
+        }
+
+        // Şehir (Tribün) Görevi
+        const citySelectors = document.querySelectorAll('#ui-city-selector-container');
+        citySelectors.forEach(el => {
+            if (!isCitySelected) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        });
     },
 
-    // 5. ÖNERGELERİ EKRANA BASMA
+    // 6. ÖNERGELERİ EKRANA BASMA
     renderProposals: (onergeler) => {
         const meclisContainer = document.getElementById('proposals-container');
         const gundemContainer = document.getElementById('gundem-container'); 
