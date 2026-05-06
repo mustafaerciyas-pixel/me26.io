@@ -1,12 +1,13 @@
 /* ==========================================================================
    ME26 AĞI - VIP KURUCU NUMARA YÖNETİCİSİ (vip.js)
-   Canlı Production Sürümü
+   Geçici Vercel Canlı Sürümü
    --------------------------------------------------------------------------
-   Önemli canlı kural:
-   - me26.org kullanılmaz. Tek resmi adres: https://me26.io
+   Kurallar:
+   - me26.org kullanılmaz.
+   - Davet linki config.js içindeki inviteBaseUrl üzerinden üretilir.
    - Paylaşım butonuna basmak davet sayısını artırmaz.
-   - Davet sayısı yalnızca veritabanındaki gerçek kayıt sayısından gelmelidir.
-   - VIP numara seçimi sadece frontend/localStorage ile kesinleştirilemez.
+   - Davet sayısı yalnızca Supabase'deki gerçek kayıt sayısından gelir.
+   - VIP numara frontend/localStorage ile verilmez; Supabase RPC ile kilitlenir.
    ========================================================================== */
 
 import { ME26_CONFIG } from './config.js';
@@ -30,22 +31,40 @@ const getUser = () => {
     return STATE.user || {};
 };
 
-const getInviteCode = (user) => {
-    const code =
-        cleanText(user?.davetKodu) ||
-        cleanText(user?.userNo && user.userNo !== 'BEKLEYEN' ? `TR-IA-${user.userNo}` : '') ||
-        cleanText(user?.uid);
+const getBaseUrl = () => {
+    return (
+        ME26_CONFIG.inviteBaseUrl ||
+        ME26_CONFIG.officialBaseUrl ||
+        'https://me26-io.vercel.app'
+    ).replace(/\/+$/, '');
+};
 
-    return code || 'ME26';
+const getInviteCode = (user) => {
+    const davetKodu = cleanText(user?.davetKodu);
+
+    if (davetKodu) {
+        return davetKodu;
+    }
+
+    if (user?.userNo && user.userNo !== 'BEKLEYEN') {
+        return `TR-IA-${user.userNo}`;
+    }
+
+    const uid = cleanText(user?.uid);
+
+    if (uid) {
+        return uid;
+    }
+
+    return 'ME26';
 };
 
 const getInviteLink = () => {
     const user = getUser();
     const ref = encodeURIComponent(getInviteCode(user));
+    const baseUrl = getBaseUrl();
 
-    // /katil kullanmıyoruz. GitHub Pages veya statik hostingte 404 riski doğurur.
-    // Ana sayfa query parametresi daha güvenli: https://me26.io/?ref=...
-    return `https://me26.io/?ref=${ref}`;
+    return `${baseUrl}/?ref=${ref}`;
 };
 
 const fallbackCopy = (text) => {
@@ -98,14 +117,36 @@ const getSampleVipNumbers = () => {
     const min = Number(ME26_CONFIG.vipMin || 101);
     const max = Number(ME26_CONFIG.vipMax || 5000);
 
-    const preferred = [
+    const preferredNumbers = [
         101,
         102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
         111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        126,
         200,
         222,
+        300,
+        333,
         500,
+        555,
         777,
+        888,
         999,
         1000,
         1071,
@@ -117,7 +158,7 @@ const getSampleVipNumbers = () => {
         5000
     ];
 
-    return preferred.filter((num) => num >= min && num <= max);
+    return preferredNumbers.filter((num) => num >= min && num <= max);
 };
 
 const userCanOpenVip = () => {
@@ -134,6 +175,14 @@ const userAlreadyHasNumber = () => {
     return Boolean(user?.userNo && user.userNo !== 'BEKLEYEN');
 };
 
+const updateInviteLinkOnScreen = () => {
+    const inviteLinkEl = $('ui-invite-link');
+
+    if (inviteLinkEl) {
+        inviteLinkEl.textContent = getInviteLink();
+    }
+};
+
 // ======================================================
 // VIP MOTORU
 // ======================================================
@@ -145,6 +194,8 @@ export const VIP = {
         const lockedState = $('vip-locked-state');
         const unlockedState = $('vip-unlocked-state');
         const user = getUser();
+
+        updateInviteLinkOnScreen();
 
         if (!lockedState || !unlockedState) return;
 
@@ -161,7 +212,8 @@ export const VIP = {
                     Kurucu Numaran Atandı
                 </h2>
                 <p class="text-sm text-gray-400 max-w-md leading-relaxed">
-                    Mevcut kurucu numaran: <span class="text-kaos font-black">TR-IA-${cleanText(user.userNo)}</span>.
+                    Mevcut kurucu numaran:
+                    <span class="text-kaos font-black">TR-IA-${cleanText(user.userNo)}</span>.
                     Aynı hesap için ikinci VIP numara seçimi yapılamaz.
                 </p>
             `;
@@ -221,9 +273,12 @@ export const VIP = {
 
         if (numbers.length === 0) {
             const empty = document.createElement('div');
+
             empty.className = 'col-span-full text-center text-gray-500 text-xs uppercase tracking-widest py-8';
             empty.textContent = 'Şu an seçilebilir VIP numara bulunmuyor.';
+
             grid.appendChild(empty);
+
             return;
         }
 
@@ -255,14 +310,23 @@ export const VIP = {
     // --------------------------------------------------
     handleShare: async (isWhatsApp = false) => {
         const inviteLink = getInviteLink();
-        const messageText = `ME26 Ağı açılıyor. İçmimarlık Mezunları ve İçmimarlık Öğrencileri için belge kontrollü, aidatsız ve başkansız dijital meclise katıl: ${inviteLink}`;
+
+        const messageText =
+            `ME26 Ağı açılıyor. İçmimarlık Mezunları ve İçmimarlık Öğrencileri için ` +
+            `belge kontrollü, aidatsız ve başkansız dijital meclise katıl: ${inviteLink}`;
 
         try {
             if (isWhatsApp) {
                 const message = encodeURIComponent(messageText);
-                window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
 
-                UI.showToast("WhatsApp paylaşım ekranı açıldı.", 'success');
+                window.open(
+                    `https://wa.me/?text=${message}`,
+                    '_blank',
+                    'noopener,noreferrer'
+                );
+
+                UI.showToast('WhatsApp paylaşım ekranı açıldı.', 'success');
+
                 return;
             }
 
@@ -283,7 +347,12 @@ export const VIP = {
             // CANLI GÜVENLİK:
             // Burada davet sayısı artırılmıyor.
             // Davet sayısı sadece gerçek kayıt veritabanına düştüğünde artmalıdır.
-            UI.renderProfile();
+            updateInviteLinkOnScreen();
+
+            if (typeof UI.renderProfile === 'function') {
+                UI.renderProfile();
+            }
+
             VIP.updateModalState();
         }
     },
@@ -306,14 +375,18 @@ export const VIP = {
 
         if (userAlreadyHasNumber()) {
             UI.showToast('Bu hesap için kurucu numara zaten atanmış.', 'info');
+
             UI.closeModal('vip-modal');
             UI.renderProfile();
+
             return;
         }
 
         if (!userCanOpenVip()) {
             UI.showToast('VIP numara seçimi için gerekli gerçek davet sayısına henüz ulaşılmadı.', 'error');
+
             VIP.updateModalState();
+
             return;
         }
 
@@ -331,35 +404,57 @@ export const VIP = {
         }
 
         try {
-            // CANLI GÜVENLİK:
-            // VIP numara localStorage ile kesinleştirilmez.
-            // Veritabanında benzersiz şekilde kilitlenmelidir.
-            // Bunun için supabase.js içinde DB.vipNumaraAl(uid, number) fonksiyonu olmalı.
             if (typeof DB.vipNumaraAl !== 'function') {
                 throw new Error('vip_backend_missing');
             }
 
             const finalNumber = await DB.vipNumaraAl(user.uid, selectedVipNumber);
+            const savedNumber = finalNumber || selectedVipNumber;
 
-            STATE.setVipNumber(finalNumber || selectedVipNumber);
+            STATE.setVipNumber(savedNumber);
 
             UI.closeModal('vip-modal');
             UI.renderProfile();
 
-            UI.showToast(`Tebrikler! VIP Kurucu Numaran TR-IA-${finalNumber || selectedVipNumber} olarak kaydedildi.`, 'success');
+            UI.showToast(
+                `Tebrikler! VIP Kurucu Numaran TR-IA-${savedNumber} olarak kaydedildi.`,
+                'success'
+            );
         } catch (error) {
             console.error('VIP numara rezervasyon hatası:', error);
 
             if (error.message === 'vip_backend_missing') {
                 UI.showToast(
-                    'VIP numara rezervasyonu canlı veritabanı kilidine bağlanmadan açılamaz. Bu güvenlik için bilinçli olarak durduruldu.',
+                    'VIP numara rezervasyonu canlı veritabanı kilidine bağlanmadan açılamaz.',
                     'error'
                 );
             } else if (error.message === 'vip_number_taken') {
-                UI.showToast('Bu VIP numara az önce başka biri tarafından alındı. Lütfen başka bir numara seçin.', 'error');
+                UI.showToast(
+                    'Bu VIP numara az önce başka biri tarafından alındı. Lütfen başka bir numara seçin.',
+                    'error'
+                );
+
                 VIP.renderGrid();
+            } else if (error.message === 'not_enough_invites') {
+                UI.showToast(
+                    'VIP numara seçimi için gerekli gerçek davet sayısına henüz ulaşılmadı.',
+                    'error'
+                );
+
+                VIP.updateModalState();
+            } else if (error.message === 'already_has_number') {
+                UI.showToast(
+                    'Bu hesap için kurucu numara zaten atanmış.',
+                    'info'
+                );
+
+                UI.closeModal('vip-modal');
+                UI.renderProfile();
             } else {
-                UI.showToast('VIP numara rezerve edilemedi. Lütfen tekrar deneyin.', 'error');
+                UI.showToast(
+                    'VIP numara rezerve edilemedi. Lütfen tekrar deneyin.',
+                    'error'
+                );
             }
 
             if (claimBtn) {
