@@ -4,6 +4,7 @@
 
 import { supabase } from './supabase.js';
 import { auth } from './config.js'; 
+import { STATE } from './state.js'; // GÜVENLİK DUVARI İÇİN STATE EKLENDİ
 
 let aktifQaSekme = 'bekleyenler';
 let aktifSoruId = null;
@@ -67,6 +68,11 @@ function qaSekmeDegistir(sekme) {
 function qaModaliAc() {
     const kullanici = aktifKullaniciyiAl();
     if (!kullanici) return alert("Soru sorabilmek için sisteme giriş yapmalısınız.");
+    
+    // GÜVENLİK DUVARI: KÜRSÜYE ÇIKMA
+    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
+        return alert("Kürsüde soru sorabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.");
+    }
     
     const modal = document.getElementById('qa-modal');
     if (modal) {
@@ -161,6 +167,11 @@ async function qaSorulariGetir() {
 async function qaSoruGonder() {
     const kullanici = aktifKullaniciyiAl();
     if (!kullanici) return alert("Soru sorabilmek için sisteme giriş yapmalısınız.");
+
+    // GÜVENLİK DUVARI: KÜRSÜYE ÇIKMA KONTROLÜ
+    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
+        return alert("Güvenlik Duvarı: Kürsüye çıkabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.");
+    }
 
     const kitle = document.getElementById('input-qa-audience').value;
     const baslik = document.getElementById('input-qa-title').value.trim();
@@ -300,11 +311,25 @@ window.qaSoruDetayAc = async function(soruId) {
         cevaplarHTML = '<div class="text-center text-gray-500 text-xs py-8 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl mt-4">Henüz kürsüde söz alan olmadı.</div>';
     }
 
-    let cevapYazmaAlani = '';
+    // GÜVENLİK DUVARI VE ROL KONTROLÜ
     let cevapYetkisiVar = true;
-    if (soru.hedef_kitle === 'Sadece İçmimarlar' && kullanici.rol !== 'İçmimar') cevapYetkisiVar = false;
-    if (soru.hedef_kitle === 'Sadece Öğrenciler' && kullanici.rol !== 'Öğrenci') cevapYetkisiVar = false;
+    let yetkisizlikMesaji = '';
 
+    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
+        cevapYetkisiVar = false;
+        yetkisizlikMesaji = 'Kürsüde söz alabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.';
+    } else {
+        if (soru.hedef_kitle === 'Sadece İçmimarlar' && kullanici.rol !== 'İçmimar') {
+            cevapYetkisiVar = false;
+            yetkisizlikMesaji = 'Bu soruya sadece Mezunlar cevap verebilir. (Tribün İzleyicisisiniz)';
+        }
+        if (soru.hedef_kitle === 'Sadece Öğrenciler' && kullanici.rol !== 'Öğrenci') {
+            cevapYetkisiVar = false;
+            yetkisizlikMesaji = 'Bu soruya sadece Öğrenciler cevap verebilir. (Tribün İzleyicisisiniz)';
+        }
+    }
+
+    let cevapYazmaAlani = '';
     if (!soru.cozuldu_mu) {
         if (cevapYetkisiVar) {
             cevapYazmaAlani = `
@@ -315,7 +340,7 @@ window.qaSoruDetayAc = async function(soruId) {
                 </div>
             `;
         } else {
-            cevapYazmaAlani = `<div class="mt-8 text-center text-red-400 bg-red-900/20 p-4 rounded-xl border border-red-900/50 text-[10px] font-bold uppercase tracking-widest">Bu soruya sadece ${soru.hedef_kitle === 'Sadece İçmimarlar' ? 'Mezunlar' : 'Öğrenciler'} cevap verebilir. (Tribün İzleyicisisiniz)</div>`;
+            cevapYazmaAlani = `<div class="mt-8 text-center text-red-400 bg-red-900/20 p-4 rounded-xl border border-red-900/50 text-[10px] font-bold uppercase tracking-widest">${yetkisizlikMesaji}</div>`;
         }
     } else {
         cevapYazmaAlani = '<div class="mt-8 text-center text-green-500 bg-green-900/10 p-4 rounded-xl border border-green-900/30 text-[10px] font-bold uppercase tracking-widest">Bu konunun çözümü bulunmuş ve arşivlenmiştir. Kürsü kilitlidir.</div>';
@@ -354,6 +379,11 @@ window.qaSoruDetayAc = async function(soruId) {
 window.qaCevapGonder = async function() {
     const kullanici = aktifKullaniciyiAl();
     if (!kullanici) return alert("Cevap verebilmek için sisteme giriş yapmalısınız.");
+
+    // GÜVENLİK DUVARI: CEVAP YAZMA KONTROLÜ
+    if (!STATE.user?.hasPhone || STATE.user?.authStage !== 'pdf_verified') {
+        return alert("Güvenlik Duvarı: Kürsüde söz alabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.");
+    }
 
     const icerik = document.getElementById('input-qa-answer').value.trim();
     if (icerik.length < 20 || icerik.length > 4000) return alert("Cevabınız 20 ile 4000 karakter arasında olmalıdır.");
