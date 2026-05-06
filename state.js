@@ -1,61 +1,139 @@
 /* ==========================================================================
    ME26 AĞI - MERKEZİ HAFIZA MOTORU (state.js)
-   Kurşun Geçirmez Sürüm - Çökme Korumalı + VIP Destekli
+   Kurşun Geçirmez Sürüm - Çökme Korumalı + Canlı Yayın (Production)
    ========================================================================== */
 
-export const STATE = {
-    // Başlangıçta tarayıcının kasasından (localStorage) kullanıcının eski verilerini çek (Hatırlama yeteneği)
-    user: JSON.parse(localStorage.getItem('me26_user')) || null,
+// Sistemin hafızaya kayıt anahtarı
+const STORAGE_KEY = 'me26_user';
 
-    // Kullanıcı o an içeride mi (giriş yapmış mı) onu kontrol eden güvenlik şalteri
+// 1. GÜVENLİ OKUMA MOTORU (Bozuk JSON çökmelerine karşı zırh)
+const safeRead = () => {
+    try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : null;
+    } catch (error) {
+        console.error("Hafıza okuma hatası (Veri bozuk, oturum sıfırlanıyor):", error);
+        return null;
+    }
+};
+
+// 2. GÜVENLİ YAZMA MOTORU (Tarayıcı gizli sekme / kota dolma koruması)
+const safeWrite = (data) => {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+        console.error("Hafıza yazma hatası (Tarayıcı engelledi veya kota dolu):", error);
+    }
+};
+
+// 3. MERKEZİ STATE (HAFIZA) NESNESİ
+export const STATE = {
+    // Başlangıçta güvenli okuma motoruyla veriyi çek
+    user: safeRead(),
+
+    // Kullanıcı içeride mi?
     isLoggedIn: () => {
         return STATE.user !== null && STATE.user !== undefined;
     },
 
-    // YENİ EKLENDİ: VIP motoru kullanıcının bilgilerini istediğinde ona güvenle veriyi teslim eden komut
+    // Kullanıcı verisini güvenle teslim et
     getUser: () => {
         return STATE.user || {};
     },
 
-    // Yeni biri girdiğinde tüm bilgilerini kasaya kilitleyen motor
+    // Yeni kullanıcıyı sisteme mühürle
     setUser: (userData) => {
         STATE.user = userData; 
-        localStorage.setItem('me26_user', JSON.stringify(userData));
+        safeWrite(userData);
     },
 
-    // Ufak bir bilgi değiştiğinde (Örneğin adam şehrini seçtiğinde) sadece o bilgiyi güncelleyen motor
+    // Tekil bir veriyi güncelle (Örn: Sadece şehri değiştir)
     updateUser: (key, value) => {
         if (!STATE.user) STATE.user = {};
         STATE.user[key] = value;
-        localStorage.setItem('me26_user', JSON.stringify(STATE.user));
+        safeWrite(STATE.user);
     },
 
-    // YENİ EKLENDİ: Kullanıcı WhatsApp'tan link paylaştığında davet sayacını 1 artıran matematik motoru
+    // Çoklu veriyi tek seferde güncelle (Performans için)
+    updateUserMany: (updates) => {
+        if (!STATE.user) STATE.user = {};
+        STATE.user = { ...STATE.user, ...updates };
+        safeWrite(STATE.user);
+    },
+
+    // VIP Viral Paylaşım Sayacını Artır
     incrementInviteCount: () => {
-        if (!STATE.user) return 0; // Adam yoksa 0 döndür
-        const currentCount = STATE.user.inviteCount || 0; // Eski sayıyı bul
-        STATE.user.inviteCount = currentCount + 1; // 1 ekle
-        localStorage.setItem('me26_user', JSON.stringify(STATE.user)); // Kasaya geri kaydet
-        return STATE.user.inviteCount; // Yeni sayıyı ekrana söyle
+        if (!STATE.user) return 0;
+        const currentCount = STATE.user.inviteCount || 0;
+        STATE.user.inviteCount = currentCount + 1;
+        safeWrite(STATE.user);
+        return STATE.user.inviteCount;
     },
 
-    // YENİ EKLENDİ: Kullanıcı VIP numarasını seçtiğinde o numarayı alnına (verisine) mühürleyen motor
+    // VIP Numarasını Mühürle
     setVipNumber: (num) => {
         if (!STATE.user) return;
         STATE.user.userNo = num;
         STATE.user.isVip = true;
-        localStorage.setItem('me26_user', JSON.stringify(STATE.user));
+        safeWrite(STATE.user);
     },
 
-    // GÜVENLİ ÇIKIŞ: Adam çıkış yaptığında hafızayı anında temizleyip kapıyı kilitleyen motor
+    // Standart Numarayı Mühürle
+    setStandardNumber: (num) => {
+        if (!STATE.user) return;
+        STATE.user.userNo = num;
+        STATE.user.isVip = false;
+        safeWrite(STATE.user);
+    },
+
+    // Telefon Onaylandığında Tetiklenecek Motor
+    setPhoneVerified: () => {
+        if (!STATE.user) return;
+        STATE.user.hasPhone = true;
+        // Eğer adamın belgesi zaten onaylıysa veya kuyruktaysa statüsünü düşürme
+        if(STATE.user.authStage !== 'pdf_verified' && STATE.user.authStage !== 'document_pending') {
+            STATE.user.authStage = 'phone_verified';
+        }
+        safeWrite(STATE.user);
+    },
+
+    // Mesleki Belge Kuyruğa Girdiğinde Tetiklenecek Motor
+    setDocumentPending: () => {
+        if (!STATE.user) return;
+        STATE.user.authStage = 'document_pending';
+        STATE.user.documentPending = true;
+        safeWrite(STATE.user);
+    },
+
+    // Mesleki Belge Onaylandığında (Tam Erişim) Tetiklenecek Motor
+    setPdfVerified: () => {
+        if (!STATE.user) return;
+        STATE.user.authStage = 'pdf_verified';
+        STATE.user.documentPending = false;
+        STATE.user.votePower = "1.0x";
+        safeWrite(STATE.user);
+    },
+
+    // Şehir (Tribün) Seçimini Mühürle
+    setCity: (city) => {
+        if (!STATE.user) return;
+        STATE.user.city = city;
+        safeWrite(STATE.user);
+    },
+
+    // Güvenli Çıkış (Sadece ME26 verisini siler)
     clearSession: () => {
         STATE.user = null;
-        localStorage.removeItem('me26_user');
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch(e) {}
     },
 
-    // SIFIRLAMA: Sitedeki tüm kalıntıları imha eden acil durum butonu
+    // Tam Temizlik (Tarayıcıdaki tüm kalıntıları imha eder)
     clearAll: () => {
         STATE.user = null;
-        localStorage.clear();
+        try {
+            localStorage.clear();
+        } catch(e) {}
     }
 };
