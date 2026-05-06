@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   Akıllı Profil ve Terfi Motoru Entegre Edilmiş Sürüm
+   Hibrit Vitrin + Otomatik Bouncer Modeli
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -92,6 +92,33 @@ export const UI = {
         }, 3000);
     },
 
+    // ==========================================
+    // YENİ: OTOMATİK BOUNCER (GÜVENLİK KAPISI)
+    // ==========================================
+    triggerVerificationGate: (silent = false) => {
+        if (!STATE.isLoggedIn()) {
+            if (!silent) UI.showToast('İşlem yapabilmek için sisteme giriş yapmalısınız.', 'error');
+            return false;
+        }
+
+        const currentPower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
+        const isVerified = STATE.user.authStage === "pdf_verified" || currentPower >= 1.0;
+
+        if (isVerified) return true;
+
+        if (!silent) {
+            if (STATE.user.authStage === "document_pending") {
+                UI.showToast("Mesleki belge başvurunuz inceleme kuyruğunda. Onay sonrası tam erişim açılacak.", "info");
+            } else if (STATE.user.hasPhone) {
+                UI.showToast("Telefon doğrulandı. Tam erişim için mesleki belgeni yüklemelisin.", "info");
+            } else {
+                UI.showToast("Bu alan doğrulanmış içmimarlar ve içmimarlık öğrencileri içindir. Sicilini tamamlamalısın.", "error");
+            }
+            UI.switchSaasTab("view-profil"); // Sicil & Ayarlar paneline fırlat
+        }
+        return false;
+    },
+
     // 5. AKILLI PROFİL MOTORU
     renderProfile: () => {
         if (!STATE.isLoggedIn()) return;
@@ -167,7 +194,7 @@ export const UI = {
         const btnPdf = document.getElementById('btn-open-pdf-modal');
         const taskContainer = btnPhone ? btnPhone.parentElement : null;
 
-        // Eski dinamik rozetleri temizle (Sayfa yenilendiğinde üst üste binmesin)
+        // Eski dinamik rozetleri temizle
         document.querySelectorAll('.dynamic-task-badge').forEach(el => el.remove());
 
         const addBadge = (html, extraClass = '') => {
@@ -202,7 +229,7 @@ export const UI = {
 
         } else if (user.authStage === 'document_pending') {
             if (btnPdf) btnPdf.classList.add('hidden');
-            addBadge('<span>⏳</span> YÖNETİCİ ONAYI BEKLENİYOR', 'bg-yellow-900/20 border-yellow-700/50 text-yellow-500');
+            addBadge('<span>⏳</span> İNCELEME KUYRUĞUNDA BEKLİYOR', 'bg-yellow-900/20 border-yellow-700/50 text-yellow-500');
         } else {
             if (btnPdf) btnPdf.classList.remove('hidden');
         }
@@ -215,7 +242,7 @@ export const UI = {
         });
     },
 
-    // 6. ÖNERGELERİ EKRANA BASMA
+    // 6. ÖNERGELERİ EKRANA BASMA (BUZLU CAM EKLENDİ)
     renderProposals: (onergeler) => {
         const meclisContainer = document.getElementById('proposals-container');
         const gundemContainer = document.getElementById('gundem-container'); 
@@ -229,26 +256,43 @@ export const UI = {
             return;
         }
 
+        // YETKİ KONTROLÜ (Sessiz mod: sadece true/false döner)
+        const isAuthorized = UI.triggerVerificationGate(true);
+
         onergeler.forEach(onerge => {
             const isKotaDoldu = (onerge.destek_sayisi || 0) >= 50;
             const container = isKotaDoldu ? gundemContainer : meclisContainer;
             if(!container) return;
 
-            const yuzde = Math.min(((onerge.destek_sayisi || 0) / 50) * 100, 100);
+            const yuzde = isAuthorized ? Math.min(((onerge.destek_sayisi || 0) / 50) * 100, 100) : 0;
+            const barHTML = isAuthorized ? `<div class="absolute left-0 bottom-0 h-1 ${isKotaDoldu ? 'bg-green-500' : 'bg-kaos'}" style="width: ${yuzde}%"></div>` : '';
+            
+            // Eğer yetki yoksa içerikleri gizle (Buzlu Cam Sınıfları)
+            const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
+            const statText = isAuthorized ? `✅ ${onerge.destek_sayisi || 0}/50` : `🔒 GİZLİ`;
+            const overlay = isAuthorized ? '' : `
+                <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer rounded-2xl" onclick="UI.triggerVerificationGate()">
+                    <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
+                        <i class="fas fa-lock text-kaos"></i> <span class="text-[10px] font-black text-white uppercase tracking-widest">KİLİDİ AÇ</span>
+                    </div>
+                </div>
+            `;
+
             const div = document.createElement('div');
-            div.className = 'bg-black/40 border border-slate-600 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden shadow-lg mb-3';
+            div.className = 'bg-black/40 border border-slate-600 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden shadow-lg mb-3 group';
             
             div.innerHTML = `
-                <div class="absolute left-0 bottom-0 h-1 ${isKotaDoldu ? 'bg-green-500' : 'bg-kaos'}" style="width: ${yuzde}%"></div>
-                <div class="flex-grow z-10 w-full pr-4">
+                ${barHTML}
+                ${overlay}
+                <div class="flex-grow z-10 w-full pr-4 relative">
                     <h4 class="text-base font-black text-white mb-2 leading-tight">${onerge.baslik}</h4>
-                    ${!isKotaDoldu ? `<p class="text-xs text-gray-400 line-clamp-2">${onerge.sorun}</p>` : ''}
+                    ${!isKotaDoldu ? `<p class="text-xs text-gray-400 line-clamp-2 ${blurClass}">${onerge.sorun}</p>` : ''}
                 </div>
-                <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-2">
+                <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-2 relative">
                     <div class="text-center md:text-right bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-700 w-full">
-                        <div class="text-sm font-black ${isKotaDoldu ? 'text-green-400' : 'text-kaos'}">✅ ${onerge.destek_sayisi || 0}/50</div>
+                        <div class="text-sm font-black ${isKotaDoldu ? 'text-green-400' : 'text-kaos'} ${blurClass}">${statText}</div>
                     </div>
-                    ${!isKotaDoldu ? `<button data-id="${onerge.id}" class="btn-destekle w-full bg-slate-800 border border-slate-500 px-4 py-2 rounded-xl text-white font-black text-[11px] transition uppercase flex justify-center items-center gap-2"><i class="fas fa-arrow-up text-kaos"></i> DESTEKLE</button>` : ''}
+                    ${!isKotaDoldu ? `<button onclick="${isAuthorized ? '' : 'return UI.triggerVerificationGate()'}" data-id="${onerge.id}" class="btn-destekle w-full ${isAuthorized ? 'bg-slate-800 border-slate-500 text-white hover:bg-slate-700' : 'bg-black/50 border-slate-700 text-gray-500 pointer-events-none'} border px-4 py-2 rounded-xl font-black text-[11px] transition uppercase flex justify-center items-center gap-2"><i class="fas ${isAuthorized ? 'fa-arrow-up text-kaos' : 'fa-lock'}"></i> DESTEKLE</button>` : ''}
                 </div>
             `;
             container.appendChild(div);
