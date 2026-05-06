@@ -70,7 +70,8 @@ export const STADYUM = {
                 const rol = kisi.role || 'Belirsiz';
                 const sehir = kisi.city || 'Belirsiz';
                 
-                const isMezun = rol.includes('Mezunu');
+                // Rolde "Mezun" geçiyorsa sarı, "Öğrenci" ise mavi yanacak
+                const isMezun = rol.includes('Mezunu') || rol.includes('Mezun');
                 if (isMezun) mezunOnline++;
                 else ogrenciOnline++;
 
@@ -112,8 +113,10 @@ export const STADYUM = {
                 let noktalarHtml = '';
                 data.koltuklar.forEach(tip => {
                     if (tip === 'mezun') {
+                        // Sarı Nokta
                         noktalarHtml += `<div class="w-2.5 h-2.5 rounded-full bg-kaos shadow-[0_0_8px_#F6C104] animate-pulse"></div>`;
                     } else {
+                        // Mavi Nokta
                         noktalarHtml += `<div class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3B82F6] animate-pulse"></div>`;
                     }
                 });
@@ -137,13 +140,14 @@ export const STADYUM = {
 
     // 3. MOTORU ÇALIŞTIRMA (SUPABASE BAĞLANTISI)
     baslat: async function() {
-        // Arayüzü Çiz (Garantile)
+        // Arayüzü Çiz (HTML iskeletini oluştur)
         this.ciz();
 
         let myUserId = 'TR-IA-ZİYARETÇİ-' + Math.floor(Math.random() * 100000);
         let myRole = 'Belirsiz'; 
         let myCity = 'Belirsiz';
 
+        // Sisteme giren kullanıcının bilgilerini alıyoruz
         if (STATE.isLoggedIn() && STATE.user) {
             myUserId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN' ? `TR-IA-${STATE.user.userNo}` : `TR-IA-ADAY-${Math.floor(Math.random()*1000)}`;
             myRole = STATE.user.role && STATE.user.role.toLowerCase().includes('öğrenci') ? 'İçmimarlık Öğrencisi' : 'İçmimarlık Mezunu';
@@ -157,7 +161,7 @@ export const STADYUM = {
             this.kanal = null;
         }
 
-        // Yeni Kanala Bağlan
+        // Yeni Kanala Bağlan (Supabase Realtime)
         this.kanal = supabase.channel('me26_stadyum', {
             config: {
                 presence: {
@@ -184,7 +188,7 @@ export const STADYUM = {
     }
 };
 
-// Sayfa kapanırken koltuktan otomatik kalkma kuralı
+// Sayfa kapanırken veya sekme değiştiğinde koltuktan otomatik kalkma kuralı
 window.addEventListener('beforeunload', () => {
     if (STADYUM.kanal) {
         STADYUM.kanal.untrack();
