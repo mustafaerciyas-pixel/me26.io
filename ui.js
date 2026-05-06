@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   SaaS Paneli ve Sekme Yönlendirme Uyumlu Sürüm
+   Tüm Pencereler (Modallar) Aktif Sürüm
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -24,22 +24,19 @@ export const UI = {
         }
     },
 
-    // 2. YENİ SAAS SEKMELERİ ARASI GEÇİŞ (Lobi, Sandık, Kürsü, Profil)
+    // 2. SAAS SEKMELERİ ARASI GEÇİŞ
     switchSaasTab: (targetId) => {
-        // Tüm odaları gizle
         document.querySelectorAll('.view-section').forEach(sec => {
             sec.classList.add('hidden');
             sec.classList.remove('block');
         });
         
-        // Hedef odayı aç
         const target = document.getElementById(targetId);
         if (target) {
             target.classList.remove('hidden');
             target.classList.add('block');
         }
 
-        // Sol ve Alt menüdeki butonların renklerini ayarla (Aktif yap)
         document.querySelectorAll('.nav-menu-btn').forEach(btn => {
             btn.classList.remove('active', 'bg-slate-800', 'text-white');
             btn.classList.add('text-gray-400');
@@ -51,7 +48,27 @@ export const UI = {
         });
     },
 
-    // Bildirim (Toast) Mesajları
+    // ==========================================
+    // İŞTE EKSİK OLAN VE TUŞLARI BOZAN KISIM BURASIYDI!
+    // ==========================================
+    openModal: (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    closeModal: (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    },
+    // ==========================================
+
+    // 3. BİLDİRİM (TOAST) MESAJLARI
     showToast: (message, type = 'success') => {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -78,34 +95,25 @@ export const UI = {
         }, 3000);
     },
 
-    // Profili Ekrana Çizme (Hem Sol Menüye Hem Ayarlar Ekranına)
+    // 4. PROFİL VERİLERİNİ EKRANA ÇİZME
     renderProfile: () => {
         if (!STATE.isLoggedIn()) return;
 
         const user = STATE.user;
-        
-        const setEl = (id, text) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = text;
-        };
+        const setEl = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
 
         const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
         const displayRole = (user.role === 'Belirsiz' || !user.role) ? 'Kimlik Bekleniyor' : user.role;
         const displayPower = user.votePower || '0.0x';
         
-        // Ana Profil Ekranı Güncellemeleri
         setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
         setEl('ui-user-role', displayRole);
         setEl('ui-vote-power', displayPower);
-        
-        // SAAS Menü (Sidebar ve Alt Bar) Güncellemeleri
         setEl('sidebar-user-role', displayRole);
         setEl('sidebar-vote-power', displayPower);
 
         let userIdText = 'TR-IA-BEKLEYEN';
-        if (user.userNo && user.userNo !== 'BEKLEYEN') {
-            userIdText = `TR-IA-${user.userNo}`;
-        }
+        if (user.userNo && user.userNo !== 'BEKLEYEN') userIdText = `TR-IA-${user.userNo}`;
         
         setEl('ui-user-id', userIdText);
         setEl('sidebar-user-id', userIdText);
@@ -122,14 +130,12 @@ export const UI = {
             if (idBadge) { idBadge.textContent = 'Aday Kurucu'; idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold'; }
         }
 
-        // Görev 1 Kutusunu Kontrol Et
         const citySelectors = document.querySelectorAll('#ui-city-selector-container');
         citySelectors.forEach(el => {
             if (!isCitySelected) el.classList.remove('hidden');
             else el.classList.add('hidden');
         });
 
-        // Paylaşım ve VIP Barı
         const inviteCount = user.inviteCount || 0;
         setEl('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
         const progressBar = document.getElementById('ui-vip-progress-bar');
@@ -150,7 +156,7 @@ export const UI = {
         }
     },
 
-    // Önergeleri Ekrana Basma
+    // 5. ÖNERGELERİ EKRANA BASMA
     renderProposals: (onergeler) => {
         const meclisContainer = document.getElementById('proposals-container');
         const gundemContainer = document.getElementById('gundem-container'); 
