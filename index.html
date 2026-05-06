@@ -193,7 +193,7 @@
                         <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest">Ortak <span class="text-kaos">Sandık</span></h2>
                         <button type="button" id="btn-open-proposal-modal" class="bg-kaos text-black px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase shadow-md hover:opacity-90"><i class="fas fa-plus mr-1"></i> Önerge Ver</button>
                     </div>
-                    <div id="manifesto-grid" class="grid-cols-1 gap-6 mb-12 hidden">
+                    <div id="proposals-container" class="grid grid-cols-1 gap-6 mb-12">
                         <div class="text-center py-10 border border-dashed border-slate-700 rounded-2xl text-gray-500 text-sm font-bold tracking-widest uppercase">Oylamalar Yükleniyor...</div>
                     </div>
                     <h2 class="text-lg font-black text-white uppercase tracking-widest mb-4 border-b border-slate-700 pb-2"><i class="fas fa-clock text-kaos mr-2"></i> Gündem Sırası</h2>
@@ -323,55 +323,64 @@
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Bildirim Türü</label>
-                                            <select class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs font-bold focus:border-kaos transition">
-                                                <option>İzinsiz İçmimar Ünvanı Kullanımı</option>
-                                                <option>Yanıltıcı Reklam / Tanıtım</option>
-                                                <option>Şüpheli Şirket / Kurum Faaliyeti</option>
-                                                <option>Belge Kontrol Talebi</option>
-                                                <option>Diğer</option>
+                                            <select id="input-koruma-turu" class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs font-bold focus:border-kaos transition">
+                                                <option value="İzinsiz İçmimar Ünvanı Kullanımı">İzinsiz İçmimar Ünvanı Kullanımı</option>
+                                                <option value="Yanıltıcı Reklam / Tanıtım">Yanıltıcı Reklam / Tanıtım</option>
+                                                <option value="Şüpheli Şirket / Kurum Faaliyeti">Şüpheli Şirket / Kurum Faaliyeti</option>
+                                                <option value="Belge Kontrol Talebi">Belge Kontrol Talebi</option>
+                                                <option value="Diğer">Diğer</option>
                                             </select>
                                         </div>
                                         
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Bildirilen Kişi / Kurum</label>
-                                                <input type="text" placeholder="Ad Soyad veya Kurum Adı" class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
+                                                <input type="text" id="input-koruma-kisi" placeholder="Ad Soyad veya Kurum Adı" class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
                                             </div>
                                             <div>
                                                 <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Web Sitesi / Sosyal Medya</label>
-                                                <input type="url" placeholder="https://..." class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
+                                                <input type="url" id="input-koruma-link" placeholder="https://..." class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
                                             </div>
                                         </div>
 
                                         <div>
                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Durum Açıklaması</label>
-                                            <textarea placeholder="Lütfen tespit ettiğiniz durumu objektif bir dille özetleyin..." class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition h-24 resize-none custom-scrollbar"></textarea>
+                                            <textarea id="input-koruma-aciklama" placeholder="Lütfen tespit ettiğiniz durumu objektif bir dille özetleyin..." class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition h-24 resize-none custom-scrollbar"></textarea>
                                         </div>
 
                                         <div>
                                             <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Delil / Belge Yükle (PDF, PNG, JPG)</label>
-                                            <input type="file" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition cursor-pointer bg-black border border-slate-600 rounded-lg p-1 outline-none">
+                                            <input type="file" id="input-koruma-belge" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition cursor-pointer bg-black border border-slate-600 rounded-lg p-1 outline-none">
                                         </div>
 
                                         <div class="border-t border-slate-800 pt-4 mt-4">
                                             <p class="text-[9px] text-gray-400 mb-3 font-medium flex items-start gap-2">
-                                                <i class="fas fa-info-circle mt-0.5"></i> Sistem ME26 Kimliğinizi referans alır. Aşağıdaki alanları boş bırakarak %100 anonim kalabilirsiniz.
+                                                <i class="fas fa-info-circle mt-0.5"></i> Sistem ME26 Kimliğinizi referans alır. Aşağıdaki seçenek ile anonim kalabilirsiniz.
                                             </p>
+
+                                            <label class="flex items-start gap-3 cursor-pointer group mb-4">
+                                                <div class="relative flex items-center justify-center mt-0.5 shrink-0">
+                                                    <input type="checkbox" id="input-koruma-anonim" class="peer appearance-none w-5 h-5 border-2 border-slate-600 rounded bg-black checked:bg-kaos checked:border-kaos transition">
+                                                    <i class="fas fa-check absolute text-black text-[10px] opacity-0 peer-checked:opacity-100 transition"></i>
+                                                </div>
+                                                <span class="text-[10px] text-white font-bold uppercase tracking-widest mt-0.5">Başvurumu Anonim Olarak Yap</span>
+                                            </label>
+
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Adınız Soyadınız <span class="text-gray-600">(İsteğe Bağlı)</span></label>
-                                                    <input type="text" class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
+                                                    <input type="text" id="input-koruma-ad" class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
                                                 </div>
                                                 <div>
                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">İletişim Tel/E-posta <span class="text-gray-600">(İsteğe Bağlı)</span></label>
-                                                    <input type="text" class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
+                                                    <input type="text" id="input-koruma-iletisim" class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition">
                                                 </div>
                                             </div>
                                         </div>
 
                                         <label class="flex items-start gap-3 cursor-pointer group mt-2 bg-black/50 p-3 rounded-lg border border-slate-800">
                                             <div class="relative flex items-center justify-center mt-0.5 shrink-0">
-                                                <input type="checkbox" id="koruma-kvkk-onay" class="peer appearance-none w-5 h-5 border-2 border-slate-600 rounded bg-black checked:bg-kaos checked:border-kaos transition">
+                                                <input type="checkbox" id="input-koruma-kvkk" class="peer appearance-none w-5 h-5 border-2 border-slate-600 rounded bg-black checked:bg-kaos checked:border-kaos transition">
                                                 <i class="fas fa-check absolute text-black text-[10px] opacity-0 peer-checked:opacity-100 transition"></i>
                                             </div>
                                             <span class="text-[9px] md:text-[10px] text-gray-400 font-medium leading-relaxed">
@@ -379,7 +388,7 @@
                                             </span>
                                         </label>
 
-                                        <button type="button" onclick="alert('Bildiriminiz şifrelenerek kayıt altına alındı. (Sistem Test Aşamasında)')" class="w-full bg-white hover:bg-gray-200 text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition mt-2">
+                                        <button type="button" id="btn-submit-koruma" class="w-full bg-white hover:bg-gray-200 text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition mt-2">
                                             BİLDİRİMİ GÜVENLİ AĞA İLET
                                         </button>
                                     </div>
@@ -515,9 +524,70 @@
         </div>
     </div>
     
-    <div id="phone-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden"><div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative"><button type="button" id="btn-close-phone-modal" class="mt-5 text-gray-500">Kapat</button></div></div>
-    <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden"><div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative"><button type="button" id="btn-close-pdf-modal" class="mt-5 text-gray-500">Kapat</button></div></div>
-    <div id="vip-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[99999] flex-col items-center justify-center p-4 hidden"><div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-3xl w-full text-center relative"><button type="button" id="btn-close-vip-modal" class="absolute top-6 right-6 text-gray-400">✕</button></div></div>
+    <div id="phone-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-2xl">
+            <button type="button" id="btn-close-phone-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl z-20">✕</button>
+            <h2 class="text-2xl font-black text-white uppercase tracking-widest mb-6">Telefon <span class="text-kaos">Doğrulama</span></h2>
+            
+            <div id="phone-step-1" class="flex flex-col gap-4 block">
+                <p class="text-xs text-gray-400 mb-2 leading-relaxed">Sisteme güvenli erişim ve çoklu hesap engellemesi için lütfen telefon numaranızı girin.</p>
+                <input type="tel" id="input-phone-number" placeholder="+90 5XX XXX XX XX" class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl text-center text-lg tracking-widest focus:border-kaos outline-none transition font-mono">
+                <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:opacity-90">Kodu Gönder</button>
+            </div>
+
+            <div id="phone-step-2" class="flex flex-col gap-4 hidden">
+                <p class="text-xs text-gray-400 mb-2">Telefonunuza gelen 6 haneli güvenlik kodunu girin.</p>
+                <input type="text" id="input-otp-code" placeholder="• • • • • •" class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl text-center text-2xl tracking-widest focus:border-kaos outline-none transition font-mono" maxlength="6">
+                <button type="button" id="btn-verify-otp" class="w-full bg-white text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:bg-gray-200">Doğrula ve Onayla</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-2xl">
+            <button type="button" id="btn-close-pdf-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl z-20">✕</button>
+            <h2 class="text-2xl font-black text-white uppercase tracking-widest mb-4">Mesleki <span class="text-kaos">Belge</span></h2>
+            <p class="text-xs text-gray-400 mb-6 leading-relaxed">E-Devlet mezuniyet belgenizi veya öğrenci belgenizi PDF formatında yükleyerek sistemdeki kilitleri kaldırın.</p>
+            
+            <div class="border-2 border-dashed border-slate-600 rounded-2xl p-8 mb-6 bg-black/50 hover:border-kaos transition cursor-pointer relative overflow-hidden group">
+                <input type="file" id="input-pdf-file" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <i class="fas fa-file-pdf text-4xl text-gray-500 mb-3 group-hover:text-kaos transition"></i>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition">PDF DOSYASI SEÇ</p>
+            </div>
+            
+            <button type="button" id="btn-submit-pdf" class="w-full bg-white text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:bg-gray-200">Belgeyi Sisteme Yükle</button>
+        </div>
+    </div>
+
+    <div id="vip-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[99999] flex-col items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-600 p-6 md:p-10 rounded-3xl max-w-4xl w-full text-center relative shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <button type="button" id="btn-close-vip-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl z-20">✕</button>
+            
+            <div id="vip-locked-state" class="flex flex-col items-center justify-center py-12 block">
+                <i class="fas fa-lock text-6xl text-slate-700 mb-6"></i>
+                <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest mb-4">VIP EKRANI <span class="text-red-500">KİLİTLİ</span></h2>
+                <p class="text-sm text-gray-400 max-w-md leading-relaxed">
+                    Bu alana erişmek ve kendi kurucu numaranızı seçmek için, profilinizdeki özel davet linkinizle en az 3 meslektaşınızı sisteme davet etmelisiniz.
+                </p>
+            </div>
+
+            <div id="vip-unlocked-state" class="hidden flex-col w-full h-full">
+                <div class="shrink-0 mb-6">
+                    <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest mb-2"><i class="fas fa-gem text-kaos mr-2"></i> VIP <span class="text-kaos">Kurucu No</span> Seçimi</h2>
+                    <p class="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest">Sistemdeki boş kurucu numaralarından birini adınıza rezerve edin.</p>
+                </div>
+                
+                <div id="ui-vip-grid" class="grid grid-cols-4 md:grid-cols-8 gap-3 mb-6 overflow-y-auto custom-scrollbar p-4 bg-black/50 border border-slate-800 rounded-2xl flex-grow content-start">
+                    </div>
+                
+                <div class="shrink-0 mt-auto pt-4 border-t border-slate-800">
+                    <button type="button" id="btn-claim-vip-number" class="w-full bg-kaos text-black font-black py-4 rounded-xl text-xs md:text-sm uppercase tracking-widest shadow-kaos transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+                        SEÇİLİ NUMARAYI REZERVE ET
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
