@@ -1,11 +1,11 @@
 /* ==========================================================================
    ME26 AĞI - SİSTEM AYARLARI (config.js)
-   Canlı Production Sürümü
+   Geçici Vercel Canlı Sürümü
    --------------------------------------------------------------------------
    NOT:
-   - Firebase apiKey ve Supabase anon key frontend projelerde görülebilir.
-   - Bunlar service_role / admin şifresi değildir.
-   - Gerçek güvenlik Firebase Authorized Domains + Supabase RLS ile sağlanır.
+   - Şu an resmi domain henüz bağlanmadığı için geçici canlı adres:
+     https://me26-io.vercel.app
+   - me26.io domaini bağlanınca sadece officialBaseUrl ve inviteBaseUrl değişecek.
    - Bu dosyaya ASLA service_role key, admin key, gizli şifre veya özel token yazma.
    ========================================================================== */
 
@@ -22,10 +22,11 @@ export const ME26_CONFIG = {
     mode: "production",
 
     // --------------------------------------------------
-    // 2. RESMİ ADRESLER
+    // 2. GEÇİCİ CANLI ADRESLER
+    // Domain bağlanana kadar resmi test adresi budur.
     // --------------------------------------------------
-    officialBaseUrl: "https://me26.io",
-    inviteBaseUrl: "https://me26.io",
+    officialBaseUrl: "https://me26-io.vercel.app",
+    inviteBaseUrl: "https://me26-io.vercel.app",
 
     // --------------------------------------------------
     // 3. VIP / KURUCU ÜYE KURALLARI
@@ -58,7 +59,6 @@ export const ME26_CONFIG = {
 
     // --------------------------------------------------
     // 6. SUPABASE
-    // Oylar, kullanıcılar, önergeler, sorular ve Koruma Hattı için kullanılır.
     // Bu key anon/publishable key olmalı; service_role ASLA buraya yazılmamalı.
     // --------------------------------------------------
     supabaseUrl: "https://ukmkojfntsmueikjcrvz.supabase.co",
