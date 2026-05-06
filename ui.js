@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   Hibrit Vitrin + Otomatik Bouncer Modeli
+   Hibrit Vitrin + Otomatik Bouncer + Ortak Kürsü Modeli
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -65,6 +65,53 @@ export const UI = {
         }
     },
 
+    // ==========================================
+    // YENİ: ORTAK KÜRSÜ MODAL YÖNETİMİ
+    // ==========================================
+    openKursuModal: () => {
+        // GÜVENLİK DUVARI: Bouncer onaylamazsa modal hiç açılmaz
+        if (!UI.triggerVerificationGate()) return;
+        
+        UI.switchKursuTab('onerge'); // Varsayılan olarak Önerge sekmesi açılsın
+        UI.openModal('ortak-kursu-modal');
+    },
+
+    switchKursuTab: (tab) => {
+        const btnOnerge = document.getElementById('tab-btn-onerge');
+        const btnSoru = document.getElementById('tab-btn-soru');
+        const fieldsOnerge = document.getElementById('kursu-onerge-fields');
+        const fieldsSoru = document.getElementById('kursu-soru-fields');
+        const btnSubmit = document.getElementById('btn-submit-kursu');
+        const durationInput = document.getElementById('input-kursu-duration');
+
+        // Modu state'e kaydet (Gönderirken app.js'e lazım olacak)
+        STATE.aktifKursuModu = tab; 
+
+        if (tab === 'onerge') {
+            btnOnerge.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition bg-slate-800 text-white shadow-md";
+            btnSoru.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition text-gray-500 hover:text-white bg-transparent";
+            
+            fieldsOnerge.classList.remove('hidden');
+            fieldsOnerge.classList.add('block');
+            fieldsSoru.classList.add('hidden');
+            fieldsSoru.classList.remove('block');
+            
+            if(durationInput) durationInput.parentElement.classList.remove('hidden'); // Süreyi göster
+            btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Önergeyi Gündeme Gönder';
+        } else {
+            btnSoru.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition bg-slate-800 text-white shadow-md";
+            btnOnerge.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition text-gray-500 hover:text-white bg-transparent";
+            
+            fieldsSoru.classList.remove('hidden');
+            fieldsSoru.classList.add('block');
+            fieldsOnerge.classList.add('hidden');
+            fieldsOnerge.classList.remove('block');
+            
+            if(durationInput) durationInput.parentElement.classList.add('hidden'); // Süreyi gizle
+            btnSubmit.innerHTML = '<i class="fas fa-comment-dots"></i> Soruyu Ortak Akla Gönder';
+        }
+    },
+
     // 4. BİLDİRİM (TOAST) MESAJLARI
     showToast: (message, type = 'success') => {
         const container = document.getElementById('toast-container');
@@ -93,7 +140,7 @@ export const UI = {
     },
 
     // ==========================================
-    // YENİ: OTOMATİK BOUNCER (GÜVENLİK KAPISI)
+    // OTOMATİK BOUNCER (GÜVENLİK KAPISI)
     // ==========================================
     triggerVerificationGate: (silent = false) => {
         if (!STATE.isLoggedIn()) {
@@ -167,7 +214,6 @@ export const UI = {
         const vipStatus = document.getElementById('ui-vip-status');
 
         if (numaraAlinmisMi) {
-            // Numara alındıysa butonları yok et, sadece "Ağı Büyüt" kalsın
             if (btnVipModal) btnVipModal.classList.add('hidden');
             if (btnStandartNum) btnStandartNum.classList.add('hidden');
             if (vipStatus) {
@@ -175,7 +221,6 @@ export const UI = {
                 vipStatus.className = 'text-[9px] text-slate-900 font-black bg-kaos px-2 py-1 rounded border border-kaos shadow-kaos';
             }
         } else {
-            // Numara alınmadıysa butonlar görünsün
             if (btnVipModal) btnVipModal.classList.remove('hidden');
             if (btnStandartNum) btnStandartNum.classList.remove('hidden');
             if (vipStatus) {
@@ -194,7 +239,6 @@ export const UI = {
         const btnPdf = document.getElementById('btn-open-pdf-modal');
         const taskContainer = btnPhone ? btnPhone.parentElement : null;
 
-        // Eski dinamik rozetleri temizle
         document.querySelectorAll('.dynamic-task-badge').forEach(el => el.remove());
 
         const addBadge = (html, extraClass = '') => {
@@ -205,7 +249,6 @@ export const UI = {
             taskContainer.insertBefore(badge, taskContainer.firstChild);
         };
 
-        // Telefon Görevi
         if (user.hasPhone) {
             if (btnPhone) btnPhone.classList.add('hidden');
             addBadge('<span>✅</span> TELEFON DOĞRULANDI (BOT KONTROLÜ)', 'bg-green-900/20 border-green-700/50 text-green-400');
@@ -213,12 +256,10 @@ export const UI = {
             if (btnPhone) btnPhone.classList.remove('hidden');
         }
 
-        // E-Devlet Görevi ve Mezuniyet Terfisi
         if (user.authStage === 'pdf_verified') {
             if (btnPdf) btnPdf.classList.add('hidden');
             addBadge('<span>🎓</span> E-DEVLET ONAYLI (1.0x TAM YETKİ)', 'bg-indigo-900/20 border-indigo-700/50 text-indigo-400');
             
-            // Eğer Öğrenciyse "Unvan Güncelle" butonunu çıkar
             if (user.role && user.role.toLowerCase().includes('öğrenci')) {
                 const terfiBtn = document.createElement('button');
                 terfiBtn.className = 'dynamic-task-badge w-full bg-kaos text-slate-900 hover:opacity-90 font-black py-3 rounded-lg text-[11px] uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 mt-2';
@@ -234,7 +275,6 @@ export const UI = {
             if (btnPdf) btnPdf.classList.remove('hidden');
         }
 
-        // Şehir (Tribün) Görevi
         const citySelectors = document.querySelectorAll('#ui-city-selector-container');
         citySelectors.forEach(el => {
             if (!isCitySelected) el.classList.remove('hidden');
@@ -242,7 +282,7 @@ export const UI = {
         });
     },
 
-    // 6. ÖNERGELERİ EKRANA BASMA (BUZLU CAM EKLENDİ)
+    // 6. ÖNERGELERİ EKRANA BASMA (BUZLU CAM)
     renderProposals: (onergeler) => {
         const meclisContainer = document.getElementById('proposals-container');
         const gundemContainer = document.getElementById('gundem-container'); 
@@ -256,7 +296,6 @@ export const UI = {
             return;
         }
 
-        // YETKİ KONTROLÜ (Sessiz mod: sadece true/false döner)
         const isAuthorized = UI.triggerVerificationGate(true);
 
         onergeler.forEach(onerge => {
@@ -267,7 +306,6 @@ export const UI = {
             const yuzde = isAuthorized ? Math.min(((onerge.destek_sayisi || 0) / 50) * 100, 100) : 0;
             const barHTML = isAuthorized ? `<div class="absolute left-0 bottom-0 h-1 ${isKotaDoldu ? 'bg-green-500' : 'bg-kaos'}" style="width: ${yuzde}%"></div>` : '';
             
-            // Eğer yetki yoksa içerikleri gizle (Buzlu Cam Sınıfları)
             const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
             const statText = isAuthorized ? `✅ ${onerge.destek_sayisi || 0}/50` : `🔒 GİZLİ`;
             const overlay = isAuthorized ? '' : `
