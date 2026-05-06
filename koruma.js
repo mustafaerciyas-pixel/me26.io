@@ -11,6 +11,8 @@ export const KORUMA = {
     baslat: function() {
         const btnSubmit = document.getElementById('btn-submit-koruma');
         if (btnSubmit) {
+            // Önceki alert vb. varsa temizle ve kendi fonksiyonumuzu bağla
+            btnSubmit.removeAttribute('onclick'); 
             btnSubmit.addEventListener('click', () => this.bildirimGonder());
         }
     },
