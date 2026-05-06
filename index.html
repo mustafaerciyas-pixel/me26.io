@@ -531,7 +531,19 @@
             
             <div id="phone-step-1" class="flex flex-col gap-4 block">
                 <p class="text-xs text-gray-400 mb-2 leading-relaxed">Sisteme güvenli erişim ve çoklu hesap engellemesi için lütfen telefon numaranızı girin.</p>
-                <input type="tel" id="input-phone-number" placeholder="+90 5XX XXX XX XX" class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl text-center text-lg tracking-widest focus:border-kaos outline-none transition font-mono">
+                <div class="flex gap-2">
+                    <select id="input-country-code" class="bg-black border border-slate-600 text-white px-2 py-4 rounded-xl text-center text-lg tracking-widest focus:border-kaos outline-none transition font-mono shrink-0 cursor-pointer">
+                        <option value="+90" data-max="10">+90</option>
+                        <option value="+1" data-max="10">+1</option>
+                        <option value="+49" data-max="11">+49</option>
+                        <option value="+44" data-max="10">+44</option>
+                        <option value="+33" data-max="9">+33</option>
+                        <option value="+31" data-max="9">+31</option>
+                        <option value="+43" data-max="10">+43</option>
+                        <option value="+32" data-max="9">+32</option>
+                    </select>
+                    <input type="tel" id="input-phone-number" placeholder="5XX XXX XX XX" maxlength="10" class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl text-center text-lg tracking-widest focus:border-kaos outline-none transition font-mono">
+                </div>
                 <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:opacity-90">Kodu Gönder</button>
             </div>
 
@@ -689,6 +701,20 @@
                     localStorage.setItem('me26_mentorluk_tercihi', e.target.value);
                 });
             });
+
+            // TELEFON ÜLKE KODU VE KARAKTER SINIRI MANTIĞI
+            const countryCodeSelect = document.getElementById('input-country-code');
+            const phoneNumberInput = document.getElementById('input-phone-number');
+            if(countryCodeSelect && phoneNumberInput) {
+                countryCodeSelect.addEventListener('change', function() {
+                    const maxLen = this.options[this.selectedIndex].getAttribute('data-max');
+                    phoneNumberInput.setAttribute('maxlength', maxLen);
+                    phoneNumberInput.value = ''; // Ülke değişince hatalı girişi önlemek için temizle
+                });
+                phoneNumberInput.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/\D/g, ''); // Sadece rakam girişine izin ver
+                });
+            }
         });
     </script>
 
