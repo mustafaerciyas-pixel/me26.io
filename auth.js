@@ -77,84 +77,63 @@ export async function eDevletBelgesiOku(file, userUid) {
                     fullText += textContent.items.map(item => item.str).join(' ') + ' \n';
                 }
                 
-                // PDF okuyucunun parçaladığı metni tek satıra sıkıştırır
                 const cleanText = fullText.replace(/\s+/g, ' ');
 
                 // =================================================================
-                // YENİ MOTOR: BAŞLIKLAR ARASI (Aralık Bulucu) MANTIK
-                // "baslangic" etiketinden başla, "bitis" etiketini görene kadar al!
+                // ESKİ VE KUSURSUZ ÇALIŞAN MOTOR (Sadece | desteği eklendi)
                 // =================================================================
-                function aradakiMetniAl(metin, baslangic, bitis) {
-                    // (?:[|:.-]\s*)* kısmı = başlığın yanındaki süslemeleri es geçer
-                    // (.*?) kısmı = alacağımız gerçek veridir
-                    const kural = new RegExp(baslangic + "\\s*(?:[|:.-]\\s*)*(.*?)\\s*" + bitis, "i");
-                    const eslesme = metin.match(kural);
-                    return eslesme ? eslesme[1].trim() : "Bulunamadı";
-                }
+                
+                const tcMatch = cleanText.match(/(?:T\.C\.|Kimlik)[\s\S]*?(?:Numarası|No)[\s|:.-]*(\d{11})/i) || cleanText.match(/(\d{11})/);
+                const tc = tcMatch ? tcMatch[1] : 'Bulunamadı';
 
-                // 1. TAM LİSTEYE GÖRE NOKTA ATIŞI VERİ ÇEKİMİ
-                const tc = aradakiMetniAl(cleanText, "(?:T\\.C\\.|Kimlik).*?(?:No|Numarası)", "Adı\\s*Soyadı");
-                const ad_soyad = aradakiMetniAl(cleanText, "Adı\\s*Soyadı", "Baba\\s*Ad[ıi]");
-                let baba_adi = aradakiMetniAl(cleanText, "Baba\\s*Ad[ıi]", "Anne\\s*Ad[ıi]");
-                let anne_adi = aradakiMetniAl(cleanText, "Anne\\s*Ad[ıi]", "Doğum\\s*Tarihi");
+                // Etiket Durdurucu Duvarımız (Motor bu kelimeleri gördüğü an okumayı keser)
+                const regexDuvar = "(?=Baba\\s*Ad|Anne\\s*Ad|Doğum\\s*Tarihi|Kimlik|T\\.C\\.|Program|Fakülte|TC|Uyruğu|Diploma|Mezuniyet|Durum|İLGİLİ)";
+                
+                const ad_soyad_raw = (cleanText.match(new RegExp(`Adı\\s*Soyadı[\\s|:.-]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1] || 'Bulunamadı';
+                const ad_soyad = ad_soyad_raw.replace(/[|:.-]+/g, '').trim();
 
-                // Eğer e-devlet Baba ve Anneyi tek satırda (Baba / Anne Adı) verdiyse
-                if (baba_adi === "Bulunamadı" && anne_adi === "Bulunamadı") {
-                    const ortak = aradakiMetniAl(cleanText, "(?:Baba[\\s/]*Anne|Anne[\\s/]*Baba)\\s*Ad[ıi]", "Doğum\\s*Tarihi");
-                    if (ortak !== "Bulunamadı") {
-                        const parcalar = ortak.split('/');
-                        if (parcalar.length >= 2) {
+                let baba_adi_raw = (cleanText.match(new RegExp(`Baba\\s*Ad[ıi][\\s|:.-]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1] || 'Bulunamadı';
+                let baba_adi = baba_adi_raw.replace(/[|:.-]+/g, '').trim();
+
+                let anne_adi_raw = (cleanText.match(new RegExp(`Anne\\s*Ad[ıi][\\s|:.-]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s]+?)` + regexDuvar, 'i')) || [])[1] || 'Bulunamadı';
+                let anne_adi = anne_adi_raw.replace(/[|:.-]+/g, '').trim();
+
+                // Eğer belge Baba / Anne Adı diye tek satırda geldiyse
+                if (baba_adi === 'Bulunamadı' && anne_adi === 'Bulunamadı') {
+                    const ortak_raw = (cleanText.match(new RegExp(`(?:Baba[\\s/]*Anne|Anne[\\s/]*Baba)\\s*Ad[ıi][\\s|:.-]*([A-ZÇĞİÖŞÜa-zçğıöşü\\s/]+?)` + regexDuvar, 'i')) || [])[1];
+                    if (ortak_raw) {
+                        const parts = ortak_raw.split('/');
+                        if (parts.length >= 2) {
                             if (/Anne[\s/]*Baba/i.test(cleanText)) {
-                                anne_adi = parcalar[0].trim();
-                                baba_adi = parcalar[1].trim();
+                                anne_adi = parts[0].replace(/[|:.-]+/g, '').trim();
+                                baba_adi = parts[1].replace(/[|:.-]+/g, '').trim();
                             } else {
-                                baba_adi = parcalar[0].trim();
-                                anne_adi = parcalar[1].trim();
+                                baba_adi = parts[0].replace(/[|:.-]+/g, '').trim();
+                                anne_adi = parts[1].replace(/[|:.-]+/g, '').trim();
                             }
                         }
                     }
                 }
 
-                const dogum_tarihi = aradakiMetniAl(cleanText, "Doğum\\s*Tarihi", "Program");
+                const dogum_tarihi = (cleanText.match(/Doğum\s*Tarihi[\s|:.-]*(\d{2}\.\d{2}\.\d{4})/i) || [])[1] || 'Bulunamadı';
                 
-                // Program satırını alıp üçe bölüyoruz (Üniversite / Fakülte / Bölüm)
-                const tam_program = aradakiMetniAl(cleanText, "Program", "Diploma\\s*No");
-                const uni_parts = tam_program.split('/');
-                const uni = uni_parts[0] ? uni_parts[0].trim() : 'Bulunamadı';
-                const fakulte = uni_parts[1] ? uni_parts[1].trim() : 'Bulunamadı';
-                const bolum = uni_parts[2] ? uni_parts[2].trim() : 'Bulunamadı';
-
-                const diploma_no = aradakiMetniAl(cleanText, "Diploma\\s*No", "Diploma\\s*Notu");
-                const diploma_notu = aradakiMetniAl(cleanText, "Diploma\\s*Notu", "Mezuniyet\\s*Tarihi");
-                const mezuniyet_tarihi = aradakiMetniAl(cleanText, "Mezuniyet\\s*Tarihi", "Durum");
-                const durum = aradakiMetniAl(cleanText, "Durum", "(?:İLGİLİ\\s*MAKAMA|AÇIKLAMALAR|YOK)");
-
-                // Barkod (YOK... ile başlar)
-                const barkodMatch = cleanText.match(/(YOK[A-Z0-9]{10,})/i);
-                const barkod = barkodMatch ? barkodMatch[1] : "Bulunamadı";
-
-                // Belge Tarihi (Belgedeki en üstteki ilk tarih)
+                const uni_program_raw = (cleanText.match(/Program[\s|:.-]*([\s\S]+?)(?=Diploma No|Kayıt Tarihi|Genel Not|Diploma Notu)/i) || [])[1] || '';
+                const uni_program = uni_program_raw.replace(/[|:.-]+$/, '').trim();
+                const uni_parts = uni_program.split('/');
+                const uni = uni_parts[0]?.trim() || 'Bulunamadı';
+                const fakulte = uni_parts[1]?.trim() || 'Bulunamadı';
+                const bolum = (uni_parts[2]?.trim() || 'Bulunamadı').split(/:|tarafından/i)[0].trim(); 
+                
+                const diploma_no = (cleanText.match(/Diploma\s*No[\s|:.-]*([A-Z0-9.\-]+)/i) || [])[1] || 'Bulunamadı';
+                const diploma_notu = (cleanText.match(/Diploma\s*Notu[\s|:.-]*([\d.,]+\s*\/\s*[\d.,]+)/i) || [])[1]?.trim() || 'Bulunamadı';
+                const mezuniyet_tarihi = (cleanText.match(/Mezuniyet\s*Tarihi[\s|:.-]*(\d{2}\.\d{2}\.\d{4})/i) || [])[1] || 'Bulunamadı';
+                const durum = (cleanText.match(/Durum[\s|:.-]*([a-zA-ZÇĞİÖŞÜçğıöşü]+)/i) || [])[1] || 'Bulunamadı';
+                
+                const barkod = (cleanText.match(/YOK[A-Z0-9]{10,}/i) || cleanText.match(/[A-Z0-9]{12,}/i) || ['Bulunamadı'])[0];
                 const tumTarihler = cleanText.match(/\d{2}\.\d{2}\.\d{4}/g) || [];
-                const belge_tarihi = tumTarihler.length > 0 ? tumTarihler[0] : "Bulunamadı";
+                const belge_tarihi = tumTarihler.length > 0 ? tumTarihler[tumTarihler.length - 1] : 'Bulunamadı'; 
 
-                // 2. VERİTABANI OBJE HARİTASI
-                const belgeData = { 
-                    tc: tc, 
-                    ad_soyad: ad_soyad, 
-                    baba_adi: baba_adi, 
-                    anne_adi: anne_adi, 
-                    dogum_tarihi: dogum_tarihi, 
-                    uni: uni, 
-                    fakulte: fakulte, 
-                    bolum: bolum, 
-                    diploma_no: diploma_no, 
-                    diploma_notu: diploma_notu, 
-                    mezuniyet_tarihi: mezuniyet_tarihi, 
-                    durum: durum, 
-                    barkod: barkod, 
-                    belge_tarihi: belge_tarihi, 
-                    belge_durumu: "Onay Bekliyor" 
-                };
+                const belgeData = { tc, ad_soyad, baba_adi, anne_adi, dogum_tarihi, uni, fakulte, bolum, diploma_no, diploma_notu, mezuniyet_tarihi, durum, barkod, belge_tarihi, belge_durumu: "Onay Bekliyor" };
 
                 const { error } = await supabase.rpc('me26_belge_yukle', { p_uid: userUid, p_data: belgeData });
                 if (error) reject("Belge kaydedilemedi."); else resolve(belgeData);
