@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - CANLI STADYUM MOTORU (stadium.js)
-   Supabase Realtime Presence ve Broadcast Altyapısı
+   Supabase Realtime Presence, Broadcast Kürsü ve Otonom Chat Altyapısı
    ========================================================================== */
 
 import { supabase } from './supabase.js';
@@ -19,9 +19,20 @@ const SEHIRLER = [
     "Düzce", "Yurtdışı"
 ];
 
+// OTONOM ARAMA MOTORU (KÜFÜR/HAKARET FİLTRESİ - ŞİFRELİ)
+// Not: Kaynak kodda profesyonelliği korumak adına kelimeler Hex (Makine) formatına çevrilmiştir.
+const YASAKLI_KELIMELER = [
+    "\x61\x6d\x6b", "\x61\x71", "\x73\x69\x6b", "\x73\x6f\x6b", "\x70\x69\xe7", 
+    "\x79\x61\x72\x72\x61\x6b", "\x6f\x72\x6f\x73\x70\x75", "\x67\x61\x76\x61\x74", 
+    "\x69\x62\x6e\x65", "\x70\x65\x7a\x65\x76\x65\x6e\x6b", "\x6b\x61\x68\x70\x65", 
+    "\x73\xfc\x72\x74\xfc\x6b", "\x61\x70\x74\x61\x6c", "\x73\x61\x6c\x61\x6b"
+];
+
 export const STADYUM = {
     kanal: null,
-    sahnedekiKisi: null, // O an mikrofonu elinde tutan kişi
+    sahnedekiKisi: null, 
+    sonMesajZamani: null,
+    chatCooldownTimer: null,
 
     ciz: function() {
         const container = document.getElementById('stadyum-tribunler');
@@ -49,11 +60,128 @@ export const STADYUM = {
         `;
         container.innerHTML = html;
 
-        // Buton Dinleyicilerini Bağla
+        // Kürsü Dinleyicileri
         const btnSoz = document.getElementById('btn-soz-iste');
         const btnIn = document.getElementById('btn-kursuyu-birak');
         if(btnSoz) btnSoz.addEventListener('click', () => this.sozIste());
         if(btnIn) btnIn.addEventListener('click', () => this.kursudenIn());
+
+        // Chat Dinleyicileri
+        const btnChat = document.getElementById('btn-chat-gonder');
+        const inputChat = document.getElementById('input-chat-mesaj');
+        
+        if (btnChat) btnChat.addEventListener('click', () => this.mesajGonder());
+        if (inputChat) {
+            inputChat.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.mesajGonder();
+            });
+        }
+    },
+
+    // Küfür Tarayıcı Motor
+    kufurVarMi: function(metin) {
+        // Noktalama işaretlerini boşalt, küçük harfe çevir, bitişik harfleri kontrol et
+        const temizMetin = metin.toLowerCase().replace(/[^a-zğüşıöç]/g, '');
+        return YASAKLI_KELIMELER.some(kelime => temizMetin.includes(kelime.toLowerCase()));
+    },
+
+    // Tribün Akışı: Mesaj Gönderme
+    mesajGonder: async function() {
+        if (!STATE.isLoggedIn()) return UI.showToast("Tribüne seslenmek için giriş yapmalısın.", "error");
+
+        const inputEl = document.getElementById('input-chat-mesaj');
+        if (!inputEl) return;
+
+        let mesaj = inputEl.value.trim();
+        if (!mesaj) return;
+        if (mesaj.length > 80) return UI.showToast("Mesaj 80 karakterden uzun olamaz. Lütfen kısaltın.", "error");
+
+        // Zaman Sınırı Kontrolü (60 Saniye)
+        const suAn = new Date().getTime();
+        if (this.sonMesajZamani && (suAn - this.sonMesajZamani) < 60000) {
+            return UI.showToast("Tribüne tekrar seslenmek için 60 saniye beklemelisin.", "error");
+        }
+
+        // Ahlak Polisi Kontrolü
+        if (this.kufurVarMi(mesaj)) {
+            return UI.showToast("SİSTEM UYARISI: Mesajınız ME26 Anayasasına aykırı kelimeler içeriyor. Gönderim reddedildi.", "error");
+        }
+
+        let myUserId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN' ? `TR-IA-${STATE.user.userNo}` : `TR-IA-ADAY`;
+        const payloadData = { uid: myUserId, mesaj: mesaj };
+
+        try {
+            // Telsiz yayını ile 81 ile fırlat
+            await this.kanal.send({
+                type: 'broadcast',
+                event: 'chat_mesaji',
+                payload: payloadData
+            });
+
+            // Kendi ekranımıza bas
+            this.mesajiEkranaBas(payloadData);
+
+            // Sistemi kilitle ve temizle
+            inputEl.value = '';
+            this.sonMesajZamani = suAn;
+            this.cooldownBaslat();
+
+        } catch (error) {
+            UI.showToast("Mesaj iletilemedi, bağlantı hatası.", "error");
+        }
+    },
+
+    // Tribün Akışı: Kilit Ekranı (60s)
+    cooldownBaslat: function() {
+        const overlay = document.getElementById('chat-cooldown-overlay');
+        const timerEl = document.getElementById('chat-cooldown-timer');
+        const inputEl = document.getElementById('input-chat-mesaj');
+        const btnEl = document.getElementById('btn-chat-gonder');
+
+        if (!overlay || !timerEl) return;
+
+        overlay.classList.remove('hidden');
+        if(inputEl) inputEl.disabled = true;
+        if(btnEl) btnEl.disabled = true;
+
+        let kalan = 60;
+        timerEl.innerText = kalan;
+
+        if (this.chatCooldownTimer) clearInterval(this.chatCooldownTimer);
+
+        this.chatCooldownTimer = setInterval(() => {
+            kalan--;
+            timerEl.innerText = kalan;
+            if (kalan <= 0) {
+                clearInterval(this.chatCooldownTimer);
+                overlay.classList.add('hidden');
+                if(inputEl) inputEl.disabled = false;
+                if(btnEl) btnEl.disabled = false;
+            }
+        }, 1000);
+    },
+
+    // Tribün Akışı: Ekrana Render ve Uçuş (Fading)
+    mesajiEkranaBas: function(data) {
+        const container = document.getElementById('stadyum-chat-messages');
+        if (!container) return;
+
+        // "Tribün sessiz" yazısını kaldır
+        const placeholder = container.querySelector('.animate-pulse');
+        if (placeholder) placeholder.remove();
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'bg-black/80 border border-slate-700 p-2.5 rounded-xl text-white shadow-md animate-slideUpFade flex items-start gap-2 shrink-0 transition-all';
+        msgDiv.innerHTML = `<span class="text-kaos font-black whitespace-nowrap text-[10px] mt-0.5">${data.uid}:</span> <span class="font-medium text-gray-300 break-words leading-relaxed text-xs">${data.mesaj}</span>`;
+        
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+
+        // 15 saniye asılı kalsın, sonra buharlaşsın
+        setTimeout(() => {
+            msgDiv.classList.add('message-fade-out');
+            setTimeout(() => msgDiv.remove(), 1500); 
+        }, 15000);
     },
 
     // Arayüzde Sahneyi (Mikrofon Alanını) Yönetme Modülü
@@ -71,7 +199,6 @@ export const STADYUM = {
         if(!STATE.isLoggedIn()) myUserId = null;
 
         if (kisiData) {
-            // Sahnede biri var, mikrofon açık, yeşil dalgalar aktif!
             if(dalgalar) { dalgalar.classList.remove('opacity-0'); dalgalar.classList.add('opacity-100'); }
             if(avatar) { avatar.classList.add('border-green-500', 'bg-green-900/20'); avatar.classList.remove('border-slate-700', 'bg-slate-900'); }
             if(micIcon) { micIcon.classList.remove('fa-microphone-slash', 'text-gray-600'); micIcon.classList.add('fa-microphone', 'text-green-500'); }
@@ -79,17 +206,14 @@ export const STADYUM = {
             if(isim) { isim.innerText = kisiData.uid; isim.classList.add('text-white'); isim.classList.remove('text-gray-500'); }
             if(rol) { rol.innerText = kisiData.role; rol.classList.add('text-green-400'); rol.classList.remove('text-gray-600'); }
 
-            // Eğer sahnedeki KENDİSİYSE inme butonunu göster
             if (myUserId === kisiData.uid) {
                 if(btnSoz) btnSoz.classList.add('hidden');
                 if(btnIn) btnIn.classList.remove('hidden');
             } else {
-                // Sahne başkası tarafından doluysa, diğerleri söz isteyemez (Şimdilik)
                 if(btnSoz) { btnSoz.classList.add('opacity-50', 'cursor-not-allowed'); btnSoz.innerHTML = '<i class="fas fa-lock"></i> Saha Dolu'; }
                 if(btnIn) btnIn.classList.add('hidden');
             }
         } else {
-            // Saha Boş, sessizlik hakim.
             if(dalgalar) { dalgalar.classList.add('opacity-0'); dalgalar.classList.remove('opacity-100'); }
             if(avatar) { avatar.classList.remove('border-green-500', 'bg-green-900/20'); avatar.classList.add('border-slate-700', 'bg-slate-900'); }
             if(micIcon) { micIcon.classList.add('fa-microphone-slash', 'text-gray-600'); micIcon.classList.remove('fa-microphone', 'text-green-500'); }
@@ -97,13 +221,11 @@ export const STADYUM = {
             if(isim) { isim.innerText = "Saha Boş"; isim.classList.remove('text-white'); isim.classList.add('text-gray-500'); }
             if(rol) { rol.innerText = "Kimse Konuşmuyor"; rol.classList.remove('text-green-400'); rol.classList.add('text-gray-600'); }
 
-            // Saha boşken tekrar "Söz İste" açılır
             if(btnSoz) { btnSoz.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed'); btnSoz.innerHTML = '<i class="fas fa-hand-paper text-kaos"></i> Söz İste'; }
             if(btnIn) btnIn.classList.add('hidden');
         }
     },
 
-    // Broadcast (Telsiz Yayını) Gönderme: El Kaldırıp Sahaya Çıkma
     sozIste: async function() {
         if(!STATE.isLoggedIn()) return UI.showToast("Söz istemek için giriş yapmalısın.", "error");
         if(this.sahnedekiKisi) return UI.showToast("Şu an meclis kürsüsü dolu. Lütfen sıranızı bekleyin.", "error");
@@ -111,19 +233,16 @@ export const STADYUM = {
         let myUserId = STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN' ? `TR-IA-${STATE.user.userNo}` : `TR-IA-ADAY`;
         let myRole = STATE.user.role && STATE.user.role.toLowerCase().includes('öğrenci') ? 'İçmimarlık Öğrencisi' : 'İçmimarlık Mezunu';
 
-        // 81 ildeki herkese anlık olarak "Ben sahneye çıktım" sinyali atarız.
         await this.kanal.send({
             type: 'broadcast',
             event: 'sahne_hareketi',
             payload: { action: 'cikti', kisi: { uid: myUserId, role: myRole } }
         });
 
-        // Kendi ekranımızı anında güncelleriz
         this.sahneyiGuncelle({ uid: myUserId, role: myRole });
         UI.showToast("Sahneye çıktınız! (WebRTC Ses Modülü ilerleyen aşamada aktif olacak)", "success");
     },
 
-    // Broadcast (Telsiz Yayını) Gönderme: Sahneden İnme
     kursudenIn: async function() {
         await this.kanal.send({
             type: 'broadcast',
@@ -134,7 +253,6 @@ export const STADYUM = {
         UI.showToast("Kürsüden ayrıldınız.", "info");
     },
 
-    // Eşzamanlı Varlık (Tribün Işıkları) Güncellemesi
     guncelle: function(presenceState) {
         let totalOnline = 0; let mezunOnline = 0; let ogrenciOnline = 0;
         let sehirSayimlari = {};
@@ -223,7 +341,6 @@ export const STADYUM = {
         });
 
         this.kanal
-            // 1. Telsiz Frekansı Dinleyicisi (Birisi sahneye çıkarsa veya inerse haber al)
             .on('broadcast', { event: 'sahne_hareketi' }, (payload) => {
                 if (payload.payload.action === 'cikti') {
                     this.sahneyiGuncelle(payload.payload.kisi);
@@ -231,7 +348,10 @@ export const STADYUM = {
                     this.sahneyiGuncelle(null);
                 }
             })
-            // 2. Varlık (Presence) Dinleyicisi (Tribün Işıkları)
+            // YENİ: CHAT MESAJLARINI DİNLE
+            .on('broadcast', { event: 'chat_mesaji' }, (payload) => {
+                this.mesajiEkranaBas(payload.payload);
+            })
             .on('presence', { event: 'sync' }, () => {
                 const state = this.kanal.presenceState();
                 this.guncelle(state);
