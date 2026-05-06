@@ -1,6 +1,7 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
    Hibrit Vitrin + Otomatik Bouncer + Ortak Kürsü Modeli + Tribün Ligi
+   Canlı Yayın (Production) Sürümü
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -157,9 +158,9 @@ export const UI = {
             if (STATE.user.authStage === "document_pending") {
                 UI.showToast("Mesleki belge başvurunuz inceleme kuyruğunda. Onay sonrası tam erişim açılacak.", "info");
             } else if (STATE.user.hasPhone) {
-                UI.showToast("Telefon doğrulandı. Tam erişim için mesleki belgeni yüklemelisin.", "info");
+                UI.showToast("Telefon doğrulandı. Tam erişim için mesleki belgenizi yüklemelisin.", "info");
             } else {
-                UI.showToast("Bu alan doğrulanmış içmimarlar ve içmimarlık öğrencileri içindir. Sicilini tamamlamalısın.", "error");
+                UI.showToast("Bu alan doğrulanmış İçmimarlık Mezunları ve İçmimarlık Öğrencileri içindir. Sicilini tamamlamalısın.", "error");
             }
             UI.switchSaasTab("view-profil"); // Sicil & Ayarlar paneline fırlat
         }
@@ -175,7 +176,13 @@ export const UI = {
 
         // --- TEMEL BİLGİLER ---
         const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
-        const displayRole = (user.role === 'Belirsiz' || !user.role) ? 'Kimlik Bekleniyor' : user.role;
+        
+        // Rol text kontrolü
+        let displayRole = 'Kimlik Bekleniyor';
+        if (user.role && user.role !== 'Belirsiz') {
+            displayRole = user.role.toLowerCase().includes('öğrenci') ? 'İçmimarlık Öğrencisi' : 'İçmimarlık Mezunu';
+        }
+        
         const displayPower = user.votePower || '0.0x';
         
         setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
@@ -204,7 +211,7 @@ export const UI = {
         }
 
         // ==========================================
-        // YENİ EKLENEN: SİSTEM DURUMU (LOBİ KUTUSU) DİNAMİK GÜNCELLEME
+        // SİSTEM DURUMU (LOBİ KUTUSU) DİNAMİK GÜNCELLEME
         // ==========================================
         const sistemDurumuEl = document.getElementById('ui-sistem-durumu');
         if (sistemDurumuEl) {
@@ -212,22 +219,22 @@ export const UI = {
             const titleBox = sistemDurumuEl.previousElementSibling;
 
             if (user.authStage === 'pdf_verified') {
-                sistemDurumuEl.innerHTML = 'Tebrikler! Kimlik onayın tamamlandı ve <strong class="text-white">1.0x Tam Yetki</strong> kazandın. Artık otonom sandıklarda oy kullanabilir ve meclise kendi önergelerini sunabilirsin.';
+                sistemDurumuEl.innerHTML = 'Tebrikler! Belge onayın tamamlandı ve <strong class="text-white">1.0x Tam Erişim</strong> kazandın. Artık otonom sandıklarda oy kullanabilir ve meclise kendi önergelerini sunabilirsin.';
                 containerBox.className = "bg-green-900/20 border border-green-500/30 p-6 rounded-2xl"; 
                 titleBox.className = "text-green-400 text-xs font-black tracking-widest uppercase mb-3";
-                titleBox.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Sistem Durumu: Tam Yetki';
+                titleBox.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Sistem Durumu: Tam Erişim';
             } else if (user.authStage === 'document_pending') {
-                sistemDurumuEl.innerHTML = 'Mesleki belgen şu an <strong>inceleme kuyruğunda</strong> bekliyor. Onaylandığında 1.0x tam yetkiye sahip olacaksın.';
+                sistemDurumuEl.innerHTML = 'Mesleki belgen şu an <strong>inceleme kuyruğunda</strong> bekliyor. Onaylandığında 1.0x tam erişime sahip olacaksın.';
                 containerBox.className = "bg-yellow-900/20 border border-yellow-500/30 p-6 rounded-2xl";
                 titleBox.className = "text-yellow-400 text-xs font-black tracking-widest uppercase mb-3";
                 titleBox.innerHTML = '<i class="fas fa-hourglass-half mr-2"></i> Sistem Durumu: İncelemede';
             } else if (user.hasPhone) {
-                sistemDurumuEl.innerHTML = 'Telefon doğrulaman tamamlandı (Bot koruması aktif). Tam yetki (1.0x) almak ve önerge verebilmek için profilinden <strong class="text-white">E-devlet belgeni</strong> yüklemelisin.';
+                sistemDurumuEl.innerHTML = 'Telefon doğrulaman tamamlandı (Bot koruması aktif). Tam erişim (1.0x) almak ve önerge verebilmek için profilinden <strong class="text-white">mesleki belgeni</strong> yüklemelisin.';
                 containerBox.className = "bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl";
                 titleBox.className = "text-blue-400 text-xs font-black tracking-widest uppercase mb-3";
                 titleBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Sistem Durumu: Eksik Yetki';
             } else {
-                sistemDurumuEl.innerHTML = 'Seninle birlikte sistem inşa ediliyor. Şu an Kurucu Oylamalar aktif. Profilinden E-devlet onayı yaparak yetkini 1.0x\'e çıkarabilir ve kendi önergelerini sunabilirsin.';
+                sistemDurumuEl.innerHTML = 'Seninle birlikte sistem inşa ediliyor. Şu an Kurucu Oylamalar aktif. Profilinden mesleki belge onayı yaparak yetkini 1.0x\'e çıkarabilir ve kendi önergelerini sunabilirsin.';
                 containerBox.className = "bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl";
                 titleBox.className = "text-gray-400 text-xs font-black tracking-widest uppercase mb-3";
                 titleBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Sistem Durumu: Kayıtlı İzleyici';
@@ -289,7 +296,7 @@ export const UI = {
 
         if (user.authStage === 'pdf_verified') {
             if (btnPdf) btnPdf.classList.add('hidden');
-            addBadge('<span>🎓</span> E-DEVLET ONAYLI (1.0x TAM YETKİ)', 'bg-indigo-900/20 border-indigo-700/50 text-indigo-400');
+            addBadge('<span>🎓</span> MESLEKİ BELGE ONAYLI (1.0x TAM ERİŞİM)', 'bg-indigo-900/20 border-indigo-700/50 text-indigo-400');
             
             if (user.role && user.role.toLowerCase().includes('öğrenci')) {
                 const terfiBtn = document.createElement('button');
@@ -431,7 +438,7 @@ export const UI = {
                 </div>
                 <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
                     <div class="text-2xl mb-1 drop-shadow-md">🎓</div>
-                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Öğrenci Gücü Lideri</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">İçmimarlık Öğrencisi Lideri</div>
                     <div class="text-sm font-black text-blue-400 uppercase tracking-widest truncate">${ogrenciLideri.city}</div>
                 </div>
                 <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
