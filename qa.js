@@ -1,10 +1,14 @@
-// ============================================================================
-// ME26 ORTAK AKIL KÜTÜPHANESİ (Soru - Cevap Modülü Motoru)
-// ============================================================================
+/* ==========================================================================
+   ME26 ORTAK AKIL KÜTÜPHANESİ (Soru - Cevap Modülü Motoru)
+   qa.js
+   ========================================================================== */
 
 import { supabase } from './supabase.js';
 import { STATE } from './state.js'; 
 import { UI } from './ui.js'; 
+
+// HTML içindeki onclick komutlarının UI fonksiyonlarını tanıması için köprü kuruyoruz
+window.UI = UI;
 
 let aktifQaSekme = 'bekleyenler';
 let aktifSoruId = null;
@@ -224,7 +228,6 @@ window.qaSoruDetayAc = async function(soruId) {
                     <label class="block text-[10px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><i class="fas fa-pen-nib"></i> Kürsüde Söz Al</label>
                     <textarea id="input-qa-answer" placeholder="Çözümünüzü veya fikrinizi detaylıca belirtin (Min 20 Karakter)..." class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl outline-none text-sm font-medium h-24 resize-none custom-scrollbar focus:border-kaos transition mb-2"></textarea>
                     
-                    <!-- YENİ: CEVAP ALANINA EVRENSEL AI BUTONU -->
                     <button id="btn-ai-answer" onclick="evrenselGeminiDuzelt('input-qa-answer', 'btn-ai-answer')" class="text-[9px] font-black uppercase tracking-widest text-kaos hover:text-white transition mb-4 flex items-center gap-1">
                         <i class="fas fa-magic"></i> ✨ Meclis Kalemi ile Düzelt
                     </button>
