@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   Hibrit Vitrin + Otomatik Bouncer + Ortak Kürsü Modeli
+   Hibrit Vitrin + Otomatik Bouncer + Ortak Kürsü Modeli + Tribün Ligi
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -66,7 +66,7 @@ export const UI = {
     },
 
     // ==========================================
-    // YENİ: ORTAK KÜRSÜ MODAL YÖNETİMİ
+    // ORTAK KÜRSÜ MODAL YÖNETİMİ
     // ==========================================
     openKursuModal: () => {
         // GÜVENLİK DUVARI: Bouncer onaylamazsa modal hiç açılmaz
@@ -335,5 +335,139 @@ export const UI = {
             `;
             container.appendChild(div);
         });
+    },
+
+    // ==========================================
+    // 7. TRİBÜN LİGİ (LEADERBOARD) MOTORU
+    // ==========================================
+    renderTribunLigi: (cityDataArray) => {
+        if (!cityDataArray || cityDataArray.length === 0) return;
+
+        // Puan Hesaplama Formülü
+        const calculateCityPower = (city) => {
+            return (city.icmimar * 10) + (city.ogrenci * 5) + (city.onerge * 2) + (city.oy * 1) + (city.katki * 2);
+        };
+
+        // Verileri güç puanına göre hesapla ve sırala
+        const processedData = cityDataArray.map(c => ({
+            ...c,
+            power: calculateCityPower(c)
+        })).sort((a, b) => b.power - a.power);
+
+        // --- 1. ZİRVE KARTLARI ---
+        const championsContainer = document.getElementById('tribun-champions');
+        if (championsContainer) {
+            const genelLider = processedData[0];
+            const enAktif = [...processedData].sort((a, b) => (b.onerge + b.oy + b.katki) - (a.onerge + a.oy + a.katki))[0];
+            const ogrenciLideri = [...processedData].sort((a, b) => b.ogrenci - a.ogrenci)[0];
+            
+            // Haftanın Yükseleni (Minimum 50 Puan şartı)
+            const eligibleForGrowth = processedData.filter(c => c.weeklyGrowthPoints >= 50);
+            const enHizli = eligibleForGrowth.length > 0 
+                            ? eligibleForGrowth.sort((a, b) => b.weeklyGrowthPercent - a.weeklyGrowthPercent)[0] 
+                            : processedData[0]; // fallback
+
+            championsContainer.innerHTML = `
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">👑</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Genel Lider</div>
+                    <div class="text-sm font-black text-kaos uppercase tracking-widest truncate">${genelLider.city}</div>
+                </div>
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">🔥</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">En Aktif Tribün</div>
+                    <div class="text-sm font-black text-red-400 uppercase tracking-widest truncate">${enAktif.city}</div>
+                </div>
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">🎓</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Öğrenci Gücü Lideri</div>
+                    <div class="text-sm font-black text-blue-400 uppercase tracking-widest truncate">${ogrenciLideri.city}</div>
+                </div>
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">⚡</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Haftanın Yükseleni</div>
+                    <div class="text-sm font-black text-green-400 uppercase tracking-widest truncate">${enHizli.city}</div>
+                </div>
+            `;
+        }
+
+        // --- 2. SENİN TRİBÜNÜN KARTI (Dinamik Motivasyon) ---
+        const userCard = document.getElementById('tribun-user-card');
+        const userCity = STATE.user?.city;
+        
+        if (userCard) {
+            if (!userCity || userCity === 'Belirsiz' || userCity === 'Seçilmedi') {
+                userCard.innerHTML = `<p class="text-xs font-bold text-gray-300 uppercase tracking-widest">📍 Tribün seçimi yapılmadı. Şehrini seçerek Liyakat Ligi’ne katıl.</p>`;
+            } else {
+                const userCityIndex = processedData.findIndex(c => c.city === userCity);
+                if (userCityIndex !== -1) {
+                    const myCityData = processedData[userCityIndex];
+                    const rank = userCityIndex + 1;
+                    let motivasyonMesaji = "";
+
+                    if (rank === 1) {
+                        motivasyonMesaji = `<span class="text-green-400">Şehrin zirvede. Farkı açmak için tribününü büyüt.</span>`;
+                    } else {
+                        const ustSehir = processedData[userCityIndex - 1];
+                        const puanFarki = ustSehir.power - myCityData.power;
+                        motivasyonMesaji = `<span class="text-yellow-400">Üst sıradaki ${ustSehir.city}’i geçmek için ${puanFarki} puan lazım.</span>`;
+                    }
+
+                    userCard.innerHTML = `
+                        <div class="text-sm font-black text-white uppercase tracking-widest mb-1">
+                            Senin Tribünün: <span class="text-kaos">${myCityData.city}</span> · ${rank}. Sıra · ${myCityData.power.toLocaleString()} Puan
+                        </div>
+                        <div class="text-[10px] font-bold tracking-widest uppercase mt-2">${motivasyonMesaji}</div>
+                    `;
+                }
+            }
+        }
+
+        // --- 3. ANA TABLOYU DOLDUR ---
+        const tableBody = document.getElementById('tribun-table-body');
+        if (tableBody) {
+            tableBody.innerHTML = '';
+            processedData.forEach((city, index) => {
+                const rank = index + 1;
+                let rankDisplay = `<span class="text-gray-400 font-black">${rank}</span>`;
+                if (rank === 1) rankDisplay = `<span class="text-xl" title="Şampiyon">👑</span>`;
+                else if (rank === 2) rankDisplay = `<span class="text-lg" title="İkinci">🥈</span>`;
+                else if (rank === 3) rankDisplay = `<span class="text-lg" title="Üçüncü">🥉</span>`;
+
+                const isCurrentUserCity = (userCity === city.city);
+                const rowClass = isCurrentUserCity ? 'bg-kaos/10 border-b border-kaos/30' : 'border-b border-slate-800 hover:bg-slate-800/50 transition';
+
+                const tr = document.createElement('tr');
+                tr.className = rowClass;
+                tr.innerHTML = `
+                    <td class="p-3 text-center align-middle">${rankDisplay}</td>
+                    <td class="p-3 font-black text-white uppercase tracking-widest ${isCurrentUserCity ? 'text-kaos' : ''}">${city.city}</td>
+                    <td class="p-3 font-mono font-black text-kaos text-base">${city.power.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-300 font-mono">${city.icmimar.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-300 font-mono">${city.ogrenci.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-400 font-mono">${city.onerge.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-400 font-mono">${city.oy.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-400 font-mono">${city.katki.toLocaleString()}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // --- 4. VİRAL WHATSAPP BUTONU ---
+        const btnViral = document.getElementById('btn-tribun-whatsapp');
+        if (btnViral) {
+            if (!userCity || userCity === 'Belirsiz' || userCity === 'Seçilmedi') {
+                btnViral.innerHTML = '<i class="fas fa-map-marker-alt"></i> 📍 ÖNCE ŞEHRİNİ SEÇ';
+                btnViral.className = "relative z-10 w-full md:w-auto px-8 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 mx-auto";
+                btnViral.onclick = () => UI.switchSaasTab('view-profil');
+            } else {
+                btnViral.innerHTML = `<i class="fab fa-whatsapp text-xl"></i> 📢 ${userCity} TRİBÜNÜNÜ ŞAMPİYON YAP`;
+                btnViral.className = "relative z-10 w-full md:w-auto px-8 bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 mx-auto";
+                btnViral.onclick = () => {
+                    const msg = `ME26 Liyakat Ligi başladı. ${userCity} Tribünü'nü zirveye taşımak için katıl, kimliğini doğrula ve şehrinin gücüne puan kazandır: https://me26.org`;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                };
+            }
+        }
     }
 };
