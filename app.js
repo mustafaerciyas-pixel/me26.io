@@ -40,9 +40,11 @@ window.ortakKursuGonder = async function() {
     // Ortak verileri al
     const baslik = document.getElementById('input-kursu-title').value.trim();
     const hedefKitle = document.getElementById('input-kursu-audience').value;
+    
+    // DÜZELTİLEN YER: Harf hatası giderildi!
     const sorumlulukOnay = document.getElementById('input-kursu-responsibility').checked;
 
-    if (!sorumulukOnay) return UI.showToast("Sorumluluk beyanını onaylamanız gerekmektedir.", "error");
+    if (!sorumlulukOnay) return UI.showToast("Sorumluluk beyanını onaylamanız gerekmektedir.", "error");
     if (baslik.length < 15 || baslik.length > 150) return UI.showToast("Başlık 15 ile 150 karakter arasında olmalıdır.", "error");
 
     const btn = document.getElementById('btn-submit-kursu');
