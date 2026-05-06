@@ -271,20 +271,17 @@ function şantiyeyiBaslat() {
     Me26VotingSystem.init();
 
     // ---------------------------------------------------------
-    // TRİBÜN LİGİ SİMÜLASYONU
+    // TRİBÜN LİGİ CANLI VERİ ENTEGRASYONU (Sahte Array Silindi)
     // ---------------------------------------------------------
     window.loadTribunLigiData = async () => {
-        const demoCityData = [
-            { city: 'Ankara', icmimar: 426, ogrenci: 180, onerge: 54, oy: 2100, katki: 340, weeklyGrowthPoints: 210, weeklyGrowthPercent: 12 },
-            { city: 'İstanbul', icmimar: 389, ogrenci: 210, onerge: 42, oy: 1850, katki: 410, weeklyGrowthPoints: 180, weeklyGrowthPercent: 8 },
-            { city: 'İzmir', icmimar: 211, ogrenci: 95, onerge: 28, oy: 940, katki: 180, weeklyGrowthPoints: 120, weeklyGrowthPercent: 15 },
-            { city: 'Eskişehir', icmimar: 85, ogrenci: 140, onerge: 12, oy: 520, katki: 95, weeklyGrowthPoints: 90, weeklyGrowthPercent: 22 },
-            { city: 'Antalya', icmimar: 156, ogrenci: 45, onerge: 18, oy: 610, katki: 120, weeklyGrowthPoints: 60, weeklyGrowthPercent: 5 },
-            { city: 'Bursa', icmimar: 134, ogrenci: 60, onerge: 15, oy: 580, katki: 85, weeklyGrowthPoints: 40, weeklyGrowthPercent: 7 },
-            { city: 'Konya', icmimar: 92, ogrenci: 55, onerge: 8, oy: 340, katki: 60, weeklyGrowthPoints: 30, weeklyGrowthPercent: 4 },
-            { city: 'Kocaeli', icmimar: 110, ogrenci: 50, onerge: 11, oy: 420, katki: 75, weeklyGrowthPoints: 75, weeklyGrowthPercent: 11 }
-        ];
-        if (typeof UI.renderTribunLigi === "function") { UI.renderTribunLigi(demoCityData); }
+        try {
+            const realCityData = await DB.tribunLigiGetir();
+            if (typeof UI.renderTribunLigi === "function") { 
+                UI.renderTribunLigi(realCityData); 
+            }
+        } catch (error) {
+            console.error("Tribün Ligi canlı verileri çekilemedi:", error);
+        }
     };
     
     window.loadTribunLigiData();
