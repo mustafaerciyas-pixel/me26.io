@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ME26 AĞI - KÜRESEL STİL DOSYASI (assets/style.css)
+   ME26 AĞI - KÜRESEL STİL DOSYASI (style.css)
    ========================================================================== */
 
 /* 1. RENK DEĞİŞKENLERİ VE KÖK AYARLAR */
@@ -13,12 +13,22 @@ html {
     scroll-behavior: smooth;
 }
 
-/* 2. ÖZEL GÖLGELER */
+/* 2. ÖZEL GÖLGELER VE PARLAMALAR */
 .shadow-kaos {
     box-shadow: 0 0 15px rgba(var(--neon-rgb), 0.4);
 }
 .shadow-kaos-lg {
     box-shadow: 0 0 40px rgba(var(--neon-rgb), 0.5);
+}
+.text-outline-kaos {
+    text-shadow: 0 0 20px rgba(var(--neon-rgb), 0.3);
+}
+.hover-border-kaos {
+    transition: all 0.3s ease;
+}
+.hover-border-kaos:hover {
+    border-color: var(--neon-hex);
+    box-shadow: 0 0 20px rgba(var(--neon-rgb), 0.2);
 }
 
 /* 3. DİJİTAL KİMLİK KARTI (Hologram / Cam Efekti) */
