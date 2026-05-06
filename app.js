@@ -191,7 +191,7 @@ export const AUTH = {
 };
 
 // ======================================================
-// 4. OTONOM SANDIK (OYLAMA) MOTORU
+// 4. OTONOM SANDIK (GERÇEK OYLAMA MOTORU)
 // ======================================================
 export const Me26VotingSystem = {
     init: function() { this.loadProposals(); },
@@ -200,6 +200,19 @@ export const Me26VotingSystem = {
         try {
             const onergeler = await DB.onergeleriGetir();
             UI.renderProposals(onergeler);
+            
+            // Eğer önergeler başarıyla çekildiyse, her birinin gerçek oy durumunu da çek ve barları doldur
+            if(onergeler && onergeler.length > 0) {
+                onergeler.forEach(async (onerge) => {
+                    const cardEl = document.querySelector(`button[data-id="${onerge.id}"]`)?.closest('.bg-black\\/40');
+                    if(cardEl) {
+                        try {
+                            const oylar = await DB.oySonuclariniGetir(onerge.id);
+                            this.calculateAndRenderRealVotes(cardEl, oylar);
+                        } catch(e) { console.error("Oylar çekilemedi:", e); }
+                    }
+                });
+            }
         } catch (error) { console.error("Önergeler yüklenemedi", error); }
     },
 
@@ -221,36 +234,88 @@ export const Me26VotingSystem = {
         const currentPower = parseFloat((user.votePower || "0").replace('x', ''));
         if (currentPower === 0) { UI.showToast('Profil panelinden mesleki belgenizi yükleyip tam erişim almalısınız.', 'error'); return; }
         
-        const choice = btnEl.getAttribute('data-vote');
-        const allButtons = container.querySelectorAll('.vote-btn');
-        allButtons.forEach(b => { b.disabled = true; b.classList.remove('hover:border-green-500', 'hover:border-yellow-500', 'hover:border-red-500', 'hover:bg-slate-700'); b.classList.add('opacity-30', 'cursor-not-allowed'); });
+        const onergeId = btnEl.getAttribute('data-onerge-id') || btnEl.closest('[data-id]')?.getAttribute('data-id');
+        const choice = btnEl.getAttribute('data-vote'); // 'yes', 'no', 'abstain'
         
-        btnEl.classList.remove('opacity-30', 'bg-slate-800', 'text-gray-400');
-        if (choice === 'yes') btnEl.classList.add('bg-green-900/60', 'border-green-500', 'text-green-400');
-        else if (choice === 'abstain') btnEl.classList.add('bg-yellow-900/60', 'border-yellow-500', 'text-yellow-400');
-        else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
-        
-        this.animateResults(container.parentElement, choice, currentPower);
-        UI.showToast(`Oyunuz Otonom Sandığa kaydedildi. (Güç: ${currentPower}x)`, 'success');
+        const originalHtml = btnEl.innerHTML;
+        btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btnEl.disabled = true;
+
+        try {
+            // 1. Oyu Gerçek Veritabanına Yaz
+            await DB.oyKullan(user.uid, onergeId, choice, currentPower);
+            
+            // 2. Arayüzü Kilitle
+            const allButtons = container.querySelectorAll('.vote-btn');
+            allButtons.forEach(b => { b.disabled = true; b.classList.remove('hover:border-green-500', 'hover:border-yellow-500', 'hover:border-red-500', 'hover:bg-slate-700'); b.classList.add('opacity-30', 'cursor-not-allowed'); });
+            
+            btnEl.classList.remove('opacity-30', 'bg-slate-800', 'text-gray-400');
+            if (choice === 'yes') btnEl.classList.add('bg-green-900/60', 'border-green-500', 'text-green-400');
+            else if (choice === 'abstain') btnEl.classList.add('bg-yellow-900/60', 'border-yellow-500', 'text-yellow-400');
+            else if (choice === 'no') btnEl.classList.add('bg-red-900/60', 'border-red-500', 'text-red-400');
+            
+            btnEl.innerHTML = originalHtml;
+
+            // 3. Güncel Oyları Çekip Çubukları Doldur (Gerçek Matematik)
+            const guncelOylar = await DB.oySonuclariniGetir(onergeId);
+            this.calculateAndRenderRealVotes(container.parentElement, guncelOylar);
+            
+            UI.showToast(`Oyunuz başarıyla mühürlendi.`, 'success');
+
+        } catch (error) {
+            btnEl.innerHTML = originalHtml;
+            btnEl.disabled = false;
+            
+            if (error.message === 'already_voted') {
+                UI.showToast('Bu önergeye zaten oy verdiniz. Sistem bir kişinin ikinci kez oy kullanmasını engeller.', 'info');
+                // Adama zaten oy verdiğini göstermek için butonları kilitle
+                const allButtons = container.querySelectorAll('.vote-btn');
+                allButtons.forEach(b => { b.disabled = true; b.classList.add('opacity-30', 'cursor-not-allowed'); });
+            } else {
+                UI.showToast('Oy gönderilirken bir hata oluştu.', 'error');
+            }
+        }
     },
 
-    animateResults: function(cardEl, userChoice, votePower) {
-        let baseYes = Math.floor(Math.random() * 40) + 20; 
-        let baseAbstain = Math.floor(Math.random() * 10) + 5;
-        let baseNo = 100 - (baseYes + baseAbstain);
-        if (userChoice === 'yes') baseYes += (20 * votePower);
-        if (userChoice === 'abstain') baseAbstain += (20 * votePower);
-        if (userChoice === 'no') baseNo += (20 * votePower);
-        const total = baseYes + baseAbstain + baseNo;
-        const pY = Math.round((baseYes / total) * 100);
-        const pA = Math.round((baseAbstain / total) * 100);
-        const pN = 100 - (pY + pA);
-        setTimeout(() => {
-            const barY = cardEl.querySelector('.vote-bar-yes'); const barA = cardEl.querySelector('.vote-bar-abstain'); const barN = cardEl.querySelector('.vote-bar-no');
-            if(barY) barY.style.width = pY + '%'; if(barA) barA.style.width = pA + '%'; if(barN) barN.style.width = pN + '%';
-            const textY = cardEl.querySelector('.vote-text-yes'); const textA = cardEl.querySelector('.vote-text-abstain'); const textN = cardEl.querySelector('.vote-text-no');
-            if(textY) textY.textContent = `%${pY} Kabul`; if(textA) textA.textContent = `%${pA} Çekimser`; if(textN) textN.textContent = `%${pN} Ret`;
-        }, 50);
+    // (YENİ) - Gelen gerçek verileri çubuklara matematiğiyle çizen motor
+    calculateAndRenderRealVotes: function(cardEl, oylarDizisi) {
+        if(!cardEl || !oylarDizisi) return;
+
+        let totalYesPower = 0;
+        let totalNoPower = 0;
+        let totalAbstainPower = 0;
+
+        oylarDizisi.forEach(oy => {
+            const guc = Number(oy.oy_gucu) || 0;
+            if (oy.kullanilan_oy === 'yes') totalYesPower += guc;
+            else if (oy.kullanilan_oy === 'no') totalNoPower += guc;
+            else if (oy.kullanilan_oy === 'abstain') totalAbstainPower += guc;
+        });
+
+        const totalPower = totalYesPower + totalNoPower + totalAbstainPower;
+
+        let pY = 0, pN = 0, pA = 0;
+        if (totalPower > 0) {
+            pY = Math.round((totalYesPower / totalPower) * 100);
+            pA = Math.round((totalAbstainPower / totalPower) * 100);
+            pN = 100 - (pY + pA); // Küsürat sapmasını önlemek için 100'den çıkar
+        }
+
+        const barY = cardEl.querySelector('.vote-bar-yes'); 
+        const barA = cardEl.querySelector('.vote-bar-abstain'); 
+        const barN = cardEl.querySelector('.vote-bar-no');
+        
+        if(barY) barY.style.width = pY + '%'; 
+        if(barA) barA.style.width = pA + '%'; 
+        if(barN) barN.style.width = pN + '%';
+
+        const textY = cardEl.querySelector('.vote-text-yes'); 
+        const textA = cardEl.querySelector('.vote-text-abstain'); 
+        const textN = cardEl.querySelector('.vote-text-no');
+        
+        if(textY) textY.textContent = `%${pY} Kabul`; 
+        if(textA) textA.textContent = `%${pA} Çekimser`; 
+        if(textN) textN.textContent = `%${pN} Ret`;
     }
 };
 
