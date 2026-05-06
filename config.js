@@ -1,27 +1,52 @@
-// Google'ın Güvenlik (Firebase) motorlarını projemize çağırıyoruz
+/* ==========================================================================
+   ME26 AĞI - SİSTEM AYARLARI (config.js)
+   Canlı Production Sürümü
+   --------------------------------------------------------------------------
+   NOT:
+   - Firebase apiKey ve Supabase anon key frontend projelerde görülebilir.
+   - Bunlar service_role / admin şifresi değildir.
+   - Gerçek güvenlik Firebase Authorized Domains + Supabase RLS ile sağlanır.
+   - Bu dosyaya ASLA service_role key, admin key, gizli şifre veya özel token yazma.
+   ========================================================================== */
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-/* ==========================================================================
-   ME26 AĞI - SİSTEM AYARLARI VE ŞİFRELERİ (config.js)
-   Tüm şalterlerin ve kapı kilitlerinin bulunduğu anahtarlık
-   ========================================================================== */
-
+// ======================================================
+// ME26 ANA AYARLARI
+// ======================================================
 export const ME26_CONFIG = {
-    // 1. SİSTEM MODU (Geliştirme aşamasında mı yoksa yayında mı olduğunu belirtir)
-    mode: "production", // "production" demek sistem canlı yayında demek
+    // --------------------------------------------------
+    // 1. SİSTEM MODU
+    // --------------------------------------------------
+    mode: "production",
 
-    // 2. VIP (SİSTEM ELÇİSİ) PAYLAŞIM KURALLARI
-    requiredInvitesForVip: 3, // Özel numara almak için WhatsApp'tan kaç kişiyi getirmeli?
+    // --------------------------------------------------
+    // 2. RESMİ ADRESLER
+    // --------------------------------------------------
+    officialBaseUrl: "https://me26.io",
+    inviteBaseUrl: "https://me26.io",
 
-    // 3. VIP KURUCU NUMARA ARALIĞI
-    vipMin: 101,   // En küçük VIP numarası
-    vipMax: 5000,  // En büyük VIP numarası
+    // --------------------------------------------------
+    // 3. VIP / KURUCU ÜYE KURALLARI
+    // --------------------------------------------------
+    requiredInvitesForVip: 3,
+    vipMin: 101,
+    vipMax: 5000,
+    founderLimit: 2000,
 
-    // 4. KURUCU KONTENJANI
-    founderLimit: 2000, // Sistemin ilk kurucu çekirdek kadrosu sınırı
+    // --------------------------------------------------
+    // 4. DOSYA / BELGE KURALLARI
+    // --------------------------------------------------
+    maxPdfSizeMb: 10,
+    allowedPdfMimeTypes: [
+        "application/pdf"
+    ],
 
-    // 5. GÜVENLİK GÖREVLİSİ ŞİFRELERİ (Firebase: SMS ve Google Girişi İçin)
+    // --------------------------------------------------
+    // 5. FIREBASE
+    // Google giriş, telefon doğrulama ve reCAPTCHA için kullanılır.
+    // --------------------------------------------------
     firebaseConfig: {
         apiKey: "AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA",
         authDomain: "me26-io.firebaseapp.com",
@@ -31,17 +56,18 @@ export const ME26_CONFIG = {
         appId: "1:87570616950:web:50c97a3de14a69efb4c557"
     },
 
-    // 6. ÇELİK ARŞİV ŞİFRELERİ (Supabase: Oylar, Kullanıcılar, Önergeler İçin)
-    supabaseUrl: "https://ukmkojfntsmueikjcrvz.supabase.co", 
-    supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw" 
+    // --------------------------------------------------
+    // 6. SUPABASE
+    // Oylar, kullanıcılar, önergeler, sorular ve Koruma Hattı için kullanılır.
+    // Bu key anon/publishable key olmalı; service_role ASLA buraya yazılmamalı.
+    // --------------------------------------------------
+    supabaseUrl: "https://ukmkojfntsmueikjcrvz.supabase.co",
+    supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw"
 };
 
-// ==========================================================================
-// MOTORLARI ÇALIŞTIRMA BÖLÜMÜ
-// ==========================================================================
-
-// Yukarıdaki şifreleri kullanarak Google Güvenlik motorunu başlat
+// ======================================================
+// FIREBASE BAŞLATMA
+// ======================================================
 const app = initializeApp(ME26_CONFIG.firebaseConfig);
 
-// Diğer dosyalar (örneğin auth.js) kullanabilsin diye kimlik doğrulama kapısını dışarı aç
 export const auth = getAuth(app);
