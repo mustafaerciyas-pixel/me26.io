@@ -183,10 +183,10 @@ export async function eDevletBelgesiOku(file, userUid) {
         throw new Error("Lütfen incelenmesi için bir dosya seçin.");
     }
 
-    // Geçerli dosya tipleri
-    const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    // GÜNCELLEME: Sadece PDF kabul edilecek
+    const validTypes = ['application/pdf'];
     if (!validTypes.includes(file.type)) {
-        throw new Error("Sisteme sadece PDF, JPG veya PNG formatında belgeler yüklenebilir.");
+        throw new Error("Sadece PDF formatında mesleki belge yükleyebilirsiniz.");
     }
 
     // Dosya boyutu sınırı (Örn: 10MB)
