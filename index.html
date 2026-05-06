@@ -154,6 +154,9 @@
                 <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800">
                     <i class="fas fa-bullhorn w-5 text-center"></i> Meclis Kürsüsü
                 </button>
+                <button data-target="view-tribun-ligi" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800">
+                    <i class="fas fa-trophy w-5 text-center"></i> Tribün Ligi
+                </button>
                 <button data-target="view-profil" class="nav-menu-btn text-gray-400 hover:text-white w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold tracking-widest uppercase transition hover:bg-slate-800">
                     <i class="fas fa-id-card w-5 text-center"></i> Sicil & Ayarlar
                 </button>
@@ -334,24 +337,84 @@
                         <button type="button" id="btn-delete-account" class="text-red-500 hover:text-red-400 text-[10px] font-bold uppercase tracking-widest underline transition">Hesabımı ve Bilgilerimi Sil</button>
                     </div>
                 </section>
+
+                <!-- 2.5. TRİBÜN LİGİ -->
+                <section id="view-tribun-ligi" class="view-section hidden animate-fadeIn">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest mb-2"><i class="fas fa-trophy text-kaos mr-2"></i> ME26 Şehir Tribünleri</h2>
+                        <h3 class="text-lg font-bold text-kaos uppercase tracking-widest mb-4">— Liyakat Ligi —</h3>
+                        <p class="text-sm text-white font-black uppercase tracking-widest max-w-2xl mx-auto leading-relaxed mb-4">
+                            Kişiler değil, şehirlerin emeği yarışır.
+                        </p>
+                        <div class="bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl max-w-3xl mx-auto text-left">
+                            <p class="text-[10px] md:text-xs text-blue-300 font-medium leading-relaxed">
+                                <i class="fas fa-info-circle mr-1"></i> Tribün Ligi tüm kayıtlı üyelere görünürdür. Ancak şehir puanına katkı sağlayan oy, önerge, kürsü katkısı ve mesleki doğrulama işlemleri yalnızca doğrulanmış içmimarlar ve içmimarlık öğrencileri tarafından yapılabilir.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Zirve Kartları -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="tribun-champions">
+                        <!-- JS tarafından doldurulacak -->
+                    </div>
+
+                    <!-- Senin Tribünün Kartı -->
+                    <div id="tribun-user-card" class="bg-slate-800 border border-slate-600 p-4 rounded-xl text-center shadow-md mb-8">
+                        <!-- JS tarafından doldurulacak -->
+                    </div>
+
+                    <!-- Leaderboard Tablosu -->
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl shadow-lg overflow-hidden mb-8">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr class="bg-slate-900 border-b border-slate-700 text-[10px] text-gray-400 uppercase tracking-widest">
+                                        <th class="p-4 font-black text-center w-16">Sıra</th>
+                                        <th class="p-4 font-black">Şehir</th>
+                                        <th class="p-4 font-black text-kaos">Güç Puanı</th>
+                                        <th class="p-4 font-bold text-center">İçmimar</th>
+                                        <th class="p-4 font-bold text-center">İçmimarlık Öğrencisi</th>
+                                        <th class="p-4 font-bold text-center">Önerge</th>
+                                        <th class="p-4 font-bold text-center">Oy</th>
+                                        <th class="p-4 font-bold text-center">Kürsü Katkısı</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tribun-table-body" class="text-sm">
+                                    <!-- JS tarafından doldurulacak -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Viral WhatsApp Butonu -->
+                    <div class="text-center mt-8">
+                        <button type="button" id="btn-tribun-whatsapp" class="relative z-10 w-full md:w-auto px-8 bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 mx-auto">
+                            Yükleniyor...
+                        </button>
+                    </div>
+                </section>
             </div>
         </main>
 
         <!-- MOBİL ALT MENÜ (BOTTOM NAV) -->
         <nav class="md:hidden fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 flex justify-around items-center py-3 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.3)] pb-safe">
-            <button data-target="view-lobi" class="nav-menu-btn active text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-lobi" class="nav-menu-btn active text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-landmark text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Lobi</span>
             </button>
-            <button data-target="view-sandik" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-sandik" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-vote-yea text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Sandık</span>
             </button>
-            <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-kursu" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-bullhorn text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Kürsü</span>
             </button>
-            <button data-target="view-profil" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/4">
+            <button data-target="view-tribun-ligi" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
+                <i class="fas fa-trophy text-lg"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Lig</span>
+            </button>
+            <button data-target="view-profil" class="nav-menu-btn text-gray-400 hover:text-kaos flex flex-col items-center gap-1 transition w-1/5">
                 <i class="fas fa-id-card text-lg"></i>
                 <span class="text-[9px] font-bold uppercase tracking-widest">Profil</span>
             </button>
