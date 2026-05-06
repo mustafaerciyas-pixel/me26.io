@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE SAAS MENÜ YÖNLENDİRİCİSİ (app.js)
-   SaaS Mimarisi + Otonom Sandık + SMS/PDF Tam Entegrasyon
+   SaaS Mimarisi + Öğrenci Terfi Motoru + Otonom Sandık
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -84,15 +84,29 @@ export const AUTH = {
     verifyPdf: async () => {
         const fileInput = document.querySelector('input[type="file"]');
         if (!fileInput || !fileInput.files[0]) { UI.showToast('Önce PDF seçin.', 'error'); return; }
+        
         const btn = document.getElementById('btn-submit-pdf');
-        if(btn) { btn.innerHTML = 'DEŞİFRE EDİLİYOR...'; btn.disabled = true; }
+        // AKILLI KONTROL: Kullanıcı zaten onaylıysa (Öğrenci terfisi yapıyorsa)
+        const isTerfi = STATE.user && STATE.user.authStage === 'pdf_verified';
+
+        if(btn) { btn.innerHTML = isTerfi ? 'UNVAN GÜNCELLENİYOR...' : 'DEŞİFRE EDİLİYOR...'; btn.disabled = true; }
+        
         try {
             await eDevletBelgesiOku(fileInput.files[0], STATE.user?.uid);
-            UI.showToast('Belge okundu! Yönetim kurulundan onay bekleniyor.', 'success');
+            
+            if (isTerfi) {
+                UI.showToast('Mezuniyet belgen onaylandı! İçmimar unvanına terfi ettiriliyorsun.', 'success');
+            } else {
+                UI.showToast('Belge okundu! Yönetim kurulundan onay bekleniyor.', 'success');
+            }
+            
             UI.closeModal('pdf-modal');
             setTimeout(() => window.location.reload(), 1500); 
-        } catch (error) { UI.showToast(error, 'error'); } 
-        finally { if(btn) { btn.innerHTML = 'E-DEVLET YÜKLE'; btn.disabled = false; } }
+        } catch (error) { 
+            UI.showToast(error, 'error'); 
+        } finally { 
+            if(btn) { btn.innerHTML = isTerfi ? 'UNVANI GÜNCELLE' : 'E-DEVLET YÜKLE'; btn.disabled = false; } 
+        }
     }
 };
 
@@ -303,12 +317,15 @@ function şantiyeyiBaslat() {
         if (firebaseUser) {
             const { data: dbUser } = await supabase.from('users').select('*').eq('id', firebaseUser.uid).maybeSingle(); 
             if (dbUser) {
+                // VERİTABANI BAĞLANTILARI BURADA TAMAMLANDI (inviteCount ve isVip Eklendi)
                 STATE.user = { 
                     uid: dbUser.id, name: dbUser.isim, email: dbUser.email, photo: dbUser.foto, 
                     city: dbUser.sehir || 'Belirsiz', role: dbUser.mesleki_durum || 'Belirsiz', 
                     votePower: dbUser.oy_gucu + "x", userNo: dbUser.vip_kurucu_no || 'BEKLEYEN', 
                     davetKodu: dbUser.kendi_davet_kodu, hasPhone: dbUser.telefon ? true : false, 
-                    authStage: dbUser.belge_durumu === 'Onaylandı' ? 'pdf_verified' : (dbUser.belge_durumu === 'Onay Bekliyor' ? 'document_pending' : 'registered') 
+                    authStage: dbUser.belge_durumu === 'Onaylandı' ? 'pdf_verified' : (dbUser.belge_durumu === 'Onay Bekliyor' ? 'document_pending' : 'registered'),
+                    inviteCount: dbUser.davet_edilen_kisi_sayisi || 0,
+                    isVip: dbUser.is_vip || false
                 };
                 
                 UI.showView('saas');
