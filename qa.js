@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 ORTAK AKIL KÜTÜPHANESİ (Soru - Cevap Modülü Motoru)
-   qa.js - (Filtreleri JavaScript ile aşan Güvenli Tasarım Modu)
+   qa.js - KUSURSUZ MONTAJ SIRASI VE TANK MODU
    ========================================================================== */
 
 import { supabase } from './supabase.js';
@@ -12,22 +12,9 @@ window.UI = UI;
 let aktifQaSekme = 'bekleyenler';
 let aktifSoruId = null;
 
-function qaMotorunuBaslat() {
-    console.log("🚀 QA Motoru Başlatılıyor...");
-    const btnBekleyenler = document.getElementById('btn-qa-bekleyenler');
-    const btnKutuphane = document.getElementById('btn-qa-kutuphane');
-
-    if(btnBekleyenler) btnBekleyenler.addEventListener('click', () => qaSekmeDegistir('bekleyenler'));
-    if(btnKutuphane) btnKutuphane.addEventListener('click', () => qaSekmeDegistir('kutuphane'));
-    
-    window.qaSorulariGetir();
-}
-
-if (document.readyState === 'loading') { 
-    document.addEventListener('DOMContentLoaded', qaMotorunuBaslat); 
-} else { 
-    qaMotorunuBaslat(); 
-}
+// ==========================================
+// 1. MOTOR PARÇALARI (ÖNCE FONKSİYONLAR TANIMLANIR)
+// ==========================================
 
 function aktifKullaniciyiAl() {
     if (!STATE.isLoggedIn() || !STATE.user) return null;
@@ -47,6 +34,7 @@ function aktifKullaniciyiAl() {
 
 function qaSekmeDegistir(sekme) {
     aktifQaSekme = sekme;
+    
     const btnBekleyenler = document.getElementById('btn-qa-bekleyenler');
     const btnKutuphane = document.getElementById('btn-qa-kutuphane');
     
@@ -57,6 +45,7 @@ function qaSekmeDegistir(sekme) {
         if(btnKutuphane) btnKutuphane.className = "bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition shadow-inner";
         if(btnBekleyenler) btnBekleyenler.className = "bg-transparent text-gray-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition hover:text-white";
     }
+    
     window.qaSorulariGetir();
 }
 
@@ -67,7 +56,7 @@ window.qaSorulariGetir = async function() {
     listelemeAlani.innerHTML = '<div class="text-center text-kaos text-sm py-10 font-bold uppercase tracking-widest animate-pulse">Meclis Kayıtları Okunuyor...</div>';
 
     try {
-        // Tablodaki her şeyi ham çek (Supabase filtreleri sorun yaratmasın diye)
+        // TANK MODU: Supabase filtrelerini JavaScript ile aşıyoruz
         const { data, error } = await supabase.from('me26_sorular').select('*');
 
         if (error) throw error;
@@ -78,16 +67,16 @@ window.qaSorulariGetir = async function() {
         }
 
         const isAuthorized = UI.triggerVerificationGate(true);
-        const secilenSekmeCozulduMu = (aktifQaSekme === 'kutuphane'); 
+        const secilenSekmeCozulduMu = (aktifQaSekme === 'kutuphane');
 
-        // JavaScript ile Güvenli Filtreleme
+        // Güvenli Filtreleme
         const filtrelenmisData = data.filter(soru => {
-            const soruCozulduMu = (soru.cozuldu_mu === true); 
+            const soruCozulduMu = (soru.cozuldu_mu === true);
             const sikayet = soru.sikayet_sayisi || 0;
             return (soruCozulduMu === secilenSekmeCozulduMu) && (sikayet < 10);
         });
 
-        // JavaScript ile Güvenli Sıralama
+        // Güvenli Sıralama
         filtrelenmisData.sort((a, b) => {
             const dateA = a.olusturma_tarihi ? new Date(a.olusturma_tarihi).getTime() : 0;
             const dateB = b.olusturma_tarihi ? new Date(b.olusturma_tarihi).getTime() : 0;
@@ -101,7 +90,7 @@ window.qaSorulariGetir = async function() {
 
         listelemeAlani.innerHTML = ''; 
 
-        // Orijinal Güzel Tasarım ile Ekrana Basma
+        // Ekrana Basma
         filtrelenmisData.forEach(soru => {
             let tarihStr = "Tarih Yok";
             if (soru.olusturma_tarihi) {
@@ -367,4 +356,24 @@ window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
             alert(`Şikayetiniz kaydedildi. (${yeniSayi}/10)`);
         }
     }
+}
+
+// ==========================================
+// 8. ŞALTER (SİSTEMİ BAŞLAT)
+// ==========================================
+function qaMotorunuBaslat() {
+    console.log("🚀 QA Motoru Başlatılıyor...");
+    const btnBekleyenler = document.getElementById('btn-qa-bekleyenler');
+    const btnKutuphane = document.getElementById('btn-qa-kutuphane');
+
+    if(btnBekleyenler) btnBekleyenler.addEventListener('click', () => qaSekmeDegistir('bekleyenler'));
+    if(btnKutuphane) btnKutuphane.addEventListener('click', () => qaSekmeDegistir('kutuphane'));
+    
+    window.qaSorulariGetir();
+}
+
+if (document.readyState === 'loading') { 
+    document.addEventListener('DOMContentLoaded', qaMotorunuBaslat); 
+} else { 
+    qaMotorunuBaslat(); 
 }
