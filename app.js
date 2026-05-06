@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE SAAS MENÜ YÖNLENDİRİCİSİ (app.js)
-   SaaS Mimarisi + Öğrenci Terfi Motoru + Otonom Sandık
+   SaaS Mimarisi + Öğrenci Terfi Motoru + Katı Güvenlik Duvarları
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -128,6 +128,11 @@ export const Me26VotingSystem = {
 
     handleVote: async function(btnEl) {
         if (!STATE.isLoggedIn()) { UI.showToast('Oy kullanmak için giriş yapmalısın!', 'error'); return; }
+
+        // --- GÜVENLİK DUVARI 1: OY KULLANMA ---
+        if (!STATE.user.hasPhone) { UI.showToast('Oy kullanmadan önce Profil sekmesinden Telefonunuzu onaylatmalısınız (Bot Koruması).', 'error'); return; }
+        if (STATE.user.authStage !== 'pdf_verified') { UI.showToast('Oy kullanabilmek için E-Devlet belgenizi yükleyip yetki almalısınız.', 'error'); return; }
+        
         const userRole = (STATE.user && STATE.user.role) ? STATE.user.role.toLowerCase() : '';
         const container = btnEl.closest('.vote-buttons-container');
         const requiredAuth = container.getAttribute('data-auth'); 
@@ -267,6 +272,13 @@ function şantiyeyiBaslat() {
         if (destekBtn) {
             e.preventDefault();
             if (!STATE.isLoggedIn()) { UI.showToast('Destek vermek için giriş yapmalısınız.', 'error'); return; }
+            
+            // --- GÜVENLİK DUVARI 2: DESTEK VERME ---
+            if (!STATE.user.hasPhone || STATE.user.authStage !== 'pdf_verified') {
+                UI.showToast('Önergeyi destekleyebilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.', 'error');
+                return;
+            }
+
             const onergeId = destekBtn.getAttribute('data-id');
             const originalText = destekBtn.innerHTML;
             destekBtn.innerHTML = '...'; destekBtn.disabled = true;
@@ -291,6 +303,13 @@ function şantiyeyiBaslat() {
     // Önerge Gönderme
     bind('btn-submit-proposal', 'click', async () => {
         if (!STATE.isLoggedIn()) { UI.showToast('Önerge vermek için giriş yapmalısınız.', 'error'); return; }
+
+        // --- GÜVENLİK DUVARI 3: ÖNERGE GÖNDERME ---
+        if (!STATE.user.hasPhone || STATE.user.authStage !== 'pdf_verified') {
+            UI.showToast('Meclise önerge sunabilmek için Profil sekmesinden Telefon ve E-Devlet onaylarınızı tamamlamalısınız.', 'error');
+            return;
+        }
+
         const baslik = document.getElementById('input-proposal-title').value.trim();
         const sorun = document.getElementById('input-proposal-problem').value.trim();
         const cozum = document.getElementById('input-proposal-solution').value.trim();
