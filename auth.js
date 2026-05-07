@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - ÇELİK KAPI MOTORU (auth.js)
-   Canlı Production Sürümü
+   Cloudflare Workers Canlı Test Sürümü
    --------------------------------------------------------------------------
    Görev:
    - Google ile giriş / çıkış
@@ -25,7 +25,7 @@ import {
 // GLOBAL DEĞİŞKENLER
 // ------------------------------------------------------
 let confirmationResult = null;
-let me26Recaptcha = null;
+let recaptchaVerifier = null;
 
 const SMS_LIMIT_KEY = 'me26_sms_limits';
 
@@ -80,6 +80,7 @@ const createInviteCode = () => {
     try {
         const randomArray = new Uint32Array(1);
         crypto.getRandomValues(randomArray);
+
         return `ME26-TR-${randomArray[0].toString(36).toUpperCase().slice(0, 6)}`;
     } catch (error) {
         return `ME26-TR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -126,11 +127,15 @@ const getFirebaseErrorMessage = (error) => {
     }
 
     if (errCode === 'auth/popup-blocked') {
-        return 'Tarayıcı Google giriş penceresini engelledi. Lütfen popup izni verin.';
+        return 'Tarayıcı Google giriş penceresini engelledi. Popup izni verin.';
     }
 
     if (errCode === 'auth/too-many-requests') {
         return 'Çok fazla deneme yapıldı. Sistem geçici olarak kilitlendi, lütfen daha sonra deneyin.';
+    }
+
+    if (errCode === 'auth/unauthorized-domain') {
+        return 'Bu domain Firebase Authentication içinde yetkilendirilmemiş. Firebase Console > Authentication > Settings > Authorized domains alanına me26.mustafaerciyas.workers.dev eklenmeli.';
     }
 
     if (errCode === 'auth/invalid-phone-number') {
@@ -138,7 +143,7 @@ const getFirebaseErrorMessage = (error) => {
     }
 
     if (errCode === 'auth/captcha-check-failed') {
-        return 'Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyin.';
+        return 'Güvenlik doğrulaması başarısız oldu. Sayfayı yenileyin.';
     }
 
     if (errCode === 'auth/provider-already-linked') {
@@ -154,7 +159,7 @@ const getFirebaseErrorMessage = (error) => {
     }
 
     if (errCode === 'auth/code-expired') {
-        return 'Doğrulama kodunun süresi dolmuş. Lütfen yeniden SMS isteyin.';
+        return 'Doğrulama kodunun süresi dolmuş. Yeniden SMS isteyin.';
     }
 
     if (message) {
@@ -182,7 +187,7 @@ export async function googleIleGiris() {
             throw new Error('Google hesabı doğrulanamadı.');
         }
 
-        const gizliPaket = {
+        const payload = {
             uid: user.uid,
             g_isim: user.displayName || 'İsimsiz',
             mail: user.email || null,
@@ -193,7 +198,7 @@ export async function googleIleGiris() {
             ref: getRefFromUrl()
         };
 
-        const data = await DB.sistemeGiris(gizliPaket);
+        const data = await DB.sistemeGiris(payload);
 
         return data;
     } catch (error) {
@@ -212,7 +217,9 @@ export async function sistemdenCikis() {
     try {
         await signOut(auth);
 
-        STATE.clearSession();
+        if (STATE && typeof STATE.clearSession === 'function') {
+            STATE.clearSession();
+        }
 
         safeLocalStorageRemove(SMS_LIMIT_KEY);
 
@@ -257,7 +264,6 @@ function readSmsLimits() {
 
 function checkSmsLimits() {
     let limits = readSmsLimits();
-
     const today = new Date().toDateString();
 
     if (limits.date !== today) {
@@ -296,15 +302,15 @@ function updateSmsLimits(limits) {
 // 4. RECAPTCHA KURULUMU
 // ======================================================
 function clearRecaptcha() {
-    if (!me26Recaptcha) return;
+    if (!recaptchaVerifier) return;
 
     try {
-        me26Recaptcha.clear();
+        recaptchaVerifier.clear();
     } catch (error) {
         console.warn('reCAPTCHA temizlenemedi:', error);
     }
 
-    me26Recaptcha = null;
+    recaptchaVerifier = null;
 }
 
 function ensureRecaptchaContainer() {
@@ -322,10 +328,9 @@ function ensureRecaptchaContainer() {
 
 async function createInvisibleRecaptcha() {
     clearRecaptcha();
-
     ensureRecaptchaContainer();
 
-    me26Recaptcha = new RecaptchaVerifier(
+    recaptchaVerifier = new RecaptchaVerifier(
         auth,
         'recaptcha-container',
         {
@@ -341,12 +346,12 @@ async function createInvisibleRecaptcha() {
     );
 
     try {
-        await me26Recaptcha.render();
+        await recaptchaVerifier.render();
     } catch (error) {
         console.warn('reCAPTCHA render uyarısı:', error);
     }
 
-    return me26Recaptcha;
+    return recaptchaVerifier;
 }
 
 // ======================================================
@@ -360,12 +365,12 @@ export async function gercekSmsGonder(phoneNumber) {
 
         const formattedPhone = normalizeTurkishPhone(phoneNumber);
         const limits = checkSmsLimits();
-        const recaptchaVerifier = await createInvisibleRecaptcha();
+        const verifier = await createInvisibleRecaptcha();
 
         confirmationResult = await linkWithPhoneNumber(
             auth.currentUser,
             formattedPhone,
-            recaptchaVerifier
+            verifier
         );
 
         updateSmsLimits(limits);
@@ -377,15 +382,6 @@ export async function gercekSmsGonder(phoneNumber) {
         clearRecaptcha();
 
         const readableMessage = getFirebaseErrorMessage(error);
-
-        if (
-            readableMessage.includes('GSM') ||
-            readableMessage.includes('saniye') ||
-            readableMessage.includes('limit') ||
-            readableMessage.includes('Oturum')
-        ) {
-            throw new Error(readableMessage);
-        }
 
         throw new Error(readableMessage || 'Ağ yoğunluğu nedeniyle SMS gönderilemedi. Lütfen tekrar deneyin.');
     }
@@ -414,10 +410,11 @@ export async function gercekSmsDogrula(code, uid, phoneValue) {
         const formattedPhone = normalizeTurkishPhone(phoneValue);
 
         await confirmationResult.confirm(temizKod);
-
         await DB.telefonuOnayla(temizUid, formattedPhone);
 
-        STATE.setPhoneVerified();
+        if (STATE && typeof STATE.setPhoneVerified === 'function') {
+            STATE.setPhoneVerified();
+        }
 
         confirmationResult = null;
 
@@ -462,7 +459,9 @@ export async function eDevletBelgesiOku(file, userUid) {
 
         await DB.belgeyiSirayaAl(temizUid, belgeData);
 
-        STATE.setDocumentPending();
+        if (STATE && typeof STATE.setDocumentPending === 'function') {
+            STATE.setDocumentPending();
+        }
 
         return true;
     } catch (error) {
