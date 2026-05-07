@@ -68,9 +68,17 @@
       backdrop-filter: blur(18px);
     }
 
+    .view-section.hidden {
+      display: none;
+    }
+
+    .view-section.block {
+      display: block;
+    }
+
     .nav-menu-btn.active {
-      background: rgba(30, 41, 59, 0.9);
-      color: white;
+      background: rgba(30, 41, 59, 0.95);
+      color: #ffffff;
       border-color: rgba(250, 204, 21, 0.35);
     }
 
@@ -88,8 +96,6 @@
 </head>
 
 <body class="min-h-screen bg-meblack text-white antialiased overflow-x-hidden">
-
-  <!-- TOAST -->
   <div
     id="toast-container"
     class="fixed right-4 bottom-4 z-[999999] flex flex-col gap-3 pointer-events-none"
@@ -99,14 +105,13 @@
        LANDING
   ======================================================= -->
   <div id="landing-view" class="min-h-screen">
-
-    <!-- NAV -->
-    <header class="fixed top-0 left-0 right-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+    <header class="fixed top-0 left-0 right-0 z-50 border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl">
       <div class="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         <a href="#top" class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-2xl bg-kaos text-slate-950 flex items-center justify-center font-black shadow-kaos">
             ME
           </div>
+
           <div>
             <div class="text-sm font-black tracking-widest">ME26 AĞI</div>
             <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">Dijital Meclis</div>
@@ -123,7 +128,7 @@
           <button
             id="btn-register-nav"
             type="button"
-            class="bg-kaos text-slate-950 px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest shadow-kaos hover:opacity-90 transition"
+            class="me26-login-btn bg-kaos text-slate-950 px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest shadow-kaos hover:opacity-90 transition"
           >
             Kayıt Ol
           </button>
@@ -131,7 +136,7 @@
           <button
             id="btn-login-nav"
             type="button"
-            class="bg-slate-900 border border-slate-700 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:border-kaos transition"
+            class="me26-login-btn bg-slate-900 border border-slate-700 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:border-kaos transition"
           >
             Giriş Yap
           </button>
@@ -139,10 +144,8 @@
       </div>
     </header>
 
-    <!-- HERO -->
     <main id="top" class="pt-28 md:pt-36 pb-20 px-4 md:px-8">
       <section class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
-
         <div>
           <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-kaos/30 bg-kaos/10 text-kaos text-[10px] font-black uppercase tracking-widest mb-6">
             <span class="w-2 h-2 rounded-full bg-kaos animate-pulse"></span>
@@ -166,7 +169,7 @@
             <button
               id="btn-register-hero"
               type="button"
-              class="bg-kaos text-slate-950 px-7 py-4 rounded-2xl text-xs md:text-sm font-black uppercase tracking-widest shadow-kaos hover:scale-[1.02] transition"
+              class="me26-login-btn bg-kaos text-slate-950 px-7 py-4 rounded-2xl text-xs md:text-sm font-black uppercase tracking-widest shadow-kaos hover:scale-[1.02] transition"
             >
               Kayıt Ol
             </button>
@@ -174,7 +177,7 @@
             <button
               id="btn-login-hero"
               type="button"
-              class="bg-slate-900 border border-slate-700 text-white px-7 py-4 rounded-2xl text-xs md:text-sm font-black uppercase tracking-widest hover:border-kaos transition"
+              class="me26-login-btn bg-slate-900 border border-slate-700 text-white px-7 py-4 rounded-2xl text-xs md:text-sm font-black uppercase tracking-widest hover:border-kaos transition"
             >
               Giriş Yap
             </button>
@@ -231,7 +234,6 @@
         </div>
       </section>
 
-      <!-- WHY -->
       <section class="max-w-7xl mx-auto mt-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div class="glass rounded-[2rem] p-7 md:p-9">
           <h2 class="text-2xl md:text-3xl font-black mb-4">Neden Gizli Profil?</h2>
@@ -264,7 +266,6 @@
         </div>
       </section>
 
-      <!-- CONTENT SECTIONS -->
       <section id="ne-yapacagiz" class="max-w-7xl mx-auto mt-20">
         <div class="mb-8">
           <h2 class="text-3xl md:text-4xl font-black">Ne Yapacağız?</h2>
@@ -421,14 +422,13 @@
        SAAS PANEL
   ======================================================= -->
   <div id="saas-view" class="hidden fixed inset-0 bg-slate-950 z-[1000] text-white">
-
-    <!-- SIDEBAR -->
     <aside class="hidden md:flex w-72 shrink-0 border-r border-slate-800 bg-slate-950 flex-col">
       <div class="p-6 border-b border-slate-800">
         <div class="flex items-center gap-3">
           <div class="w-11 h-11 rounded-2xl bg-kaos text-slate-950 flex items-center justify-center font-black shadow-kaos">
             ME
           </div>
+
           <div>
             <div class="text-lg font-black tracking-widest">ME26</div>
             <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">Dijital Meclis</div>
@@ -483,7 +483,6 @@
       </div>
     </aside>
 
-    <!-- MAIN -->
     <div class="flex-1 flex flex-col min-w-0">
       <header class="h-16 md:hidden border-b border-slate-800 bg-slate-950 flex items-center justify-between px-4">
         <div>
@@ -497,8 +496,6 @@
       </header>
 
       <main class="flex-1 overflow-y-auto pb-24 md:pb-6">
-
-        <!-- CITY GATE -->
         <div id="ui-city-selector-container" class="hidden p-4 md:p-6">
           <div class="max-w-5xl mx-auto bg-kaos/10 border border-kaos/40 rounded-3xl p-5 md:p-6">
             <div class="flex flex-col md:flex-row md:items-center gap-4 justify-between">
@@ -519,13 +516,86 @@
                 >
                   <option value="">Şehrini Seç...</option>
                   <option>Adana</option>
+                  <option>Adıyaman</option>
+                  <option>Afyonkarahisar</option>
+                  <option>Ağrı</option>
+                  <option>Aksaray</option>
+                  <option>Amasya</option>
                   <option>Ankara</option>
                   <option>Antalya</option>
+                  <option>Ardahan</option>
+                  <option>Artvin</option>
+                  <option>Aydın</option>
+                  <option>Balıkesir</option>
+                  <option>Bartın</option>
+                  <option>Batman</option>
+                  <option>Bayburt</option>
+                  <option>Bilecik</option>
+                  <option>Bingöl</option>
+                  <option>Bitlis</option>
+                  <option>Bolu</option>
+                  <option>Burdur</option>
                   <option>Bursa</option>
+                  <option>Çanakkale</option>
+                  <option>Çankırı</option>
+                  <option>Çorum</option>
+                  <option>Denizli</option>
+                  <option>Diyarbakır</option>
+                  <option>Düzce</option>
+                  <option>Edirne</option>
+                  <option>Elazığ</option>
+                  <option>Erzincan</option>
+                  <option>Erzurum</option>
+                  <option>Eskişehir</option>
+                  <option>Gaziantep</option>
+                  <option>Giresun</option>
+                  <option>Gümüşhane</option>
+                  <option>Hakkari</option>
+                  <option>Hatay</option>
+                  <option>Iğdır</option>
+                  <option>Isparta</option>
                   <option>İstanbul</option>
                   <option>İzmir</option>
+                  <option>Kahramanmaraş</option>
+                  <option>Karabük</option>
+                  <option>Karaman</option>
+                  <option>Kars</option>
+                  <option>Kastamonu</option>
+                  <option>Kayseri</option>
+                  <option>Kırıkkale</option>
+                  <option>Kırklareli</option>
+                  <option>Kırşehir</option>
+                  <option>Kilis</option>
+                  <option>Kocaeli</option>
                   <option>Konya</option>
+                  <option>Kütahya</option>
+                  <option>Malatya</option>
+                  <option>Manisa</option>
+                  <option>Mardin</option>
                   <option>Mersin</option>
+                  <option>Muğla</option>
+                  <option>Muş</option>
+                  <option>Nevşehir</option>
+                  <option>Niğde</option>
+                  <option>Ordu</option>
+                  <option>Osmaniye</option>
+                  <option>Rize</option>
+                  <option>Sakarya</option>
+                  <option>Samsun</option>
+                  <option>Siirt</option>
+                  <option>Sinop</option>
+                  <option>Sivas</option>
+                  <option>Şanlıurfa</option>
+                  <option>Şırnak</option>
+                  <option>Tekirdağ</option>
+                  <option>Tokat</option>
+                  <option>Trabzon</option>
+                  <option>Tunceli</option>
+                  <option>Uşak</option>
+                  <option>Van</option>
+                  <option>Yalova</option>
+                  <option>Yozgat</option>
+                  <option>Zonguldak</option>
                   <option>Yurtdışı</option>
                 </select>
 
@@ -541,7 +611,6 @@
           </div>
         </div>
 
-        <!-- LOBI -->
         <section id="view-lobi" class="view-section block p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
@@ -600,7 +669,6 @@
           </div>
         </section>
 
-        <!-- SANDIK -->
         <section id="view-sandik" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -642,7 +710,6 @@
           </div>
         </section>
 
-        <!-- KURSU / QA -->
         <section id="view-kursu" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -687,7 +754,6 @@
           </div>
         </section>
 
-        <!-- STADIUM -->
         <section id="view-stadium" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
@@ -795,7 +861,6 @@
           </div>
         </section>
 
-        <!-- TRIBUN -->
         <section id="view-tribun" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
@@ -826,7 +891,6 @@
           </div>
         </section>
 
-        <!-- KORUMA -->
         <section id="view-koruma" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
@@ -966,7 +1030,6 @@
           </div>
         </section>
 
-        <!-- PROFIL -->
         <section id="view-profil" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
@@ -1124,7 +1187,6 @@
         </section>
       </main>
 
-      <!-- MOBILE BOTTOM NAV -->
       <nav class="md:hidden fixed bottom-0 left-0 right-0 z-[1100] bg-slate-950 border-t border-slate-800 grid grid-cols-7 text-[9px] font-black uppercase tracking-widest">
         <button type="button" data-target="view-lobi" class="nav-menu-btn active py-3 flex flex-col items-center gap-1 text-white">
           <i class="fa-solid fa-landmark text-kaos"></i>
@@ -1420,93 +1482,193 @@
   ======================================================= -->
   <script type="module" src="./app.js"></script>
 
-  <!-- Giriş / Kayıt Fallback: app.js patlasa bile buton boşta kalmasın -->
+  <!--
+    Acil giriş yedeği:
+    app.js syntax hatası alırsa bile giriş / kayıt butonlarını bağımsız olarak bağlar.
+    app.js düzeldikten sonra bu blok kalsa da sorun çıkarmaz; window.AUTH varsa onu kullanır.
+  -->
   <script type="module">
-    import { googleIleGiris } from './auth.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
-    const loginButtonIds = [
-      'btn-register-nav',
-      'btn-login-nav',
-      'btn-register-hero',
-      'btn-login-hero'
-    ];
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    async function me26GoogleLoginFallback(event) {
+    const FALLBACK_CONFIG = {
+      officialBaseUrl: 'https://me26.mustafaerciyas.workers.dev',
+      inviteBaseUrl: 'https://me26.mustafaerciyas.workers.dev',
+      firebaseConfig: {
+        apiKey: 'AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA',
+        authDomain: 'me26-io.firebaseapp.com',
+        projectId: 'me26-io',
+        storageBucket: 'me26-io.firebasestorage.app',
+        messagingSenderId: '87570616950',
+        appId: '1:87570616950:web:50c97a3de14a69efb4c557'
+      },
+      supabaseUrl: 'https://ukmkojfntsmueikjcrvz.supabase.co',
+      supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw'
+    };
+
+    let fallbackAuth = null;
+    let fallbackSupabase = null;
+    let fallbackLock = false;
+
+    const $ = (id) => document.getElementById(id);
+
+    const cleanText = (value, fallback = '') => {
+      if (value === null || value === undefined) return fallback;
+      return String(value).trim();
+    };
+
+    const showToast = (message, type = 'info') => {
+      if (window.UI && typeof window.UI.showToast === 'function') {
+        window.UI.showToast(message, type);
+        return;
+      }
+
+      const container = $('toast-container');
+      if (!container) return;
+
+      const colors = {
+        success: 'bg-green-900/90 text-green-300 border-green-700',
+        info: 'bg-blue-900/90 text-blue-300 border-blue-700',
+        warning: 'bg-yellow-900/90 text-yellow-300 border-yellow-700',
+        error: 'bg-red-900/90 text-red-300 border-red-700'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs font-bold uppercase tracking-widest max-w-sm ${colors[type] || colors.info}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => toast.remove(), 3500);
+    };
+
+    const getRefFromUrl = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const ref = cleanText(params.get('ref'));
+        if (!ref) return null;
+        return ref.replace(/[^A-Z0-9\-]/gi, '').toUpperCase().slice(0, 60);
+      } catch {
+        return null;
+      }
+    };
+
+    const createInviteCode = (uid) => {
+      try {
+        const randomArray = new Uint32Array(1);
+        crypto.getRandomValues(randomArray);
+        return `ME26-TR-${randomArray[0].toString(36).toUpperCase().slice(0, 6)}`;
+      } catch {
+        return `ME26-TR-${String(uid || Math.random()).slice(0, 8).toUpperCase()}`;
+      }
+    };
+
+    const showSaasFallback = (dbUser) => {
+      const landing = $('landing-view');
+      const saas = $('saas-view');
+
+      if (landing) landing.classList.add('hidden');
+      if (saas) {
+        saas.classList.remove('hidden');
+        saas.classList.add('flex');
+      }
+
+      document.body.classList.add('overflow-hidden');
+
+      const userNo = dbUser?.vip_kurucu_no || dbUser?.kurucu_no || dbUser?.userNo || 'BEKLEYEN';
+      const digitalId = userNo !== 'BEKLEYEN' ? `TR-IA-${userNo}` : 'TR-IA-BEKLEYEN';
+      const role = dbUser?.mesleki_durum || dbUser?.m_durum || dbUser?.role || 'Kimlik Bekleniyor';
+      const city = dbUser?.sehir || dbUser?.city || 'TRİBÜN SEÇİLMEDİ';
+      const inviteCode = dbUser?.kendi_davet_kodu || dbUser?.davet_kodu || dbUser?.d_kod || digitalId;
+
+      const setText = (id, value) => {
+        const el = $(id);
+        if (el) el.textContent = value;
+      };
+
+      setText('sidebar-user-id', digitalId);
+      setText('mobile-user-id', digitalId);
+      setText('ui-user-id', digitalId);
+      setText('ui-user-role', role);
+      setText('sidebar-user-role', role);
+      setText('ui-user-city', city);
+      setText('ui-vote-power', dbUser?.oy_gucu > 0 ? 'Tam' : 'Sınırlı');
+      setText('sidebar-vote-power', dbUser?.oy_gucu > 0 ? 'Erişim Seviyesi Tam' : 'Erişim Seviyesi Sınırlı');
+      setText('ui-invite-link', `${FALLBACK_CONFIG.inviteBaseUrl}/?ref=${encodeURIComponent(inviteCode)}`);
+
+      const cityGate = $('ui-city-selector-container');
+      if (cityGate) {
+        const hasCity = Boolean(dbUser?.sehir || dbUser?.city);
+        cityGate.classList.toggle('hidden', hasCity);
+      }
+    };
+
+    const fallbackLogin = async (event) => {
       event.preventDefault();
-      event.stopImmediatePropagation();
+      event.stopPropagation();
 
-      if (window.__ME26_LOGIN_LOCK__ === true) return;
-      window.__ME26_LOGIN_LOCK__ = true;
+      if (fallbackLock) return;
+      fallbackLock = true;
 
       try {
-        console.info('ME26 giriş/kayıt butonu çalıştı.');
-
         if (window.AUTH && typeof window.AUTH.loginWithGoogle === 'function') {
           await window.AUTH.loginWithGoogle();
-        } else {
-          const result = await googleIleGiris();
-
-          if (result) {
-            window.location.reload();
-          }
-        }
-      } catch (error) {
-        console.error('ME26 Google giriş hatası:', error);
-        alert(error?.message || 'Google giriş başlatılamadı.');
-      } finally {
-        setTimeout(() => {
-          window.__ME26_LOGIN_LOCK__ = false;
-        }, 1500);
-      }
-    }
-
-    function bindMe26LoginFallback() {
-      loginButtonIds.forEach((id) => {
-        const btn = document.getElementById(id);
-
-        if (!btn) {
-          console.warn('ME26 giriş butonu bulunamadı:', id);
           return;
         }
 
-        if (btn.dataset.me26LoginFallbackBound === '1') return;
-
-        btn.dataset.me26LoginFallbackBound = '1';
-        btn.removeAttribute('onclick');
-        btn.style.pointerEvents = 'auto';
-        btn.style.cursor = 'pointer';
-
-        btn.addEventListener('click', me26GoogleLoginFallback, true);
-
-        console.info('ME26 giriş butonu bağlandı:', id);
-      });
-
-      document.querySelectorAll('button, a').forEach((el) => {
-        const text = (el.textContent || '').trim().toUpperCase();
-
-        if (text === 'KAYIT OL' || text === 'GİRİŞ YAP' || text === 'GIRIS YAP') {
-          if (el.dataset.me26LoginFallbackBound === '1') return;
-
-          el.dataset.me26LoginFallbackBound = '1';
-          el.addEventListener('click', me26GoogleLoginFallback, true);
+        if (!fallbackAuth || !fallbackSupabase) {
+          const app = initializeApp(FALLBACK_CONFIG.firebaseConfig);
+          fallbackAuth = getAuth(app);
+          fallbackSupabase = createClient(
+            FALLBACK_CONFIG.supabaseUrl,
+            FALLBACK_CONFIG.supabaseKey,
+            {
+              auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false
+              }
+            }
+          );
         }
-      });
-    }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', bindMe26LoginFallback);
-    } else {
-      bindMe26LoginFallback();
-    }
-  </script>
+        showToast('Google giriş başlatılıyor.', 'info');
 
-  <script type="module" src="./qa.js"></script>
-  <script type="module" src="./stadium.js"></script>
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
-  <script>
-    document.getElementById('btn-mobile-logout')?.addEventListener('click', () => {
-      document.getElementById('btn-logout')?.click();
-    });
-  </script>
-</body>
-</html>
+        const result = await signInWithPopup(fallbackAuth, provider);
+        const firebaseUser = result.user;
+
+        if (!firebaseUser?.uid) {
+          throw new Error('Google kullanıcı kimliği alınamadı.');
+        }
+
+        const { data: existingUser, error: selectError } = await fallbackSupabase
+          .from('users')
+          .select('*')
+          .eq('id', firebaseUser.uid)
+          .maybeSingle();
+
+        if (selectError) throw selectError;
+
+        let dbUser = existingUser;
+
+        if (!dbUser) {
+          const payload = {
+            uid: firebaseUser.uid,
+            g_isim: firebaseUser.displayName || 'İsimsiz',
+            mail: firebaseUser.email || null,
+            foto: firebaseUser.photoURL || '',
+            m_durum: 'Belirsiz',
+            sehir: null,
+            d_kod: createInviteCode(firebaseUser.uid),
+            ref: getRefFromUrl()
+          };
+
+          const { data: createdUser, error:
