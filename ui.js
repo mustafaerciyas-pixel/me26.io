@@ -8,7 +8,7 @@
    - Menü sekme geçişleri
    - Modal aç/kapat
    - Profil bilgilerini ekrana basma
-   - Önerge / gündem / soru / tribün / stadyum temel render yardımcıları
+   - Önerge / gündem / soru / tribün / stadyum render yardımcıları
    - Güvenli HTML escape
 
    Not:
@@ -41,28 +41,43 @@ const toNumber = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const setText = (id, value) => {
-  const el = $(id);
-  if (el) el.textContent = value;
-};
-
-const setHtml = (id, value) => {
-  const el = $(id);
-  if (el) el.innerHTML = value;
-};
-
-const setVisible = (id, visible) => {
-  const el = $(id);
-  if (!el) return;
-
-  el.classList.toggle('hidden', !visible);
-};
-
 const formatNumber = (value) => {
   return Number(value || 0).toLocaleString('tr-TR');
 };
 
-const emptyState = (text) => {
+export const setText = (id, value) => {
+  const el = $(id);
+  if (el) el.textContent = value;
+};
+
+export const setHtml = (id, value) => {
+  const el = $(id);
+  if (el) el.innerHTML = value;
+};
+
+export const setVisible = (id, visible) => {
+  const el = $(id);
+  if (!el) return;
+  el.classList.toggle('hidden', !visible);
+};
+
+export const emptyState = (text) => {
+  return `
+    <div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">
+      ${escapeHtml(text)}
+    </div>
+  `;
+};
+
+export const errorState = (text) => {
+  return `
+    <div class="text-center py-10 border border-red-900/60 rounded-2xl text-red-300 text-xs font-bold uppercase tracking-widest bg-red-950/20">
+      ${escapeHtml(text)}
+    </div>
+  `;
+};
+
+export const loadingState = (text = 'Yükleniyor...') => {
   return `
     <div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">
       ${escapeHtml(text)}
@@ -120,8 +135,7 @@ export function showToast(message, type = 'info') {
 // ------------------------------------------------------
 
 export function setLoading(buttonOrId, text = 'İşleniyor...') {
-  const button =
-    typeof buttonOrId === 'string' ? $(buttonOrId) : buttonOrId;
+  const button = typeof buttonOrId === 'string' ? $(buttonOrId) : buttonOrId;
 
   if (!button) return '';
 
@@ -135,8 +149,7 @@ export function setLoading(buttonOrId, text = 'İşleniyor...') {
 }
 
 export function restoreButton(buttonOrId, oldText = '') {
-  const button =
-    typeof buttonOrId === 'string' ? $(buttonOrId) : buttonOrId;
+  const button = typeof buttonOrId === 'string' ? $(buttonOrId) : buttonOrId;
 
   if (!button) return;
 
@@ -228,7 +241,6 @@ export function switchSaasTab(targetId) {
   }
 }
 
-// Geriye uyumluluk için alias
 export const switchTab = switchSaasTab;
 export const navigate = switchSaasTab;
 
@@ -305,6 +317,7 @@ export function renderProfile(user = {}) {
     'TRİBÜN SEÇİLMEDİ';
 
   const votePower = toNumber(user.votePower || user.vote_power || user.oy_gucu, 0);
+
   const inviteCount = toNumber(
     user.inviteCount ||
     user.invite_count ||
@@ -386,7 +399,6 @@ export function renderProfile(user = {}) {
   }
 }
 
-// Alias
 export const renderUser = renderProfile;
 export const updateUserPanel = renderProfile;
 export const renderUserInfo = renderProfile;
@@ -404,6 +416,7 @@ export function renderProposalCard(item = {}, options = {}) {
   );
 
   const status = cleanText(item.status || item.durum).toLowerCase();
+
   const isAgenda =
     options.isAgenda ||
     destekSayisi >= 50 ||
@@ -513,7 +526,6 @@ export function renderGundem(list = []) {
     .join('');
 }
 
-// Alias
 export const renderOnergeler = renderProposals;
 export const onergeleriCiz = renderProposals;
 
@@ -526,11 +538,12 @@ export function renderQuestionCard(item = {}) {
   const content = item.icerik || item.content || item.aciklama || '';
   const author = item.yazar_dijital_id || item.author_id || item.yazar || 'TR-IA-BEKLEYEN';
   const solved = Boolean(item.cozuldu_mu || item.solved);
+  const answerCount = item.cevap_sayisi || item.answer_count || item.answers_count || 0;
 
   return `
     <div class="bg-black/50 border border-slate-800 p-5 rounded-2xl shadow-lg">
       <div class="flex items-center justify-between gap-3 mb-3">
-        <span class="text-[9px] font-black uppercase tracking-widest text-kaos">
+        <span class="text-[9px] font-black uppercase tracking-widest ${solved ? 'text-green-400' : 'text-kaos'}">
           ${solved ? 'Kütüphane' : 'Çözüm Bekliyor'}
         </span>
 
@@ -547,7 +560,11 @@ export function renderQuestionCard(item = {}) {
         ${escapeHtml(content)}
       </p>
 
-      <div class="mt-4 flex justify-end">
+      <div class="mt-4 flex items-center justify-between gap-3">
+        <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+          ${Number(answerCount || 0).toLocaleString('tr-TR')} cevap
+        </span>
+
         <button
           type="button"
           data-id="${escapeHtml(item.id)}"
@@ -575,7 +592,6 @@ export function renderQuestions(list = []) {
   container.innerHTML = items.map((item) => renderQuestionCard(item)).join('');
 }
 
-// Alias
 export const renderQAList = renderQuestions;
 export const sorulariCiz = renderQuestions;
 
@@ -650,7 +666,7 @@ export function renderStadiumTribunes(list = []) {
   container.innerHTML = items
     .map((item) => {
       const city = item.sehir || item.city || item.name || 'Belirsiz';
-      const count = item.count || item.sayi || item.online || 0;
+      const count = item.count || item.sayi || item.online || item.kisi_sayisi || 0;
 
       return `
         <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
@@ -672,7 +688,7 @@ export function addStadiumMessage(message = {}) {
   if (!container) return;
 
   const text = message.text || message.mesaj || message.content || '';
-  const author = message.author || message.yazar || message.id || 'TR-IA';
+  const author = message.author || message.yazar || message.id || message.dijital_id || 'TR-IA';
   const city = message.city || message.sehir || '';
 
   const row = document.createElement('div');
@@ -707,7 +723,7 @@ export function renderStageSpeaker(speaker = null) {
     return;
   }
 
-  if (nameEl) nameEl.textContent = speaker.name || speaker.id || 'TR-IA';
+  if (nameEl) nameEl.textContent = speaker.name || speaker.id || speaker.dijital_id || 'TR-IA';
   if (roleEl) roleEl.textContent = speaker.role || speaker.rol || 'Kürsüde';
 
   if (iconEl) {
@@ -786,6 +802,14 @@ export const UI = {
   showToast,
   toast: showToast,
 
+  setText,
+  setHtml,
+  setVisible,
+
+  emptyState,
+  errorState,
+  loadingState,
+
   setLoading,
   restoreButton,
 
@@ -831,7 +855,6 @@ export const UI = {
   initUI
 };
 
-// window.UI varsa üstüne güvenli şekilde birleştir.
 window.UI = {
   ...(window.UI || {}),
   ...UI
