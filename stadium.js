@@ -26,6 +26,7 @@ export const STADYUM = {
     sahnedekiKisi: null, 
     sonMesajZamani: null,
     chatCooldownTimer: null,
+    heartbeatTimer: null,
 
     ciz: function() {
         const container = document.getElementById('stadyum-tribunler');
@@ -259,8 +260,13 @@ export const STADYUM = {
 
         for (const key in presenceState) {
             const userInstances = presenceState[key];
-            if (userInstances && userInstances.length > 0) {
-                const kisi = userInstances[0];
+            const freshInstances = (userInstances || []).filter(kisi => {
+                if (!kisi.last_seen_at) return true;
+                const seenTime = new Date(kisi.last_seen_at).getTime();
+                return Number.isFinite(seenTime) && (Date.now() - seenTime < 120000);
+            });
+            if (freshInstances.length > 0) {
+                const kisi = freshInstances[freshInstances.length - 1];
                 totalOnline++;
                 const rol = kisi.role || 'Belirsiz';
                 const sehir = kisi.city || 'Belirsiz';
@@ -328,6 +334,11 @@ export const STADYUM = {
             myCity = STATE.user.city && STATE.user.city !== 'Seçilmedi' ? STATE.user.city : 'Belirsiz';
         }
 
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = null;
+        }
+
         if (this.kanal) {
             await this.kanal.untrack();
             supabase.removeChannel(this.kanal);
@@ -355,12 +366,32 @@ export const STADYUM = {
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    await this.kanal.track({ user_id: myUserId, role: myRole, city: myCity, online_at: new Date().toISOString() });
+                    const buildPresencePayload = () => ({
+                        user_id: myUserId,
+                        role: myRole,
+                        city: myCity,
+                        online_at: new Date().toISOString(),
+                        last_seen_at: new Date().toISOString()
+                    });
+
+                    await this.kanal.track(buildPresencePayload());
+
+                    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+                    this.heartbeatTimer = setInterval(() => {
+                        this.kanal?.track(buildPresencePayload());
+                    }, 30000);
                 }
             });
     }
 };
 
 window.addEventListener('beforeunload', () => {
-    if (STADYUM.kanal) { STADYUM.kanal.untrack(); supabase.removeChannel(STADYUM.kanal); }
+    if (STADYUM.heartbeatTimer) clearInterval(STADYUM.heartbeatTimer); if (STADYUM.kanal) { STADYUM.kanal.untrack(); supabase.removeChannel(STADYUM.kanal); }
+});
+
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && STADYUM.kanal) {
+        STADYUM.kanal.track({ last_seen_at: new Date().toISOString(), status: 'background' });
+    }
 });

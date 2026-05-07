@@ -122,7 +122,7 @@ window.qaSorulariGetir = async function() {
             const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
             const yazarId = isAuthorized ? (soru.yazar_dijital_id || 'TR-IA-????') : 'TR-IA-****';
             const overlay = isAuthorized ? '' : `
-                <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer mt-12 rounded-2xl" onclick="UI.triggerVerificationGate()">
+                <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer mt-12 rounded-2xl" data-qa-action="verify">
                     <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
                         <i class="fas fa-lock text-kaos"></i> <span class="text-[10px] font-black text-white uppercase tracking-widest">Söz Hakkı Yok</span>
                     </div>
@@ -150,10 +150,10 @@ window.qaSorulariGetir = async function() {
                 <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${escapeHtml(soru.icerik || 'İçerik bulunamadı.')}</p>
                 
                 <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto relative z-10">
-                    <button onclick="${isAuthorized ? `qaSoruDetayAc('${safeId(soru.id)}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
+                    <button data-qa-action="${isAuthorized ? 'open-question' : 'verify'}" data-qa-id="${safeId(soru.id)}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
                         ${isAuthorized ? 'Kürsüye Git <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> KİLİDİ AÇ'}
                     </button>
-                    <button onclick="qaUygunsuzBildir('${safeId(soru.id)}', 'soru')" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
+                    <button data-qa-action="report" data-qa-id="${safeId(soru.id)}" data-qa-type="soru" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
                         <i class="fas fa-flag"></i> Uygunsuz
                     </button>
                 </div>
@@ -206,7 +206,7 @@ window.qaSoruDetayAc = async function(soruId) {
             const cozumRozeti = cevap.is_cozum ? '<div class="absolute -top-3 -right-3 bg-green-500 text-slate-900 text-[10px] font-black px-3 py-1 rounded shadow-md border border-slate-900 transform rotate-3">USTANIN EL VERMESİ (ÇÖZÜM)</div>' : '';
             
             const cozumButonu = (isOwner && !soru.cozuldu_mu && !cevap.is_cozum) 
-                ? `<button onclick="qaCozumİsaretle('${safeId(cevap.id)}', '${safeId(soru.id)}')" class="text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-slate-900 text-[10px] font-bold px-3 py-1 rounded transition">Çözüm Olarak İşaretle</button>` 
+                ? `<button data-qa-action="mark-solution" data-qa-id="${safeId(cevap.id)}" data-qa-id2="${safeId(soru.id)}" class="text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-slate-900 text-[10px] font-bold px-3 py-1 rounded transition">Çözüm Olarak İşaretle</button>` 
                 : '';
 
             cevaplarHTML += `
@@ -219,7 +219,7 @@ window.qaSoruDetayAc = async function(soruId) {
                     <p class="text-sm text-gray-300 font-medium leading-relaxed mb-4 whitespace-pre-wrap">${escapeHtml(cevap.icerik || '')}</p>
                     <div class="flex justify-between items-center border-t border-slate-700/50 pt-3">
                         ${cozumButonu}
-                        <button onclick="qaUygunsuzBildir('${safeId(cevap.id)}', 'cevap')" class="text-gray-600 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition ml-auto">Uygunsuz Bildir</button>
+                        <button data-qa-action="report" data-qa-id="${safeId(cevap.id)}" data-qa-type="cevap" class="text-gray-600 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition ml-auto">Uygunsuz Bildir</button>
                     </div>
                 </div>
             `;
@@ -248,7 +248,7 @@ window.qaSoruDetayAc = async function(soruId) {
                     <label class="block text-[10px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><i class="fas fa-pen-nib"></i> Kürsüde Söz Al</label>
                     <textarea id="input-qa-answer" placeholder="Çözümünüzü veya fikrinizi detaylıca belirtin (Min 20 Karakter)..." class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl outline-none text-sm font-medium h-24 resize-none custom-scrollbar focus:border-kaos transition mb-2"></textarea>
                     
-                    <button onclick="qaCevapGonder()" id="btn-submit-answer" class="w-full bg-slate-800 text-white hover:text-kaos hover:border-kaos border border-slate-600 font-black py-3 rounded-xl uppercase tracking-widest transition shadow-md text-xs mt-4">Cevabı Gönder</button>
+                    <button data-qa-action="send-answer" id="btn-submit-answer" class="w-full bg-slate-800 text-white hover:text-kaos hover:border-kaos border border-slate-600 font-black py-3 rounded-xl uppercase tracking-widest transition shadow-md text-xs mt-4">Cevabı Gönder</button>
                 </div>
             `;
         } else {
@@ -263,7 +263,7 @@ window.qaSoruDetayAc = async function(soruId) {
     modalDiv.className = 'fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100000] flex flex-col items-center justify-center p-2 sm:p-4';
     modalDiv.innerHTML = `
         <div class="bg-slate-900 border border-slate-600 p-6 sm:p-10 rounded-3xl w-full max-w-3xl relative shadow-[0_0_50px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-hidden flex flex-col">
-            <button onclick="document.getElementById('dinamik-detay-modal').remove()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-black rounded-full flex items-center justify-center border border-slate-700 shadow-md z-10">✕</button>
+            <button data-qa-action="close-modal" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-black rounded-full flex items-center justify-center border border-slate-700 shadow-md z-10">✕</button>
             
             <div class="overflow-y-auto custom-scrollbar flex-grow pr-2 pb-4">
                 <div class="mb-8 border-b border-slate-700 pb-6 mt-4">
@@ -369,11 +369,53 @@ window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
     }
 }
 
+
+function qaDelegasyonunuBaslat() {
+    if (window.__me26QaDelegasyonAktif) return;
+    window.__me26QaDelegasyonAktif = true;
+
+    document.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-qa-action]');
+        if (!btn) return;
+
+        const action = btn.dataset.qaAction;
+        const id = safeId(btn.dataset.qaId || '');
+        const id2 = safeId(btn.dataset.qaId2 || '');
+        const type = cleanText(btn.dataset.qaType || '');
+
+        if (action === 'verify') {
+            event.preventDefault();
+            UI.triggerVerificationGate();
+        }
+        if (action === 'open-question') {
+            event.preventDefault();
+            if (id) window.qaSoruDetayAc(id);
+        }
+        if (action === 'report') {
+            event.preventDefault();
+            if (id && type) window.qaUygunsuzBildir(id, type);
+        }
+        if (action === 'mark-solution') {
+            event.preventDefault();
+            if (id && id2) window.qaCozumİsaretle(id, id2);
+        }
+        if (action === 'send-answer') {
+            event.preventDefault();
+            window.qaCevapGonder();
+        }
+        if (action === 'close-modal') {
+            event.preventDefault();
+            document.getElementById('dinamik-detay-modal')?.remove();
+        }
+    });
+}
+
 // ==========================================
 // 8. ŞALTER (SİSTEMİ BAŞLAT)
 // ==========================================
 function qaMotorunuBaslat() {
     console.log("🚀 QA Motoru Başlatılıyor...");
+    qaDelegasyonunuBaslat();
     const btnBekleyenler = document.getElementById('btn-qa-bekleyenler');
     const btnKutuphane = document.getElementById('btn-qa-kutuphane');
 

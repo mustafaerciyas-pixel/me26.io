@@ -1,6 +1,6 @@
 // ============================================================================
 // ME26 SİSTEMİ - ÇELİK KAPI (auth.js)
-// Kimlik Doğrulama, SMS Bot Koruması ve Mesleki Belge Kuyruk Motoru
+// Kimlik Doğrulama, SMS kullanıcı deneyimi limiti ve Mesleki Belge Manuel İnceleme Kuyruğu
 // ============================================================================
 
 import { STATE } from './state.js'; 
@@ -50,7 +50,7 @@ export async function sistemdenCikis() {
 }
 
 // ============================================================================
-// 2. SMS LİMİT KONTROL MOTORU (GÜNLÜK 5 DENEME / 60 SANİYE KİLİDİ)
+// 2. SMS KULLANICI DENEYİMİ LİMİTİ (GERÇEK RATE LIMIT SUNUCU/FIREBASE TARAFINDADIR)
 // ============================================================================
 const SMS_LIMIT_KEY = 'me26_sms_limits';
 
@@ -66,7 +66,7 @@ function checkSmsLimits() {
     const now = Date.now();
     
     if (limits.count >= 5) {
-        throw new Error("Günlük SMS gönderme limitinizi (5) doldurdunuz. Lütfen yarın tekrar deneyin.");
+        throw new Error("Bugünkü SMS deneme sınırına ulaştınız. Lütfen yarın tekrar deneyin.");
     }
 
     const timeDiff = Math.floor((now - limits.lastAttempt) / 1000);
@@ -84,7 +84,7 @@ function updateSmsLimits(limits) {
 }
 
 // ============================================================================
-// 3. SMS GÖNDERME MOTORU (BOT KORUMASI)
+// 3. SMS GÖNDERME MOTORU (Firebase reCAPTCHA + kullanıcı deneyimi bekleme kontrolü)
 // ============================================================================
 export async function gercekSmsGonder(phoneNumber) {
     try {
@@ -176,7 +176,7 @@ export async function gercekSmsDogrula(code, uid, phoneValue) {
 }
 
 // ============================================================================
-// 5. MESLEKİ BELGE İNCELEME MOTORU (AĞIR PDF DEŞİFRESİ KALDIRILDI)
+// 5. MESLEKİ BELGE MANUEL İNCELEME KUYRUĞU (OTOMATİK E-DEVLET DOĞRULAMASI DEĞİLDİR)
 // ============================================================================
 export async function eDevletBelgesiOku(file, userUid) {
     if (!file) {
@@ -195,11 +195,11 @@ export async function eDevletBelgesiOku(file, userUid) {
     }
 
     try {
-        // Backend (Karanlık Oda) için hazırlanacak temel belge paketi
+        // Manuel inceleme kuyruğu için hazırlanacak temel belge paketi
         const belgeData = { 
             dosya_adi: file.name,
             tur: file.type,
-            belge_durumu: "Onay Bekliyor"
+            belge_durumu: "Manuel İnceleme Kuyruğunda"
         };
 
         // Supabase'e belge inceleme talebini yaz (DB motorundan hata gelirse yakalar)

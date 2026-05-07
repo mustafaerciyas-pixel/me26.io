@@ -61,7 +61,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body id="ana-body" class="antialiased bg-zemin text-white h-screen overflow-hidden flex transition-colors duration-1000">
+<body id="ana-body" class="me26-premium-live antialiased bg-zemin text-white h-screen overflow-hidden flex transition-colors duration-1000">
 
     <div id="toast-container" class="fixed bottom-20 md:bottom-6 right-6 z-[90000] flex flex-col gap-3 pointer-events-none"></div>
 
@@ -348,9 +348,13 @@
                                             <textarea id="input-koruma-aciklama" placeholder="Lütfen tespit ettiğiniz durumu objektif bir dille özetleyin..." class="w-full bg-black border border-slate-600 text-white p-3 rounded-lg outline-none text-xs focus:border-kaos transition h-24 resize-none custom-scrollbar"></textarea>
                                         </div>
 
-                                        <div>
-                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Delil / Belge Yükle (PDF, PNG, JPG)</label>
-                                            <input type="file" id="input-koruma-belge" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition cursor-pointer bg-black border border-slate-600 rounded-lg p-1 outline-none">
+                                        <div class="bg-black/40 border border-slate-700 rounded-xl p-4">
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Delil / Belge Yükleme</label>
+                                            <div class="flex items-start gap-3 text-[11px] text-gray-400 leading-relaxed">
+                                                <i class="fas fa-lock text-kaos mt-0.5"></i>
+                                                <p>Canlı güvenlik denetimi tamamlanana kadar dosya yükleme pasif tutulur. Şu anda yalnızca yazılı bildirim alınır; delil/belge bağlantısını açıklama veya link alanına ekleyebilirsiniz.</p>
+                                            </div>
+                                            <input type="file" id="input-koruma-belge" class="hidden" disabled aria-disabled="true">
                                         </div>
 
                                         <div class="border-t border-slate-800 pt-4 mt-4">
@@ -419,7 +423,7 @@
                                 </div>
                                 <div class="flex flex-col gap-3 mt-auto">
                                     <button type="button" id="btn-open-phone-modal" class="w-full bg-slate-800 border border-slate-600 text-white text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📱 Telefonu Doğrula</button>
-                                    <button type="button" id="btn-open-pdf-modal" class="w-full bg-slate-800 border border-slate-600 text-white text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📜 Mesleki Belge Yükle</button>
+                                    <button type="button" id="btn-open-pdf-modal" class="w-full bg-slate-800 border border-slate-600 text-white text-[11px] font-bold py-3 rounded-lg shadow-md hover:bg-slate-700 uppercase tracking-widest transition">📜 Belge Başvurusu Yap</button>
                                 </div>
                             </div>
                             
@@ -552,6 +556,7 @@
                 </p>
 
                 <button type="button" id="btn-submit-phone" class="w-full bg-kaos text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:opacity-90 mt-2">SMS GÖNDER</button>
+            <p class="text-[10px] text-gray-500 mt-3 leading-relaxed">Not: Bu ekrandaki bekleme/deneme sınırı kullanıcı deneyimi içindir. Canlı güvenlik için Firebase ve sunucu tarafı limitleri esas alınır.</p>
             </div>
 
             <div id="phone-step-2" class="flex flex-col gap-4 hidden">
@@ -566,7 +571,7 @@
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-2xl">
             <button type="button" id="btn-close-pdf-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl z-20">✕</button>
             <h2 class="text-2xl font-black text-white uppercase tracking-widest mb-4">Mesleki <span class="text-kaos">Belge</span></h2>
-            <p class="text-xs text-gray-400 mb-6 leading-relaxed">E-Devlet mezuniyet belgenizi veya öğrenci belgenizi PDF formatında yükleyerek sistemdeki kilitleri kaldırın.</p>
+            <p class="text-xs text-gray-400 mb-6 leading-relaxed">Mezuniyet veya öğrenci belgenizi PDF formatında yükleyin. Başvuru manuel doğrulama kuyruğuna alınır; kilitler inceleme/onay sonrası açılır.</p>
             
             <div class="border-2 border-dashed border-slate-600 rounded-2xl p-8 mb-6 bg-black/50 hover:border-kaos transition cursor-pointer relative overflow-hidden group">
                 <input type="file" id="input-pdf-file" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
@@ -574,7 +579,7 @@
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition">PDF DOSYASI SEÇ</p>
             </div>
             
-            <button type="button" id="btn-submit-pdf" class="w-full bg-white text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:bg-gray-200">Belgeyi Sisteme Yükle</button>
+            <button type="button" id="btn-submit-pdf" class="w-full bg-white text-black font-black py-4 rounded-xl text-xs uppercase tracking-widest shadow-md transition hover:bg-gray-200">Belgeyi İnceleme Kuyruğuna Al</button>
         </div>
     </div>
 

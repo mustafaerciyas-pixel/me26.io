@@ -5,6 +5,16 @@
 
 // Sistemin hafızaya kayıt anahtarı
 const STORAGE_KEY = 'me26_user';
+const SESSION_CHANNEL_NAME = 'me26_session_sync';
+const SESSION_CHANNEL = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel(SESSION_CHANNEL_NAME) : null;
+
+const broadcastState = (action, payload = null) => {
+    try {
+        SESSION_CHANNEL?.postMessage({ action, payload, ts: Date.now() });
+    } catch (error) {
+        console.warn('Sekme senkronizasyon mesajı gönderilemedi:', error);
+    }
+};
 
 // 1. GÜVENLİ OKUMA MOTORU (Bozuk JSON çökmelerine karşı zırh)
 const safeRead = () => {
@@ -21,6 +31,7 @@ const safeRead = () => {
 const safeWrite = (data) => {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        broadcastState('user-updated', data);
     } catch (error) {
         console.error("Hafıza yazma hatası (Tarayıcı engelledi veya kota dolu):", error);
     }
@@ -126,6 +137,7 @@ export const STATE = {
         STATE.user = null;
         try {
             localStorage.removeItem(STORAGE_KEY);
+            broadcastState('session-cleared');
         } catch(e) {}
     },
 
@@ -134,6 +146,30 @@ export const STATE = {
         STATE.user = null;
         try {
             localStorage.clear();
+            broadcastState('session-cleared');
         } catch(e) {}
     }
 };
+
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (event) => {
+        if (event.key !== STORAGE_KEY) return;
+        STATE.user = event.newValue ? safeRead() : null;
+        window.dispatchEvent(new CustomEvent('me26:state-sync', { detail: { source: 'storage', user: STATE.user } }));
+    });
+
+    if (SESSION_CHANNEL) {
+        SESSION_CHANNEL.onmessage = (event) => {
+            const action = event.data?.action;
+            if (action === 'user-updated') {
+                STATE.user = event.data.payload || safeRead();
+                window.dispatchEvent(new CustomEvent('me26:state-sync', { detail: { source: 'broadcast', user: STATE.user } }));
+            }
+            if (action === 'session-cleared') {
+                STATE.user = null;
+                window.dispatchEvent(new CustomEvent('me26:state-sync', { detail: { source: 'broadcast', user: null } }));
+            }
+        };
+    }
+}

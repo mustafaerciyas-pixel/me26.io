@@ -1,6 +1,6 @@
 /* ==========================================================================
    ME26 AĞI - İÇMİMAR KORUMA HATTI MOTORU (koruma.js)
-   Bildirimleri Supabase veritabanına iletir.
+   Bildirimleri Supabase veritabanına iletir. Dosya yükleme canlı güvenlik onayı tamamlanana kadar pasiftir.
    ========================================================================== */
 
 import { supabase } from './supabase.js';
@@ -27,6 +27,12 @@ export const KORUMA = {
         const iletisim = document.getElementById('input-koruma-iletisim')?.value.trim();
         const anonimMi = document.getElementById('input-koruma-anonim')?.checked;
         const kvkkOnay = document.getElementById('input-koruma-kvkk')?.checked;
+        const belgeInput = document.getElementById('input-koruma-belge');
+
+        if (belgeInput && belgeInput.files && belgeInput.files.length > 0) {
+            belgeInput.value = '';
+            UI.showToast("Dosya yükleme canlı güvenlik denetimi tamamlanana kadar pasiftir. Lütfen delil bağlantısını açıklama/link alanına yazın.", "info");
+        }
 
         // Validasyonlar (Zorunlu Alanlar)
         if (!kisiKurum) return UI.showToast("Lütfen bildirilen kişi veya kurumu yazın.", "error");
@@ -58,7 +64,8 @@ export const KORUMA = {
                         aciklama: aciklama,
                         ad_soyad: adSoyad,
                         iletisim: iletisim,
-                        anonim_mi: anonimMi
+                        anonim_mi: anonimMi,
+                        dosya_yukleme_durumu: "pasif_yazili_bildirim"
                     }
                 ]);
 
