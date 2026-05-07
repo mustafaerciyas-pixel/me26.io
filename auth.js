@@ -7,6 +7,11 @@
    - Telefon doğrulama
    - Firebase reCAPTCHA bot koruması
    - Mesleki belge inceleme başvurusu
+
+   KRİTİK:
+   - Bu dosyada service key yoktur.
+   - Google giriş sadece bu dosyadaki googleIleGiris() üzerinden çalışır.
+   - Çift popup / cancelled-popup-request riskine karşı giriş kilidi vardır.
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -26,6 +31,7 @@ import {
 // ------------------------------------------------------
 let confirmationResult = null;
 let recaptchaVerifier = null;
+let googleLoginInProgress = false;
 
 const SMS_LIMIT_KEY = 'me26_sms_limits';
 
@@ -79,6 +85,7 @@ const getRefFromUrl = () => {
 const createInviteCode = () => {
     try {
         const randomArray = new Uint32Array(1);
+
         crypto.getRandomValues(randomArray);
 
         return `ME26-TR-${randomArray[0].toString(36).toUpperCase().slice(0, 6)}`;
@@ -123,7 +130,7 @@ const getFirebaseErrorMessage = (error) => {
     }
 
     if (errCode === 'auth/cancelled-popup-request') {
-        return 'Google giriş işlemi iptal edildi.';
+        return 'Google giriş işlemi iptal edildi. Genelde aynı anda iki giriş isteği çalışınca olur.';
     }
 
     if (errCode === 'auth/popup-blocked') {
@@ -131,11 +138,15 @@ const getFirebaseErrorMessage = (error) => {
     }
 
     if (errCode === 'auth/too-many-requests') {
-        return 'Çok fazla deneme yapıldı. Sistem geçici olarak kilitlendi, lütfen daha sonra deneyin.';
+        return 'Çok fazla deneme yapıldı. Sistem geçici olarak kilitlendi, lütfen daha sonra tekrar deneyin.';
     }
 
     if (errCode === 'auth/unauthorized-domain') {
         return 'Bu domain Firebase Authentication içinde yetkilendirilmemiş. Firebase Console > Authentication > Settings > Authorized domains alanına me26.mustafaerciyas.workers.dev eklenmeli.';
+    }
+
+    if (errCode === 'auth/invalid-api-key') {
+        return 'Firebase API key geçersiz görünüyor. config.js içindeki Firebase Web App ayarlarını kontrol edin.';
     }
 
     if (errCode === 'auth/invalid-phone-number') {
@@ -143,7 +154,7 @@ const getFirebaseErrorMessage = (error) => {
     }
 
     if (errCode === 'auth/captcha-check-failed') {
-        return 'Güvenlik doğrulaması başarısız oldu. Sayfayı yenileyin.';
+        return 'Güvenlik doğrulaması başarısız oldu. Sayfayı yenileyin ve tekrar deneyin.';
     }
 
     if (errCode === 'auth/provider-already-linked') {
@@ -173,6 +184,13 @@ const getFirebaseErrorMessage = (error) => {
 // 1. GOOGLE İLE GİRİŞ
 // ======================================================
 export async function googleIleGiris() {
+    if (googleLoginInProgress) {
+        console.warn('Google giriş isteği zaten devam ediyor. İkinci istek engellendi.');
+        return null;
+    }
+
+    googleLoginInProgress = true;
+
     try {
         const provider = new GoogleAuthProvider();
 
@@ -181,17 +199,17 @@ export async function googleIleGiris() {
         });
 
         const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+        const firebaseUser = result.user;
 
-        if (!user || !user.uid) {
+        if (!firebaseUser || !firebaseUser.uid) {
             throw new Error('Google hesabı doğrulanamadı.');
         }
 
         const payload = {
-            uid: user.uid,
-            g_isim: user.displayName || 'İsimsiz',
-            mail: user.email || null,
-            foto: user.photoURL || '',
+            uid: firebaseUser.uid,
+            g_isim: firebaseUser.displayName || 'İsimsiz',
+            mail: firebaseUser.email || null,
+            foto: firebaseUser.photoURL || '',
             m_durum: 'Belirsiz',
             sehir: null,
             d_kod: createInviteCode(),
@@ -207,6 +225,8 @@ export async function googleIleGiris() {
         alert(getFirebaseErrorMessage(error));
 
         return null;
+    } finally {
+        googleLoginInProgress = false;
     }
 }
 
