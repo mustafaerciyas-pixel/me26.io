@@ -1,10 +1,10 @@
 /* ==========================================================================
    ME26 AĞI - SİSTEM AYARLARI (config.js)
-   Geçici Vercel Canlı Sürümü
+   Cloudflare Workers Canlı Test Sürümü
    --------------------------------------------------------------------------
    NOT:
-   - Şu an resmi domain henüz bağlanmadığı için geçici canlı adres:
-     https://me26-io.vercel.app
+   - Geçici canlı adres:
+     https://me26.mustafaerciyas.workers.dev
    - me26.io domaini bağlanınca sadece officialBaseUrl ve inviteBaseUrl değişecek.
    - Bu dosyaya ASLA service_role key, admin key, gizli şifre veya özel token yazma.
    ========================================================================== */
@@ -23,10 +23,9 @@ export const ME26_CONFIG = {
 
     // --------------------------------------------------
     // 2. GEÇİCİ CANLI ADRESLER
-    // Domain bağlanana kadar resmi test adresi budur.
     // --------------------------------------------------
-    officialBaseUrl: "https://me26-io.vercel.app",
-    inviteBaseUrl: "https://me26-io.vercel.app",
+    officialBaseUrl: "https://me26.mustafaerciyas.workers.dev",
+    inviteBaseUrl: "https://me26.mustafaerciyas.workers.dev",
 
     // --------------------------------------------------
     // 3. VIP / KURUCU ÜYE KURALLARI
