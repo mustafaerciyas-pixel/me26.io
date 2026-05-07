@@ -1,372 +1,674 @@
 /* ==========================================================================
-   ME26 ORTAK AKIL KÜTÜPHANESİ (Soru - Cevap Modülü Motoru)
-   qa.js - Canlı Yayın (Production) Sürümü
-   ========================================================================== */
+   ME26 AĞI - SÖZ SENDE / QA MOTORU (qa.js)
+   Temiz Final Sürüm
 
-import { supabase } from './supabase.js';
-import { STATE } from './state.js'; 
-import { UI } from './ui.js'; 
+   Görev:
+   - Söz Sende soru listesini yüklemek
+   - Çözüm Bekleyenler / Kütüphane sekmeleri
+   - Yeni soru gönderimi
+   - Soruya cevap yazma
+   - Çözüldü / kütüphaneye taşıma desteği
 
-window.UI = UI;
+   Not:
+   - Önerge gönderimini app.js yönetir.
+   - Bu dosya sadece soru modundayken submit işlemini yakalar.
+========================================================================== */
 
-let aktifQaSekme = 'bekleyenler';
-let aktifSoruId = null;
+import { DB } from './supabase.js';
+import {
+  UI,
+  escapeHtml,
+  showToast,
+  openModal,
+  closeModal,
+  setLoading,
+  restoreButton
+} from './ui.js';
 
-// ==========================================
-// 1. MOTOR PARÇALARI
-// ==========================================
+// ------------------------------------------------------
+// GLOBAL DURUM
+// ------------------------------------------------------
 
-function aktifKullaniciyiAl() {
-    if (!STATE.isLoggedIn() || !STATE.user) return null;
+let currentQaFilter = 'bekleyen';
+let qaStarted = false;
 
-    // Rolleri yeni terminolojiye (İçmimarlık Mezunu / Öğrencisi) göre çekiyoruz
-    let rol = 'İçmimarlık Mezunu';
-    if(STATE.user.role && STATE.user.role.toLowerCase().includes('öğrenci')) rol = 'İçmimarlık Öğrencisi';
+// ------------------------------------------------------
+// KISA YARDIMCILAR
+// ------------------------------------------------------
 
-    let dijitalId = 'TR-IA-BEKLEYEN';
-    if(STATE.user.userNo && STATE.user.userNo !== 'BEKLEYEN') dijitalId = `TR-IA-${STATE.user.userNo}`;
+const $ = (id) => document.getElementById(id);
 
-    return {
-        uid: STATE.user.uid,
-        dijital_id: dijitalId,
-        rol: rol
-    };
+const cleanText = (value, fallback = '') => {
+  if (value === null || value === undefined) return fallback;
+  return String(value).trim();
+};
+
+const isHidden = (el) => {
+  if (!el) return true;
+  return el.classList.contains('hidden') || el.style.display === 'none';
+};
+
+const getCurrentUser = () => {
+  if (window.ME26_APP && typeof window.ME26_APP.getCurrentUser === 'function') {
+    const user = window.ME26_APP.getCurrentUser();
+    if (user) return user;
+  }
+
+  try {
+    const raw = localStorage.getItem('me26_user');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+
+  return null;
+};
+
+const getDigitalId = (user = {}) => {
+  return (
+    user.digitalId ||
+    user.digital_id ||
+    user.dijital_id ||
+    user.kendi_davet_kodu ||
+    user.davet_kodu ||
+    'TR-IA-BEKLEYEN'
+  );
+};
+
+const getQuestionMode = () => {
+  const soruFields = $('kursu-soru-fields');
+  const onergeFields = $('kursu-onerge-fields');
+
+  if (soruFields && !isHidden(soruFields)) return true;
+  if (onergeFields && isHidden(onergeFields)) return true;
+
+  return false;
+};
+
+const emptyState = (text) => {
+  return `
+    <div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">
+      ${escapeHtml(text)}
+    </div>
+  `;
+};
+
+const errorState = (text) => {
+  return `
+    <div class="text-center py-10 border border-red-900/60 rounded-2xl text-red-300 text-xs font-bold uppercase tracking-widest bg-red-950/20">
+      ${escapeHtml(text)}
+    </div>
+  `;
+};
+
+const loadingState = (text = 'Meclis kayıtları okunuyor...') => {
+  return `
+    <div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">
+      ${escapeHtml(text)}
+    </div>
+  `;
+};
+
+// ------------------------------------------------------
+// MODAL SORU MODU
+// ------------------------------------------------------
+
+function setKursuQuestionMode() {
+  const onergeBtn = $('tab-btn-onerge');
+  const soruBtn = $('tab-btn-soru');
+  const onergeFields = $('kursu-onerge-fields');
+  const soruFields = $('kursu-soru-fields');
+  const submitBtn = $('btn-submit-kursu');
+  const durationWrapper = $('input-kursu-duration')?.parentElement;
+
+  onergeBtn?.classList.remove('bg-slate-800', 'text-white', 'shadow-md');
+  onergeBtn?.classList.add('text-gray-500', 'bg-transparent');
+
+  soruBtn?.classList.add('bg-slate-800', 'text-white', 'shadow-md');
+  soruBtn?.classList.remove('text-gray-500', 'bg-transparent');
+
+  onergeFields?.classList.add('hidden');
+  soruFields?.classList.remove('hidden');
+
+  if (durationWrapper) durationWrapper.classList.add('hidden');
+
+  if (submitBtn) {
+    submitBtn.textContent = 'SORUYU ORTAK AKLA GÖNDER';
+  }
 }
 
-function qaSekmeDegistir(sekme) {
-    aktifQaSekme = sekme;
-    
-    const btnBekleyenler = document.getElementById('btn-qa-bekleyenler');
-    const btnKutuphane = document.getElementById('btn-qa-kutuphane');
-    
-    if (sekme === 'bekleyenler') {
-        if(btnBekleyenler) btnBekleyenler.className = "bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition shadow-inner";
-        if(btnKutuphane) btnKutuphane.className = "bg-transparent text-gray-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition hover:text-white";
-    } else {
-        if(btnKutuphane) btnKutuphane.className = "bg-slate-800 text-white border border-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition shadow-inner";
-        if(btnBekleyenler) btnBekleyenler.className = "bg-transparent text-gray-500 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition hover:text-white";
-    }
-    
-    window.qaSorulariGetir();
+function setKursuProposalMode() {
+  const onergeBtn = $('tab-btn-onerge');
+  const soruBtn = $('tab-btn-soru');
+  const onergeFields = $('kursu-onerge-fields');
+  const soruFields = $('kursu-soru-fields');
+  const submitBtn = $('btn-submit-kursu');
+  const durationWrapper = $('input-kursu-duration')?.parentElement;
+
+  soruBtn?.classList.remove('bg-slate-800', 'text-white', 'shadow-md');
+  soruBtn?.classList.add('text-gray-500', 'bg-transparent');
+
+  onergeBtn?.classList.add('bg-slate-800', 'text-white', 'shadow-md');
+  onergeBtn?.classList.remove('text-gray-500', 'bg-transparent');
+
+  soruFields?.classList.add('hidden');
+  onergeFields?.classList.remove('hidden');
+
+  if (durationWrapper) durationWrapper.classList.remove('hidden');
+
+  if (submitBtn) {
+    submitBtn.textContent = 'ÖNERGEYİ GÜNDEME GÖNDER';
+  }
 }
 
-window.qaSorulariGetir = async function() {
-    const listelemeAlani = document.getElementById('qa-listesi');
-    if(!listelemeAlani) return;
+function openQuestionModal() {
+  setKursuQuestionMode();
+  openModal('ortak-kursu-modal');
+}
 
-    listelemeAlani.innerHTML = '<div class="text-center text-kaos text-sm py-10 font-bold uppercase tracking-widest animate-pulse">Meclis Kayıtları Okunuyor...</div>';
+// ------------------------------------------------------
+// SORULARI GETİR
+// ------------------------------------------------------
 
+async function fetchQuestions(filter = 'bekleyen') {
+  try {
+    const data = await DB.sorulariGetir(filter);
+    return Array.isArray(data) ? data : [];
+  } catch (dbError) {
+    console.warn('DB.sorulariGetir çalışmadı, direkt Supabase fallback deneniyor:', dbError);
+  }
+
+  const supabase = DB.supabase || window.ME26_SUPABASE;
+
+  if (!supabase) {
+    throw new Error('Supabase bağlantısı bulunamadı.');
+  }
+
+  const tableTries = ['me26_sorular', 'sorular'];
+  const solved = filter === 'kutuphane' || filter === 'cozuldu';
+
+  let lastError = null;
+
+  for (const table of tableTries) {
     try {
-        const { data, error } = await supabase.from('me26_sorular').select('*');
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('cozuldu_mu', solved)
+        .order('olusturulma_tarihi', { ascending: false });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (!data || data.length === 0) {
-            listelemeAlani.innerHTML = '<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl">Kürsü tamamen boş. Hiç kayıt yok.</div>';
-            return;
-        }
-
-        const isAuthorized = UI.triggerVerificationGate(true);
-        const secilenSekmeCozulduMu = (aktifQaSekme === 'kutuphane');
-
-        const filtrelenmisData = data.filter(soru => {
-            const soruCozulduMu = (soru.cozuldu_mu === true);
-            const sikayet = soru.sikayet_sayisi || 0;
-            return (soruCozulduMu === secilenSekmeCozulduMu) && (sikayet < 10);
-        });
-
-        filtrelenmisData.sort((a, b) => {
-            const dateA = a.olusturma_tarihi ? new Date(a.olusturma_tarihi).getTime() : 0;
-            const dateB = b.olusturma_tarihi ? new Date(b.olusturma_tarihi).getTime() : 0;
-            return dateB - dateA; 
-        });
-
-        if (filtrelenmisData.length === 0) {
-            listelemeAlani.innerHTML = `<div class="text-center text-gray-500 text-sm py-10 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl">Bu sekmede gösterilecek kayıt yok.</div>`;
-            return;
-        }
-
-        listelemeAlani.innerHTML = ''; 
-
-        filtrelenmisData.forEach(soru => {
-            let tarihStr = "Tarih Yok";
-            if (soru.olusturma_tarihi) {
-                tarihStr = new Date(soru.olusturma_tarihi).toLocaleDateString('tr-TR');
-            }
-            
-            let kitleEtiketi = '';
-            if(soru.hedef_kitle === 'Sadece İçmimarlık Mezunları') kitleEtiketi = '<span class="bg-red-900/50 text-red-400 border border-red-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Usta Kalemi</span>';
-            else if(soru.hedef_kitle === 'Sadece İçmimarlık Öğrencileri') kitleEtiketi = '<span class="bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-lock mr-1"></i> Çırak Kalemi</span>';
-            else kitleEtiketi = '<span class="bg-blue-900/50 text-blue-400 border border-blue-700 px-2 py-1 rounded text-[9px] uppercase"><i class="fas fa-globe mr-1"></i> Ortak Kürsü</span>';
-
-            const rozet = soru.cozuldu_mu ? '<span class="absolute top-0 right-0 bg-green-500 text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-bl-lg uppercase tracking-widest shadow-md">✓ ÇÖZÜLDÜ</span>' : '';
-
-            const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
-            const yazarId = isAuthorized ? (soru.yazar_dijital_id || 'TR-IA-????') : 'TR-IA-****';
-            const overlay = isAuthorized ? '' : `
-                <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer mt-12 rounded-2xl" onclick="UI.triggerVerificationGate()">
-                    <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
-                        <i class="fas fa-lock text-kaos"></i> <span class="text-[10px] font-black text-white uppercase tracking-widest">Söz Hakkı Yok</span>
-                    </div>
-                </div>
-            `;
-
-            const soruKarti = document.createElement('div');
-            soruKarti.className = 'bg-black/40 border border-slate-700 p-6 rounded-2xl relative shadow-md hover:border-slate-500 transition-colors group';
-            soruKarti.innerHTML = `
-                ${rozet}
-                ${overlay}
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center border border-slate-600 text-gray-400 text-xs ${blurClass}">
-                            <i class="fas fa-user-astronaut"></i>
-                        </div>
-                        <div class="${blurClass}">
-                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${yazarId}</div>
-                            <div class="text-[9px] text-gray-500">${tarihStr}</div>
-                        </div>
-                    </div>
-                    ${kitleEtiketi}
-                </div>
-                <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${soru.baslik || 'Başlıksız Soru'}</h4>
-                <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${soru.icerik || 'İçerik bulunamadı.'}</p>
-                
-                <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto relative z-10">
-                    <button onclick="${isAuthorized ? `qaSoruDetayAc('${soru.id}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
-                        ${isAuthorized ? 'Kürsüye Git <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> KİLİDİ AÇ'}
-                    </button>
-                    <button onclick="qaUygunsuzBildir('${soru.id}', 'soru')" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
-                        <i class="fas fa-flag"></i> Uygunsuz
-                    </button>
-                </div>
-            `;
-            listelemeAlani.appendChild(soruKarti);
-        });
-
-    } catch (err) {
-        console.error("🔥 CİDDİ HATA:", err);
-        listelemeAlani.innerHTML = `<div class="bg-red-900/30 border border-red-500 p-6 rounded-xl text-center">
-            <div class="text-red-500 font-black text-lg mb-2">SİSTEM HATASI</div>
-            <div class="text-white font-mono text-xs">${err.message}</div>
-        </div>`;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      lastError = error;
+      console.warn(`Soru tablosu okunamadı: ${table}`, error);
     }
+  }
+
+  throw lastError || new Error('Sorular alınamadı.');
 }
 
-window.qaSoruDetayAc = async function(soruId) {
-    if (!UI.triggerVerificationGate()) return; 
-    
-    const kullanici = aktifKullaniciyiAl();
-    if (!kullanici) return UI.showToast("İşlem yapmak için giriş yapmalısınız.", "error");
-    
-    const { data: soru, error: soruError } = await supabase.from('me26_sorular').select('*').eq('id', soruId).single();
-    if (soruError) return alert("Soru bulunamadı.");
+// ------------------------------------------------------
+// RENDER
+// ------------------------------------------------------
 
-    const { data: hamCevaplar, error: cevaplarError } = await supabase.from('me26_cevaplar').select('*').eq('soru_id', soruId);
+function renderQuestionCard(item = {}) {
+  const id = item.id;
+  const title = item.baslik || item.title || 'Başlıksız Soru';
+  const content = item.icerik || item.content || item.aciklama || '';
+  const author =
+    item.yazar_dijital_id ||
+    item.author_id ||
+    item.yazar ||
+    item.dijital_id ||
+    'TR-IA-BEKLEYEN';
 
-    let cevaplar = [];
-    if (hamCevaplar && !cevaplarError) {
-        cevaplar = hamCevaplar.filter(c => (c.sikayet_sayisi || 0) < 10);
-        cevaplar.sort((a, b) => {
-            if (a.is_cozum === b.is_cozum) {
-                const dateA = a.olusturma_tarihi ? new Date(a.olusturma_tarihi).getTime() : 0;
-                const dateB = b.olusturma_tarihi ? new Date(b.olusturma_tarihi).getTime() : 0;
-                return dateA - dateB; 
-            }
-            return a.is_cozum ? -1 : 1; 
-        });
+  const solved = Boolean(item.cozuldu_mu || item.solved);
+  const answerCount =
+    item.cevap_sayisi ||
+    item.answer_count ||
+    item.answers_count ||
+    0;
+
+  const createdAt =
+    item.olusturulma_tarihi ||
+    item.created_at ||
+    item.tarih ||
+    null;
+
+  let dateText = '';
+
+  if (createdAt) {
+    try {
+      dateText = new Date(createdAt).toLocaleDateString('tr-TR');
+    } catch {
+      dateText = '';
     }
+  }
 
-    const mevcutModal = document.getElementById('dinamik-detay-modal');
-    if(mevcutModal) mevcutModal.remove();
+  return `
+    <div class="bg-black/50 border border-slate-800 p-5 rounded-2xl shadow-lg" data-question-card="${escapeHtml(id)}">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <span class="text-[9px] font-black uppercase tracking-widest ${solved ? 'text-green-400' : 'text-kaos'}">
+          ${solved ? 'Kütüphane' : 'Çözüm Bekliyor'}
+        </span>
 
-    aktifSoruId = soruId;
-    const isOwner = kullanici.uid === soru.yazar_uid; 
+        <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">
+          ${escapeHtml(author)}
+        </span>
+      </div>
 
-    let cevaplarHTML = '';
-    if(cevaplar && cevaplar.length > 0) {
-        cevaplar.forEach(cevap => {
-            const cozumRozeti = cevap.is_cozum ? '<div class="absolute -top-3 -right-3 bg-green-500 text-slate-900 text-[10px] font-black px-3 py-1 rounded shadow-md border border-slate-900 transform rotate-3">USTANIN EL VERMESİ (ÇÖZÜM)</div>' : '';
-            
-            const cozumButonu = (isOwner && !soru.cozuldu_mu && !cevap.is_cozum) 
-                ? `<button onclick="qaCozumİsaretle('${cevap.id}', '${soru.id}')" class="text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-slate-900 text-[10px] font-bold px-3 py-1 rounded transition">Çözüm Olarak İşaretle</button>` 
-                : '';
+      <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
+        ${escapeHtml(title)}
+      </h3>
 
-            cevaplarHTML += `
-                <div class="bg-black/60 border ${cevap.is_cozum ? 'border-green-500/50' : 'border-slate-700'} p-5 rounded-xl relative mt-4">
-                    ${cozumRozeti}
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest"><i class="fas fa-comment-dots mr-1 text-slate-600"></i> ${cevap.yazar_dijital_id || 'TR-IA-????'}</div>
-                        <div class="text-[9px] text-gray-500">${cevap.olusturma_tarihi ? new Date(cevap.olusturma_tarihi).toLocaleDateString('tr-TR') : ''}</div>
-                    </div>
-                    <p class="text-sm text-gray-300 font-medium leading-relaxed mb-4 whitespace-pre-wrap">${cevap.icerik || ''}</p>
-                    <div class="flex justify-between items-center border-t border-slate-700/50 pt-3">
-                        ${cozumButonu}
-                        <button onclick="qaUygunsuzBildir('${cevap.id}', 'cevap')" class="text-gray-600 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition ml-auto">Uygunsuz Bildir</button>
-                    </div>
-                </div>
-            `;
-        });
-    } else {
-        cevaplarHTML = '<div class="text-center text-gray-500 text-xs py-8 font-bold uppercase tracking-widest border border-dashed border-slate-700 rounded-xl mt-4">Henüz kürsüde söz alan olmadı.</div>';
-    }
+      <p class="text-xs md:text-sm text-gray-400 leading-relaxed">
+        ${escapeHtml(content)}
+      </p>
 
-    let cevapYetkisiVar = true;
-    let yetkisizlikMesaji = '';
-
-    if (soru.hedef_kitle === 'Sadece İçmimarlık Mezunları' && kullanici.rol !== 'İçmimarlık Mezunu') {
-        cevapYetkisiVar = false;
-        yetkisizlikMesaji = 'Bu soruya sadece İçmimarlık Mezunları cevap verebilir. (Tribün İzleyicisisiniz)';
-    }
-    if (soru.hedef_kitle === 'Sadece İçmimarlık Öğrencileri' && kullanici.rol !== 'İçmimarlık Öğrencisi') {
-        cevapYetkisiVar = false;
-        yetkisizlikMesaji = 'Bu soruya sadece İçmimarlık Öğrencileri cevap verebilir. (Tribün İzleyicisisiniz)';
-    }
-
-    let cevapYazmaAlani = '';
-    if (!soru.cozuldu_mu) {
-        if (cevapYetkisiVar) {
-            cevapYazmaAlani = `
-                <div class="mt-8 border-t border-slate-700 pt-6">
-                    <label class="block text-[10px] font-bold text-kaos uppercase tracking-widest mb-2 flex items-center gap-2"><i class="fas fa-pen-nib"></i> Kürsüde Söz Al</label>
-                    <textarea id="input-qa-answer" placeholder="Çözümünüzü veya fikrinizi detaylıca belirtin (Min 20 Karakter)..." class="w-full bg-black border border-slate-600 text-white p-4 rounded-xl outline-none text-sm font-medium h-24 resize-none custom-scrollbar focus:border-kaos transition mb-2"></textarea>
-                    
-                    <button onclick="qaCevapGonder()" id="btn-submit-answer" class="w-full bg-slate-800 text-white hover:text-kaos hover:border-kaos border border-slate-600 font-black py-3 rounded-xl uppercase tracking-widest transition shadow-md text-xs mt-4">Cevabı Gönder</button>
-                </div>
-            `;
-        } else {
-            cevapYazmaAlani = `<div class="mt-8 text-center text-red-400 bg-red-900/20 p-4 rounded-xl border border-red-900/50 text-[10px] font-bold uppercase tracking-widest">${yetkisizlikMesaji}</div>`;
-        }
-    } else {
-        cevapYazmaAlani = '<div class="mt-8 text-center text-green-500 bg-green-900/10 p-4 rounded-xl border border-green-900/30 text-[10px] font-bold uppercase tracking-widest">Bu konunun çözümü bulunmuş ve arşivlenmiştir. Kürsü kilitlidir.</div>';
-    }
-
-    const modalDiv = document.createElement('div');
-    modalDiv.id = 'dinamik-detay-modal';
-    modalDiv.className = 'fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100000] flex flex-col items-center justify-center p-2 sm:p-4';
-    modalDiv.innerHTML = `
-        <div class="bg-slate-900 border border-slate-600 p-6 sm:p-10 rounded-3xl w-full max-w-3xl relative shadow-[0_0_50px_rgba(0,0,0,0.8)] max-h-[90vh] overflow-hidden flex flex-col">
-            <button onclick="document.getElementById('dinamik-detay-modal').remove()" class="absolute top-4 sm:top-6 right-4 sm:right-6 text-gray-400 hover:text-white transition w-8 h-8 bg-black rounded-full flex items-center justify-center border border-slate-700 shadow-md z-10">✕</button>
-            
-            <div class="overflow-y-auto custom-scrollbar flex-grow pr-2 pb-4">
-                <div class="mb-8 border-b border-slate-700 pb-6 mt-4">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="text-[10px] bg-slate-800 text-gray-300 border border-slate-600 px-2 py-1 rounded font-bold uppercase tracking-widest">Soran: ${soru.yazar_dijital_id || 'TR-IA-????'}</span>
-                        ${soru.cozuldu_mu ? '<span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded font-bold uppercase tracking-widest">ÇÖZÜLDÜ</span>' : ''}
-                    </div>
-                    <h2 class="text-xl sm:text-2xl font-black text-white mb-4 leading-tight">${soru.baslik || ''}</h2>
-                    <p class="text-sm sm:text-base text-gray-300 font-medium leading-relaxed bg-black/30 p-5 rounded-xl border border-slate-800 whitespace-pre-wrap">${soru.icerik || ''}</p>
-                </div>
-
-                <h3 class="text-xs font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fas fa-layer-group text-kaos"></i> Kürsü Kayıtları (${cevaplar ? cevaplar.length : 0})</h3>
-                ${cevaplarHTML}
-                ${cevapYazmaAlani}
-            </div>
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap gap-2 text-[10px] text-gray-500 font-black uppercase tracking-widest">
+          <span>${Number(answerCount || 0).toLocaleString('tr-TR')} cevap</span>
+          ${dateText ? `<span>· ${escapeHtml(dateText)}</span>` : ''}
         </div>
-    `;
 
-    document.body.appendChild(modalDiv);
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            data-id="${escapeHtml(id)}"
+            class="btn-qa-cevapla bg-slate-800 border border-slate-600 hover:border-kaos hover:text-kaos text-white rounded-xl px-5 py-3 text-[10px] font-black uppercase tracking-widest transition"
+          >
+            Cevapla
+          </button>
+
+          ${!solved ? `
+            <button
+              type="button"
+              data-id="${escapeHtml(id)}"
+              class="btn-qa-cozuldu bg-slate-900 border border-slate-700 hover:border-green-500 hover:text-green-400 text-gray-300 rounded-xl px-5 py-3 text-[10px] font-black uppercase tracking-widest transition"
+            >
+              Kütüphaneye Taşı
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
-window.qaCevapGonder = async function() {
-    if (!UI.triggerVerificationGate()) return; 
-    const kullanici = aktifKullaniciyiAl();
-    if (!kullanici) return UI.showToast("Cevap verebilmek için giriş yapmalısınız.", "error");
+function renderQuestions(list = []) {
+  const container = $('qa-listesi');
 
-    const icerik = document.getElementById('input-qa-answer').value.trim();
-    if (icerik.length < 20 || icerik.length > 4000) return alert("Cevabınız 20 ile 4000 karakter arasında olmalıdır.");
+  if (!container) return;
 
-    const btn = document.getElementById('btn-submit-answer');
-    btn.innerText = "GÖNDERİLİYOR...";
-    btn.disabled = true;
+  const items = Array.isArray(list) ? list : [];
 
-    const yeniCevap = {
-        soru_id: aktifSoruId,
-        yazar_uid: kullanici.uid,
-        yazar_dijital_id: kullanici.dijital_id,
-        icerik: icerik,
-        is_cozum: false,   
-        sikayet_sayisi: 0  
-    };
+  if (items.length === 0) {
+    container.innerHTML =
+      currentQaFilter === 'kutuphane'
+        ? emptyState('Kütüphaneye taşınmış soru yok.')
+        : emptyState('Henüz çözüm bekleyen soru yok.');
 
-    const { error } = await supabase.from('me26_cevaplar').insert([yeniCevap]);
+    return;
+  }
 
-    if (error) {
-        console.error(error);
-        alert("Cevap gönderilemedi.");
-        btn.innerText = "Cevabı Gönder";
-        btn.disabled = false;
-    } else {
-        qaSoruDetayAc(aktifSoruId);
-    }
+  container.innerHTML = items.map(renderQuestionCard).join('');
 }
 
-window.qaCozumİsaretle = async function(cevapId, soruId) {
-    if (!UI.triggerVerificationGate()) return; 
-    if(!confirm("Bu cevabı çözüm olarak işaretlerseniz soru kilitlenecek ve arşivlenecektir. Onaylıyor musunuz?")) return;
+// ------------------------------------------------------
+// LİSTE YÜKLE
+// ------------------------------------------------------
 
-    await supabase.from('me26_cevaplar').update({ is_cozum: true }).eq('id', cevapId);
-    await supabase.from('me26_sorular').update({ cozuldu_mu: true }).eq('id', soruId);
+export async function loadQA(filter = currentQaFilter) {
+  currentQaFilter = filter;
 
-    alert("Mükemmel! Ustanın El Vermesi gerçekleşti ve konu arşive kaldırıldı.");
-    
-    document.getElementById('dinamik-detay-modal').remove();
-    window.qaSorulariGetir();
-}
+  const container = $('qa-listesi');
 
-window.qaUygunsuzBildir = async function(hedefId, hedefTipi) {
-    if (!UI.triggerVerificationGate()) return; 
-    const kullanici = aktifKullaniciyiAl();
-    
-    if(!confirm("Bu içeriğin mesleki kurallara uymadığını teyit ediyor musunuz? (10 şikayette içerik otomatik silinecektir)")) return;
+  if (container) {
+    container.innerHTML = loadingState();
+  }
 
-    const { error } = await supabase.from('me26_sikayetler').insert([{
-        sikayet_eden_uid: kullanici.uid,
-        hedef_id: hedefId,
-        hedef_tipi: hedefTipi
-    }]);
+  updateQaTabButtons();
 
-    if (error) {
-        if(error.code === '23505') { 
-            alert("Bu içeriği zaten daha önce şikayet ettiniz.");
-        } else {
-            alert("Şikayet işlemi sırasında bir hata oluştu.");
-        }
-        return;
+  try {
+    const questions = await fetchQuestions(filter);
+    renderQuestions(questions);
+  } catch (error) {
+    console.error('QA listesi alınamadı:', error);
+
+    if (container) {
+      container.innerHTML = errorState('Söz Sende kayıtları alınamadı.');
     }
 
-    const tablo = hedefTipi === 'soru' ? 'me26_sorular' : 'me26_cevaplar';
-    const { data: mevcutVeri } = await supabase.from(tablo).select('sikayet_sayisi').eq('id', hedefId).single();
-    
-    if(mevcutVeri) {
-        const yeniSayi = mevcutVeri.sikayet_sayisi + 1;
-        await supabase.from(tablo).update({ sikayet_sayisi: yeniSayi }).eq('id', hedefId);
-        
-        if(yeniSayi >= 10) {
-            alert("Topluluk gücü! Bu içerik 10 şikayete ulaştığı için sistemden otonom olarak kaldırıldı.");
-            if(document.getElementById('dinamik-detay-modal')) document.getElementById('dinamik-detay-modal').remove();
-            window.qaSorulariGetir();
-        } else {
-            alert(`Şikayetiniz kaydedildi. (${yeniSayi}/10)`);
-        }
+    showToast(error?.message || 'Söz Sende kayıtları alınamadı.', 'error');
+  }
+}
+
+function updateQaTabButtons() {
+  const bekleyenBtn = $('btn-qa-bekleyenler');
+  const kutuphaneBtn = $('btn-qa-kutuphane');
+
+  if (currentQaFilter === 'kutuphane') {
+    bekleyenBtn?.classList.remove('bg-slate-800', 'text-white', 'border-slate-600');
+    bekleyenBtn?.classList.add('bg-transparent', 'text-gray-500');
+
+    kutuphaneBtn?.classList.add('bg-slate-800', 'text-white', 'border', 'border-slate-600');
+    kutuphaneBtn?.classList.remove('bg-transparent', 'text-gray-500');
+
+    return;
+  }
+
+  kutuphaneBtn?.classList.remove('bg-slate-800', 'text-white', 'border-slate-600');
+  kutuphaneBtn?.classList.add('bg-transparent', 'text-gray-500');
+
+  bekleyenBtn?.classList.add('bg-slate-800', 'text-white', 'border', 'border-slate-600');
+  bekleyenBtn?.classList.remove('bg-transparent', 'text-gray-500');
+}
+
+// ------------------------------------------------------
+// SORU GÖNDER
+// ------------------------------------------------------
+
+async function submitQuestion(event = null) {
+  if (event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+
+  const user = getCurrentUser();
+
+  if (!user?.uid) {
+    showToast('Soru göndermek için giriş yapmalısınız.', 'error');
+    return;
+  }
+
+  const title = cleanText($('input-kursu-title')?.value);
+  const content = cleanText($('input-kursu-content')?.value);
+  const audience = cleanText($('input-kursu-audience')?.value, 'Herkes');
+  const responsibility = $('input-kursu-responsibility')?.checked === true;
+
+  if (!responsibility) {
+    showToast('Sorumluluk beyanını onaylamalısınız.', 'error');
+    return;
+  }
+
+  if (title.length < 15) {
+    showToast('Başlık en az 15 karakter olmalıdır.', 'error');
+    return;
+  }
+
+  if (content.length < 50) {
+    showToast('Soru içeriği en az 50 karakter olmalıdır.', 'error');
+    return;
+  }
+
+  const button = $('btn-submit-kursu');
+  const oldText = setLoading(button, 'Soru gönderiliyor...');
+
+  try {
+    await DB.soruGonder({
+      uid: user.uid,
+      yazar_dijital_id: getDigitalId(user),
+      baslik: title,
+      icerik: content,
+      hedef_kitle: audience
+    });
+
+    ['input-kursu-title', 'input-kursu-content'].forEach((id) => {
+      const el = $(id);
+      if (el) el.value = '';
+    });
+
+    const responsibilityInput = $('input-kursu-responsibility');
+    if (responsibilityInput) responsibilityInput.checked = false;
+
+    closeModal('ortak-kursu-modal');
+
+    showToast('Sorunuz ortak akla gönderildi.', 'success');
+
+    currentQaFilter = 'bekleyen';
+    await loadQA('bekleyen');
+  } catch (error) {
+    console.error('Soru gönderilemedi:', error);
+    showToast(error?.message || 'Soru gönderilemedi.', 'error');
+  } finally {
+    restoreButton(button, oldText || 'SORUYU ORTAK AKLA GÖNDER');
+  }
+}
+
+// ------------------------------------------------------
+// CEVAP GÖNDER
+// ------------------------------------------------------
+
+async function answerQuestion(questionId) {
+  const user = getCurrentUser();
+
+  if (!user?.uid) {
+    showToast('Cevap yazmak için giriş yapmalısınız.', 'error');
+    return;
+  }
+
+  const answer = window.prompt('Cevabınızı yazın:');
+
+  if (answer === null) return;
+
+  const content = cleanText(answer);
+
+  if (content.length < 20) {
+    showToast('Cevap en az 20 karakter olmalıdır.', 'error');
+    return;
+  }
+
+  try {
+    await DB.cevapGonder({
+      uid: user.uid,
+      soru_id: questionId,
+      icerik: content
+    });
+
+    await incrementAnswerCount(questionId);
+
+    showToast('Cevabınız kaydedildi.', 'success');
+    await loadQA(currentQaFilter);
+  } catch (error) {
+    console.error('Cevap gönderilemedi:', error);
+    showToast(error?.message || 'Cevap gönderilemedi.', 'error');
+  }
+}
+
+async function incrementAnswerCount(questionId) {
+  const supabase = DB.supabase || window.ME26_SUPABASE;
+
+  if (!supabase) return;
+
+  const tableTries = ['me26_sorular', 'sorular'];
+
+  for (const table of tableTries) {
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .select('cevap_sayisi')
+        .eq('id', questionId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      const current = Number(data?.cevap_sayisi || 0);
+
+      await supabase
+        .from(table)
+        .update({ cevap_sayisi: current + 1 })
+        .eq('id', questionId);
+
+      return;
+    } catch (error) {
+      console.warn(`Cevap sayısı güncellenemedi: ${table}`, error);
     }
+  }
 }
 
-// ==========================================
-// 8. ŞALTER (SİSTEMİ BAŞLAT)
-// ==========================================
-function qaMotorunuBaslat() {
-    console.log("🚀 QA Motoru Başlatılıyor...");
-    const btnBekleyenler = document.getElementById('btn-qa-bekleyenler');
-    const btnKutuphane = document.getElementById('btn-qa-kutuphane');
+// ------------------------------------------------------
+// KÜTÜPHANEYE TAŞI
+// ------------------------------------------------------
 
-    if(btnBekleyenler) btnBekleyenler.addEventListener('click', () => qaSekmeDegistir('bekleyenler'));
-    if(btnKutuphane) btnKutuphane.addEventListener('click', () => qaSekmeDegistir('kutuphane'));
-    
-    window.qaSorulariGetir();
+async function markQuestionSolved(questionId) {
+  const supabase = DB.supabase || window.ME26_SUPABASE;
+
+  if (!supabase) {
+    showToast('Supabase bağlantısı bulunamadı.', 'error');
+    return;
+  }
+
+  const ok = window.confirm('Bu soru kütüphaneye taşınsın mı?');
+
+  if (!ok) return;
+
+  const tableTries = ['me26_sorular', 'sorular'];
+
+  let lastError = null;
+
+  for (const table of tableTries) {
+    try {
+      const { error } = await supabase
+        .from(table)
+        .update({ cozuldu_mu: true })
+        .eq('id', questionId);
+
+      if (error) throw error;
+
+      showToast('Soru kütüphaneye taşındı.', 'success');
+      await loadQA(currentQaFilter);
+
+      return;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Soru kütüphaneye taşınamadı: ${table}`, error);
+    }
+  }
+
+  showToast(lastError?.message || 'Soru kütüphaneye taşınamadı.', 'error');
 }
 
-if (document.readyState === 'loading') { 
-    document.addEventListener('DOMContentLoaded', qaMotorunuBaslat); 
-} else { 
-    qaMotorunuBaslat(); 
+// ------------------------------------------------------
+// EVENT BAĞLAMA
+// ------------------------------------------------------
+
+function bindQaEvents() {
+  const openBtn = $('btn-open-qa-modal');
+
+  if (openBtn && openBtn.dataset.me26QaOpenBound !== '1') {
+    openBtn.dataset.me26QaOpenBound = '1';
+    openBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      openQuestionModal();
+    }, true);
+  }
+
+  const soruTab = $('tab-btn-soru');
+
+  if (soruTab && soruTab.dataset.me26QaTabBound !== '1') {
+    soruTab.dataset.me26QaTabBound = '1';
+    soruTab.addEventListener('click', () => {
+      setKursuQuestionMode();
+    });
+  }
+
+  const onergeTab = $('tab-btn-onerge');
+
+  if (onergeTab && onergeTab.dataset.me26QaOnergeTabBound !== '1') {
+    onergeTab.dataset.me26QaOnergeTabBound = '1';
+    onergeTab.addEventListener('click', () => {
+      setKursuProposalMode();
+    });
+  }
+
+  const submitBtn = $('btn-submit-kursu');
+
+  if (submitBtn && submitBtn.dataset.me26QaSubmitBound !== '1') {
+    submitBtn.dataset.me26QaSubmitBound = '1';
+
+    submitBtn.addEventListener('click', (event) => {
+      if (!getQuestionMode()) return;
+      submitQuestion(event);
+    }, true);
+  }
+
+  const bekleyenBtn = $('btn-qa-bekleyenler');
+
+  if (bekleyenBtn && bekleyenBtn.dataset.me26QaBekleyenBound !== '1') {
+    bekleyenBtn.dataset.me26QaBekleyenBound = '1';
+    bekleyenBtn.addEventListener('click', () => {
+      loadQA('bekleyen');
+    });
+  }
+
+  const kutuphaneBtn = $('btn-qa-kutuphane');
+
+  if (kutuphaneBtn && kutuphaneBtn.dataset.me26QaKutuphaneBound !== '1') {
+    kutuphaneBtn.dataset.me26QaKutuphaneBound = '1';
+    kutuphaneBtn.addEventListener('click', () => {
+      loadQA('kutuphane');
+    });
+  }
+
+  document.body.addEventListener('click', (event) => {
+    const answerBtn = event.target.closest('.btn-qa-cevapla');
+
+    if (answerBtn) {
+      event.preventDefault();
+      const questionId = answerBtn.getAttribute('data-id');
+
+      if (questionId) answerQuestion(questionId);
+      return;
+    }
+
+    const solvedBtn = event.target.closest('.btn-qa-cozuldu');
+
+    if (solvedBtn) {
+      event.preventDefault();
+      const questionId = solvedBtn.getAttribute('data-id');
+
+      if (questionId) markQuestionSolved(questionId);
+    }
+  });
+}
+
+// ------------------------------------------------------
+// BAŞLAT
+// ------------------------------------------------------
+
+export function initQA() {
+  if (qaStarted) return;
+
+  qaStarted = true;
+
+  bindQaEvents();
+  updateQaTabButtons();
+
+  if ($('qa-listesi')) {
+    loadQA('bekleyen');
+  }
+
+  console.info('ME26 qa.js temiz final sürüm yüklendi.');
+}
+
+// ------------------------------------------------------
+// GLOBAL KÖPRÜLER
+// ------------------------------------------------------
+
+window.ME26_QA = {
+  initQA,
+  loadQA,
+  openQuestionModal,
+  submitQuestion,
+  answerQuestion,
+  markQuestionSolved
+};
+
+window.loadQA = loadQA;
+window.sorulariYukle = loadQA;
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initQA);
+} else {
+  initQA();
 }
