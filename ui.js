@@ -1,6 +1,6 @@
 /* ========================================================================== 
    ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
-   Canlı Production Sürümü
+   Geçici Vercel Canlı Sürümü
    --------------------------------------------------------------------------
    Görev:
    - Landing / SaaS ekran geçişleri
@@ -8,10 +8,12 @@
    - Profil ve erişim durumu yazıları
    - Önerge / gündem kartları
    - Tribün Ligi görünümü
-   - XSS riskini azaltmak için kullanıcı içeriklerini ekrana güvenli basmak
+   - Davet linklerini config.js üzerinden üretmek
+   - XSS riskini azaltmak için kullanıcı içeriklerini güvenli basmak
    ========================================================================== */
 
 import { STATE } from './state.js';
+import { ME26_CONFIG } from './config.js';
 
 // ------------------------------------------------------
 // KISA YARDIMCILAR
@@ -44,7 +46,12 @@ const setText = (id, text) => {
 };
 
 const isCitySelected = (city) => {
-    return Boolean(city && city !== 'Belirsiz' && city !== 'Seçilmedi' && city !== 'TRİBÜN SEÇİLMEDİ');
+    return Boolean(
+        city &&
+        city !== 'Belirsiz' &&
+        city !== 'Seçilmedi' &&
+        city !== 'TRİBÜN SEÇİLMEDİ'
+    );
 };
 
 const getUser = () => {
@@ -52,9 +59,21 @@ const getUser = () => {
     return STATE.user || {};
 };
 
+const getBaseUrl = () => {
+    return (
+        ME26_CONFIG.inviteBaseUrl ||
+        ME26_CONFIG.officialBaseUrl ||
+        'https://me26-io.vercel.app'
+    ).replace(/\/+$/, '');
+};
+
 const getDigitalId = (user) => {
     if (!user) return 'TR-IA-BEKLEYEN';
-    if (user.userNo && user.userNo !== 'BEKLEYEN') return `TR-IA-${user.userNo}`;
+
+    if (user.userNo && user.userNo !== 'BEKLEYEN') {
+        return `TR-IA-${user.userNo}`;
+    }
+
     return 'TR-IA-BEKLEYEN';
 };
 
@@ -62,7 +81,10 @@ const getDisplayRole = (user) => {
     const role = cleanText(user?.role, 'Belirsiz');
 
     if (!role || role === 'Belirsiz') return 'Kimlik Bekleniyor';
-    if (role.toLowerCase().includes('öğrenci')) return 'İçmimarlık Öğrencisi';
+
+    if (role.toLowerCase().includes('öğrenci')) {
+        return 'İçmimarlık Öğrencisi';
+    }
 
     return 'İçmimarlık Mezunu';
 };
@@ -74,6 +96,7 @@ const getAccessLabel = (user) => {
 const getVotePowerNumber = (user) => {
     const raw = user?.votePower || '0';
     const parsed = parseFloat(String(raw).replace('x', ''));
+
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
@@ -88,7 +111,9 @@ const getAudienceAuth = (hedefKitle) => {
 
 const buildInviteLink = (user) => {
     const code = cleanText(user?.davetKodu) || getDigitalId(user);
-    return `https://me26.io/katil?ref=${encodeURIComponent(code)}`;
+    const baseUrl = getBaseUrl();
+
+    return `${baseUrl}/?ref=${encodeURIComponent(code)}`;
 };
 
 const goToProfile = () => {
@@ -97,8 +122,10 @@ const goToProfile = () => {
 
 const createEmptyState = (message) => {
     const div = document.createElement('div');
+
     div.className = 'text-center py-10 border border-dashed border-slate-700 rounded-2xl text-gray-500 text-xs md:text-sm font-bold tracking-widest uppercase bg-black/20';
     div.textContent = message;
+
     return div;
 };
 
@@ -131,6 +158,8 @@ export const UI = {
                 saas.classList.remove('hidden');
                 saas.classList.add('flex');
             }
+
+            document.body.classList.add('overflow-hidden');
         }
     },
 
@@ -257,6 +286,7 @@ export const UI = {
     // --------------------------------------------------
     showToast: (message, type = 'success') => {
         const container = $('toast-container');
+
         if (!container) return;
 
         const safeMessage = escapeHtml(message);
@@ -294,7 +324,10 @@ export const UI = {
 
         setTimeout(() => {
             toast.classList.add('translate-y-10', 'opacity-0');
-            setTimeout(() => toast.remove(), 500);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 500);
         }, 3500);
     },
 
@@ -303,7 +336,10 @@ export const UI = {
     // --------------------------------------------------
     triggerVerificationGate: (silent = false) => {
         if (!STATE.isLoggedIn()) {
-            if (!silent) UI.showToast('İşlem yapabilmek için sisteme giriş yapmalısınız.', 'error');
+            if (!silent) {
+                UI.showToast('İşlem yapabilmek için sisteme giriş yapmalısınız.', 'error');
+            }
+
             return false;
         }
 
@@ -361,6 +397,7 @@ export const UI = {
         if (cityGate) cityGate.classList.toggle('hidden', selectedCity);
 
         const roleBadge = $('ui-role-badge');
+
         if (roleBadge) {
             if (hasNumber && user.isVip) {
                 roleBadge.textContent = 'VIP KURUCU';
@@ -382,6 +419,7 @@ export const UI = {
 
     renderSystemStatus: (user) => {
         const textEl = $('ui-sistem-durumu');
+
         if (!textEl) return;
 
         const box = textEl.parentElement;
@@ -389,36 +427,47 @@ export const UI = {
 
         if (user.authStage === 'pdf_verified') {
             textEl.textContent = 'Tebrikler. Mesleki belge başvurunuz onaylandı. Artık sistemde tam erişim hakkına sahipsiniz; sandıklarda oy kullanabilir ve kendi önergenizi sunabilirsiniz.';
+
             if (box) box.className = 'bg-green-900/20 border border-green-500/30 p-6 rounded-2xl';
+
             if (title) {
                 title.className = 'text-green-400 text-xs font-black tracking-widest uppercase mb-3';
                 title.textContent = 'Sistem Durumu: Tam Erişim';
             }
+
             return;
         }
 
         if (user.authStage === 'document_pending') {
             textEl.textContent = 'Mesleki belge başvurunuz ön inceleme kuyruğunda. Kontroller tamamlandığında ve başvurunuz onaylandığında tam erişim açılacaktır.';
+
             if (box) box.className = 'bg-yellow-900/20 border border-yellow-500/30 p-6 rounded-2xl';
+
             if (title) {
                 title.className = 'text-yellow-400 text-xs font-black tracking-widest uppercase mb-3';
                 title.textContent = 'Sistem Durumu: İncelemede';
             }
+
             return;
         }
 
         if (user.hasPhone) {
             textEl.textContent = 'Telefon doğrulamanız tamamlandı. Tam erişim için mesleki belge inceleme başvurunuzu göndermeniz gerekir.';
+
             if (box) box.className = 'bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl';
+
             if (title) {
                 title.className = 'text-blue-400 text-xs font-black tracking-widest uppercase mb-3';
                 title.textContent = 'Sistem Durumu: Eksik Yetki';
             }
+
             return;
         }
 
         textEl.textContent = 'Sisteme hoş geldiniz. Şu an meclisi izleyebilirsiniz. Oy kullanmak, önerge vermek ve ortak akla katkı sunmak için telefon doğrulaması ve mesleki belge inceleme başvurusu gerekir.';
+
         if (box) box.className = 'bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl';
+
         if (title) {
             title.className = 'text-gray-400 text-xs font-black tracking-widest uppercase mb-3';
             title.textContent = 'Sistem Durumu: Kayıtlı İzleyici';
@@ -436,8 +485,10 @@ export const UI = {
             if (!taskContainer) return;
 
             const badge = document.createElement('div');
+
             badge.className = `dynamic-task-badge w-full py-3 rounded-lg text-[10px] md:text-xs text-center uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2 border ${extraClass}`;
             badge.innerHTML = html;
+
             taskContainer.insertBefore(badge, taskContainer.firstChild);
         };
 
@@ -456,14 +507,17 @@ export const UI = {
 
         if (user.authStage === 'pdf_verified') {
             if (btnPdf) btnPdf.classList.add('hidden');
+
             addBadge('✅ MESLEKİ BELGE ONAYLI · TAM ERİŞİM', 'bg-indigo-900/20 border-indigo-700/50 text-indigo-400');
 
             if (user.role && user.role.toLowerCase().includes('öğrenci')) {
                 const upgradeButton = document.createElement('button');
+
                 upgradeButton.type = 'button';
                 upgradeButton.className = 'dynamic-task-badge w-full bg-kaos text-slate-900 hover:opacity-90 font-black py-3 rounded-lg text-[11px] uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 mt-2';
                 upgradeButton.textContent = 'Mezun Oldun Mu? Unvanını Güncelle';
                 upgradeButton.addEventListener('click', () => UI.openModal('pdf-modal'));
+
                 if (taskContainer) taskContainer.appendChild(upgradeButton);
             }
 
@@ -472,7 +526,9 @@ export const UI = {
 
         if (user.authStage === 'document_pending') {
             if (btnPdf) btnPdf.classList.add('hidden');
+
             addBadge('⏳ BELGE İNCELEME KUYRUĞUNDA', 'bg-yellow-900/20 border-yellow-700/50 text-yellow-500');
+
             return;
         }
 
@@ -518,6 +574,7 @@ export const UI = {
 
         studentArea.classList.add('hidden');
         studentArea.classList.remove('flex');
+
         graduateArea.classList.add('hidden');
         graduateArea.classList.remove('flex');
 
@@ -552,10 +609,12 @@ export const UI = {
         if (!onergeler || onergeler.length === 0) {
             if (proposalsContainer) proposalsContainer.appendChild(createEmptyState('Bekleyen önerge yok.'));
             if (agendaContainer) agendaContainer.appendChild(createEmptyState('Sırada önerge yok.'));
+
             return;
         }
 
         const isAuthorized = UI.triggerVerificationGate(true);
+
         let proposalCount = 0;
         let agendaCount = 0;
 
@@ -595,6 +654,7 @@ export const UI = {
         const audience = escapeHtml(onerge.hedef_kitle || 'Herkes');
 
         const card = document.createElement('div');
+
         card.className = 'bg-black/40 border border-slate-600 p-5 rounded-2xl relative overflow-hidden shadow-lg mb-3 group';
         card.setAttribute('data-onerge-card', id);
 
@@ -609,19 +669,29 @@ export const UI = {
         card.innerHTML = `
             <div class="absolute top-0 left-0 h-1 bg-kaos transition-all" style="width:${progress}%"></div>
             ${lockedOverlay}
+
             <div class="${isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none'}">
                 <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div class="flex-grow">
                         <div class="text-[9px] font-black uppercase tracking-widest text-kaos mb-2">${audience}</div>
-                        <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${title}</h3>
-                        <p class="text-xs md:text-sm text-gray-300 leading-relaxed mb-3">${problem}</p>
+
+                        <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
+                            ${title}
+                        </h3>
+
+                        <p class="text-xs md:text-sm text-gray-300 leading-relaxed mb-3">
+                            ${problem}
+                        </p>
+
                         ${solution ? `<p class="text-[11px] text-gray-500 leading-relaxed border-l-2 border-slate-700 pl-3">Çözüm: ${solution}</p>` : ''}
                     </div>
+
                     <div class="md:w-40 shrink-0 flex flex-col gap-3">
                         <div class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-center">
                             <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Destek</div>
                             <div class="text-lg font-black text-kaos">${isAuthorized ? `${destekSayisi}/50` : 'GİZLİ'}</div>
                         </div>
+
                         <button type="button" data-id="${id}" class="btn-destekle bg-slate-800 border border-slate-600 hover:border-kaos hover:text-kaos text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition">
                             Destekle
                         </button>
@@ -644,6 +714,7 @@ export const UI = {
         const authType = getAudienceAuth(onerge.hedef_kitle);
 
         const card = document.createElement('div');
+
         card.className = 'bg-black/50 border border-kaos/40 p-5 rounded-2xl relative overflow-hidden shadow-lg mb-4';
         card.setAttribute('data-onerge-card', id);
 
@@ -657,12 +728,17 @@ export const UI = {
 
         card.innerHTML = `
             ${lockedOverlay}
+
             <div class="${isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none'}">
                 <div class="flex items-center justify-between gap-3 mb-3">
                     <span class="text-[9px] font-black uppercase tracking-widest text-kaos">Gündemde · ${audience}</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">Oylama Açık</span>
                 </div>
-                <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${title}</h3>
+
+                <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
+                    ${title}
+                </h3>
+
                 ${problem ? `<p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-2">${problem}</p>` : ''}
                 ${solution ? `<p class="text-xs md:text-sm text-gray-300 leading-relaxed mb-4 border-l-2 border-kaos/60 pl-3">${solution}</p>` : ''}
 
@@ -672,6 +748,7 @@ export const UI = {
                         <div class="vote-bar-abstain bg-yellow-500 h-full transition-all" style="width:0%"></div>
                         <div class="vote-bar-no bg-red-500 h-full transition-all" style="width:0%"></div>
                     </div>
+
                     <div class="flex justify-between text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-2">
                         <span class="vote-text-yes">%0 Kabul</span>
                         <span class="vote-text-abstain">%0 Çekimser</span>
@@ -680,9 +757,9 @@ export const UI = {
                 </div>
 
                 <div class="vote-buttons-container grid grid-cols-3 gap-2" data-auth="${authType}">
-                    <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-green-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-onerge-id="${id}" data-vote="yes">Kabul</button>
-                    <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-yellow-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-onerge-id="${id}" data-vote="abstain">Çekimser</button>
-                    <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-red-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-onerge-id="${id}" data-vote="no">Ret</button>
+                    <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-green-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-id="${id}" data-onerge-id="${id}" data-vote="yes">Kabul</button>
+                    <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-yellow-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-id="${id}" data-onerge-id="${id}" data-vote="abstain">Çekimser</button>
+                    <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-red-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-id="${id}" data-onerge-id="${id}" data-vote="no">Ret</button>
                 </div>
             </div>
         `;
@@ -739,9 +816,17 @@ export const UI = {
                 championsContainer.innerHTML = '';
             } else {
                 const leader = processed[0];
-                const mostActive = [...processed].sort((a, b) => (b.onerge + b.oy + b.katki) - (a.onerge + a.oy + a.katki))[0] || leader;
-                const studentLeader = [...processed].sort((a, b) => Number(b.ogrenci || 0) - Number(a.ogrenci || 0))[0] || leader;
-                const fastest = [...processed].sort((a, b) => Number(b.weeklyGrowthPercent || 0) - Number(a.weeklyGrowthPercent || 0))[0] || leader;
+                const mostActive = [...processed].sort((a, b) => {
+                    return (b.onerge + b.oy + b.katki) - (a.onerge + a.oy + a.katki);
+                })[0] || leader;
+
+                const studentLeader = [...processed].sort((a, b) => {
+                    return Number(b.ogrenci || 0) - Number(a.ogrenci || 0);
+                })[0] || leader;
+
+                const fastest = [...processed].sort((a, b) => {
+                    return Number(b.weeklyGrowthPercent || 0) - Number(a.weeklyGrowthPercent || 0);
+                })[0] || leader;
 
                 championsContainer.innerHTML = `
                     ${UI.createChampionCard('Genel Lider', leader.city, '🏆')}
@@ -758,14 +843,18 @@ export const UI = {
 
         if (processed.length === 0) {
             const row = document.createElement('tr');
+
             row.innerHTML = '<td colspan="2" class="p-4 text-center text-gray-500 text-xs uppercase tracking-widest">Henüz tribün verisi yok.</td>';
+
             tableBody.appendChild(row);
+
             return;
         }
 
         processed.forEach((city, index) => {
             const isMine = validUserCity && city.city === userCity;
             const row = document.createElement('tr');
+
             row.className = isMine
                 ? 'bg-kaos/10 border-b border-kaos/30'
                 : 'border-b border-slate-800 hover:bg-slate-800/50 transition';
@@ -778,7 +867,9 @@ export const UI = {
                     <span class="mr-2">${medal}</span>${escapeHtml(city.city)}
                     ${isMine ? '<span class="ml-2 text-[9px] text-kaos uppercase tracking-widest">Senin Tribünün</span>' : ''}
                 </td>
-                <td class="p-4 font-mono font-black text-kaos text-sm">${Number(city.power || 0).toLocaleString('tr-TR')}</td>
+                <td class="p-4 font-mono font-black text-kaos text-sm">
+                    ${Number(city.power || 0).toLocaleString('tr-TR')}
+                </td>
             `;
 
             tableBody.appendChild(row);
@@ -810,9 +901,13 @@ document.addEventListener('keydown', (event) => {
         'dinamik-detay-modal'
     ].forEach((modalId) => {
         const modal = $(modalId);
+
         if (modal && !modal.classList.contains('hidden')) {
-            if (modalId === 'dinamik-detay-modal') modal.remove();
-            else UI.closeModal(modalId);
+            if (modalId === 'dinamik-detay-modal') {
+                modal.remove();
+            } else {
+                UI.closeModal(modalId);
+            }
         }
     });
 });
