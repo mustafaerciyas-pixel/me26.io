@@ -14,6 +14,7 @@
   <meta name="theme-color" content="#facc15" />
 
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -36,7 +37,9 @@
   />
 
   <style>
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       background:
@@ -51,8 +54,13 @@
       backdrop-filter: blur(18px);
     }
 
-    .view-section.hidden { display: none; }
-    .view-section.block { display: block; }
+    .view-section.hidden {
+      display: none;
+    }
+
+    .view-section.block {
+      display: block;
+    }
 
     .nav-menu-btn.active {
       background: rgba(30, 41, 59, 0.95);
@@ -83,9 +91,12 @@
           <div class="w-9 h-9 rounded-2xl bg-kaos text-slate-950 flex items-center justify-center font-black shadow-kaos">
             ME
           </div>
+
           <div>
             <div class="text-sm font-black tracking-widest">ME26 AĞI</div>
-            <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">Dijital Meclis</div>
+            <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">
+              Dijital Meclis
+            </div>
           </div>
         </a>
 
@@ -124,10 +135,9 @@
           </div>
 
           <h1 class="text-4xl md:text-6xl xl:text-7xl font-black leading-[0.95] tracking-tight">
-            <span class="text-kaos">11.000 kişi</span><br />
-            içeride.<br />
-            <span class="text-gray-500">95.000 kişi dışarıda.</span><br />
-            Sistemi yeniden kuruyoruz.
+            <span class="text-kaos">İçmimarlık</span><br />
+            için dijital meclis.<br />
+            <span class="text-gray-500">Aidatsız. Başkansız. Kurallı.</span>
           </h1>
 
           <p class="mt-7 max-w-2xl text-base md:text-lg text-gray-300 leading-relaxed">
@@ -162,8 +172,10 @@
         <div class="glass rounded-[2rem] p-6 md:p-8 shadow-2xl">
           <div class="flex items-center justify-between mb-8">
             <div>
-              <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">ME26 Ağı</div>
-              <div class="text-xl font-black">Aidatsız. Başkansız. Otonom.</div>
+              <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                ME26 Ağı
+              </div>
+              <div class="text-xl font-black">İnsan Yönetici Yok. Kurallar Var.</div>
             </div>
 
             <div class="w-14 h-14 rounded-2xl bg-kaos text-slate-950 flex items-center justify-center font-black shadow-kaos">
@@ -173,7 +185,9 @@
 
           <div class="grid gap-4">
             <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-              <div class="text-kaos text-2xl mb-3"><i class="fa-solid fa-square-poll-vertical"></i></div>
+              <div class="text-kaos text-2xl mb-3">
+                <i class="fa-solid fa-square-poll-vertical"></i>
+              </div>
               <h3 class="font-black mb-2">Ortak Sandık</h3>
               <p class="text-sm text-gray-400 leading-relaxed">
                 Mesleki sorunlar önergeye dönüşür. Yeterli destek alan başlıklar ortak sandığa taşınır.
@@ -181,7 +195,9 @@
             </div>
 
             <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-              <div class="text-kaos text-2xl mb-3"><i class="fa-solid fa-comments"></i></div>
+              <div class="text-kaos text-2xl mb-3">
+                <i class="fa-solid fa-comments"></i>
+              </div>
               <h3 class="font-black mb-2">Söz Sende</h3>
               <p class="text-sm text-gray-400 leading-relaxed">
                 Öğrenciler ve mezunlar soru sorar, deneyim aktarır, çözüm üreten bilgi kütüphanesi oluşur.
@@ -189,41 +205,14 @@
             </div>
 
             <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-              <div class="text-kaos text-2xl mb-3"><i class="fa-solid fa-shield-halved"></i></div>
+              <div class="text-kaos text-2xl mb-3">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
               <h3 class="font-black mb-2">Koruma Hattı</h3>
               <p class="text-sm text-gray-400 leading-relaxed">
                 Ünvan kullanımı, belge kontrolü ve mesleki kimlik güvenliği için ön inceleme bildirimleri alınır.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="max-w-7xl mx-auto mt-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="glass rounded-[2rem] p-7 md:p-9">
-          <h2 class="text-2xl md:text-3xl font-black mb-4">Neden Gizli Profil?</h2>
-          <p class="text-gray-300 leading-relaxed">
-            Çünkü küçük sektörlerde insanlar fikir söylerken çevre, iş, oda, firma ve müşteri baskısından çekinir.
-            ME26 gerçek kullanıcıyı sistem içinde doğrular; topluluk içinde ad-soyad yerine Global ID gösterir.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center">
-            <div class="text-3xl font-black text-kaos">0₺</div>
-            <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Aidat</div>
-          </div>
-          <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center">
-            <div class="text-3xl font-black text-kaos">0</div>
-            <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Başkan</div>
-          </div>
-          <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center">
-            <div class="text-3xl font-black text-kaos">ID</div>
-            <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Gizli Profil</div>
-          </div>
-          <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center">
-            <div class="text-3xl font-black text-kaos">PDF</div>
-            <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Belge Kontrol</div>
           </div>
         </div>
       </section>
@@ -239,34 +228,63 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="glass rounded-3xl p-6">
-            <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-landmark"></i></div>
+            <div class="text-kaos text-2xl mb-4">
+              <i class="fa-solid fa-landmark"></i>
+            </div>
             <h3 class="font-black mb-2">İçmimar Lobisi</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">Mesleğin genel durumunu, gündem başlıklarını ve sistem duyurularını tek alanda toplar.</p>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Mesleğin genel durumunu, gündem başlıklarını ve sistem duyurularını tek alanda toplar.
+            </p>
           </div>
+
           <div class="glass rounded-3xl p-6">
-            <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-box-archive"></i></div>
+            <div class="text-kaos text-2xl mb-4">
+              <i class="fa-solid fa-box-archive"></i>
+            </div>
             <h3 class="font-black mb-2">Ortak Sandık</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">Öneriler destek toplar. Yeterli desteğe ulaşan başlıklar oylamaya açılır.</p>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Öneriler destek toplar. Yeterli desteğe ulaşan başlıklar oylamaya açılır.
+            </p>
           </div>
+
           <div class="glass rounded-3xl p-6">
-            <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-microphone-lines"></i></div>
+            <div class="text-kaos text-2xl mb-4">
+              <i class="fa-solid fa-microphone-lines"></i>
+            </div>
             <h3 class="font-black mb-2">Söz Sende</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">Soru, cevap, deneyim ve çözüm kayıtları zamanla mesleki bilgi kütüphanesine dönüşür.</p>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Soru, cevap, deneyim ve çözüm kayıtları zamanla mesleki bilgi kütüphanesine dönüşür.
+            </p>
           </div>
+
           <div class="glass rounded-3xl p-6">
-            <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-city"></i></div>
+            <div class="text-kaos text-2xl mb-4">
+              <i class="fa-solid fa-city"></i>
+            </div>
             <h3 class="font-black mb-2">Canlı Stadyum</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">Kimlerin hangi şehir tribününden sisteme katıldığını canlı ve anonim şekilde gösterir.</p>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Kimlerin hangi şehir tribününden sisteme katıldığını canlı ve anonim şekilde gösterir.
+            </p>
           </div>
+
           <div class="glass rounded-3xl p-6">
-            <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-ranking-star"></i></div>
+            <div class="text-kaos text-2xl mb-4">
+              <i class="fa-solid fa-ranking-star"></i>
+            </div>
             <h3 class="font-black mb-2">Tribün Ligi</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">Şehirlerin katılım, önerge, oy ve katkı gücünü görünür hale getirir.</p>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Şehirlerin katılım, önerge, oy ve katkı gücünü görünür hale getirir.
+            </p>
           </div>
+
           <div class="glass rounded-3xl p-6">
-            <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-user-shield"></i></div>
+            <div class="text-kaos text-2xl mb-4">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
             <h3 class="font-black mb-2">Koruma Hattı</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">Ünvan güvenliği, belge kontrolü ve mesleki kimlik koruması için bildirimleri ön incelemeye alır.</p>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Ünvan güvenliği, belge kontrolü ve mesleki kimlik koruması için bildirimleri ön incelemeye alır.
+            </p>
           </div>
         </div>
       </section>
@@ -280,27 +298,30 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">1. Gerçek Kimlik, Gizli Profil</h3>
-            <p class="text-sm text-gray-400">Sistem gerçek kullanıcıyı doğrular; topluluk içinde ad-soyad yerine Global ID görünür.</p>
+            <p class="text-sm text-gray-400">
+              Sistem gerçek kullanıcıyı doğrular; topluluk içinde ad-soyad yerine Global ID görünür.
+            </p>
           </div>
+
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">2. Belge Kontrollü Erişim</h3>
-            <p class="text-sm text-gray-400">Tam erişim, mesleki belge inceleme başvurusu ve telefon doğrulaması sonrasında açılır.</p>
+            <p class="text-sm text-gray-400">
+              Tam erişim, mesleki belge inceleme başvurusu ve telefon doğrulaması sonrasında açılır.
+            </p>
           </div>
+
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">3. Oy Gücü Kurallıdır</h3>
-            <p class="text-sm text-gray-400">Oy, destek ve katkı işlemleri veritabanı kayıtlarıyla kilitlenir. Aynı başlıkta çift oy engellenir.</p>
+            <p class="text-sm text-gray-400">
+              Oy, destek ve katkı işlemleri veritabanı kayıtlarıyla kilitlenir.
+            </p>
           </div>
+
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">4. İftira ve Hedef Gösterme Yok</h3>
-            <p class="text-sm text-gray-400">Kişisel saldırı, hakaret, iftira, linç ve mesleki itibarı haksız zedeleyen içerikler sistem dışı bırakılır.</p>
-          </div>
-          <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-            <h3 class="font-black mb-2">5. Koruma Hattı Kesin Hüküm Vermez</h3>
-            <p class="text-sm text-gray-400">ME26 yargı mercii veya meslek odası değildir. Bildirimleri belgeye dayalı ön inceleme amacıyla kayıt altına alır.</p>
-          </div>
-          <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-            <h3 class="font-black mb-2">6. Başkan Yok, Kural Var</h3>
-            <p class="text-sm text-gray-400">Sistemin amacı kişileri öne çıkarmak değil; kurallı, izlenebilir ve liyakate dayalı ortak akıl üretmektir.</p>
+            <p class="text-sm text-gray-400">
+              Kişisel saldırı, hakaret, iftira, linç ve mesleki itibarı haksız zedeleyen içerikler sistem dışı bırakılır.
+            </p>
           </div>
         </div>
       </section>
@@ -317,19 +338,23 @@
           <div class="grid gap-4">
             <div class="glass rounded-3xl p-6">
               <h3 class="font-black mb-2">Global ID</h3>
-              <p class="text-sm text-gray-400">Topluluk içinde kullanıcılar ad-soyadla değil; TR-IA kimliği, şehir tribünü, rol ve katkı geçmişiyle görünür.</p>
+              <p class="text-sm text-gray-400">
+                Topluluk içinde kullanıcılar ad-soyadla değil; TR-IA kimliği, şehir tribünü, rol ve katkı geçmişiyle görünür.
+              </p>
             </div>
+
             <div class="glass rounded-3xl p-6">
               <h3 class="font-black mb-2">Telefon Doğrulama</h3>
-              <p class="text-sm text-gray-400">Çoklu hesap, sahte kayıt ve manipülasyon riskini azaltmak için telefon doğrulaması istenir.</p>
+              <p class="text-sm text-gray-400">
+                Çoklu hesap, sahte kayıt ve manipülasyon riskini azaltmak için telefon doğrulaması istenir.
+              </p>
             </div>
+
             <div class="glass rounded-3xl p-6">
               <h3 class="font-black mb-2">Belge İnceleme</h3>
-              <p class="text-sm text-gray-400">Mesleki belge başvurusu otomatik hüküm üretmez. Ön inceleme kuyruğuna alınır.</p>
-            </div>
-            <div class="glass rounded-3xl p-6">
-              <h3 class="font-black mb-2">Koruma Hattı</h3>
-              <p class="text-sm text-gray-400">Bildirim sahibinin bilgileri gizli tutulur. Süreçler anonim ve istatistiksel biçimde değerlendirilebilir.</p>
+              <p class="text-sm text-gray-400">
+                Mesleki belge başvurusu otomatik hüküm üretmez. Ön inceleme kuyruğuna alınır.
+              </p>
             </div>
           </div>
         </div>
@@ -343,13 +368,8 @@
           ME26 kesin hüküm vermez, yargı mercii veya meslek odası değildir.
           Bildirimleri belgeye dayalı ön inceleme amacıyla kayıt altına alır.
         </p>
-        <p class="mt-4">
-          Bu geçici canlı test sürümünde dosya yükleme, belge onayı ve hukuki bildirim süreçleri kontrollü olarak izlenmelidir.
-          Resmi lansman öncesinde KVKK Aydınlatma Metni, Kullanım Şartları, Gizlilik Politikası ve Topluluk Kuralları ayrıca yayınlanmalıdır.
-        </p>
         <p class="mt-6">
           © 2026 ME26 Teknoloji · İnsan Yönetici Yok. Kurallar Var.
-          <span class="block md:inline md:ml-3">Geçici canlı adres: me26.mustafaerciyas.workers.dev</span>
         </p>
       </div>
     </footer>
@@ -365,40 +385,60 @@
           <div class="w-11 h-11 rounded-2xl bg-kaos text-slate-950 flex items-center justify-center font-black shadow-kaos">
             ME
           </div>
+
           <div>
             <div class="text-lg font-black tracking-widest">ME26</div>
-            <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">Dijital Meclis</div>
+            <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">
+              Dijital Meclis
+            </div>
           </div>
         </div>
 
         <div class="mt-5 bg-black/40 border border-slate-800 rounded-2xl p-4">
           <div id="sidebar-user-id" class="text-kaos font-black text-sm">TR-IA-???</div>
-          <div id="sidebar-user-role" class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Kimlik Bekleniyor</div>
-          <div id="sidebar-vote-power" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Erişim Seviyesi Sınırlı</div>
+          <div id="sidebar-user-role" class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+            Kimlik Bekleniyor
+          </div>
+          <div id="sidebar-vote-power" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+            Erişim Seviyesi Sınırlı
+          </div>
         </div>
       </div>
 
       <nav class="p-4 flex-1 overflow-y-auto space-y-2">
         <button type="button" data-target="view-lobi" class="nav-menu-btn active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-white border border-transparent">
-          <i class="fa-solid fa-landmark w-5 text-kaos"></i> İçmimar Lobisi
+          <i class="fa-solid fa-landmark w-5 text-kaos"></i>
+          İçmimar Lobisi
         </button>
+
         <button type="button" data-target="view-sandik" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
-          <i class="fa-solid fa-square-poll-vertical w-5"></i> Ortak Sandık
+          <i class="fa-solid fa-square-poll-vertical w-5"></i>
+          Ortak Sandık
         </button>
+
         <button type="button" data-target="view-kursu" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
-          <i class="fa-solid fa-comments w-5"></i> Söz Sende
+          <i class="fa-solid fa-comments w-5"></i>
+          Söz Sende
         </button>
+
         <button type="button" data-target="view-stadium" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
-          <i class="fa-solid fa-city w-5"></i> Canlı Stadyum
+          <i class="fa-solid fa-city w-5"></i>
+          Canlı Stadyum
         </button>
+
         <button type="button" data-target="view-tribun" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
-          <i class="fa-solid fa-ranking-star w-5"></i> Tribün
+          <i class="fa-solid fa-ranking-star w-5"></i>
+          Tribün Ligi
         </button>
+
         <button type="button" data-target="view-koruma" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
-          <i class="fa-solid fa-shield-halved w-5"></i> İçmimar Koruma Hattı
+          <i class="fa-solid fa-shield-halved w-5"></i>
+          İçmimar Koruma Hattı
         </button>
+
         <button type="button" data-target="view-profil" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
-          <i class="fa-solid fa-id-card w-5"></i> Sicilim & Ayarlarım
+          <i class="fa-solid fa-id-card w-5"></i>
+          Sicilim & Ayarlarım
         </button>
       </nav>
 
@@ -419,6 +459,7 @@
           <div class="text-sm font-black tracking-widest">ME26 AĞI</div>
           <div id="mobile-user-id" class="text-[10px] text-kaos font-black">TR-IA-???</div>
         </div>
+
         <button id="btn-mobile-logout" type="button" class="text-xs text-red-400 font-black uppercase tracking-widest">
           Çıkış
         </button>
@@ -452,79 +493,18 @@
                   <option>Amasya</option>
                   <option>Ankara</option>
                   <option>Antalya</option>
-                  <option>Ardahan</option>
-                  <option>Artvin</option>
-                  <option>Aydın</option>
-                  <option>Balıkesir</option>
-                  <option>Bartın</option>
-                  <option>Batman</option>
-                  <option>Bayburt</option>
-                  <option>Bilecik</option>
-                  <option>Bingöl</option>
-                  <option>Bitlis</option>
-                  <option>Bolu</option>
-                  <option>Burdur</option>
-                  <option>Bursa</option>
-                  <option>Çanakkale</option>
-                  <option>Çankırı</option>
-                  <option>Çorum</option>
-                  <option>Denizli</option>
-                  <option>Diyarbakır</option>
-                  <option>Düzce</option>
-                  <option>Edirne</option>
-                  <option>Elazığ</option>
-                  <option>Erzincan</option>
-                  <option>Erzurum</option>
-                  <option>Eskişehir</option>
-                  <option>Gaziantep</option>
-                  <option>Giresun</option>
-                  <option>Gümüşhane</option>
-                  <option>Hakkari</option>
-                  <option>Hatay</option>
-                  <option>Iğdır</option>
-                  <option>Isparta</option>
                   <option>İstanbul</option>
                   <option>İzmir</option>
-                  <option>Kahramanmaraş</option>
-                  <option>Karabük</option>
-                  <option>Karaman</option>
-                  <option>Kars</option>
-                  <option>Kastamonu</option>
-                  <option>Kayseri</option>
-                  <option>Kırıkkale</option>
-                  <option>Kırklareli</option>
-                  <option>Kırşehir</option>
-                  <option>Kilis</option>
-                  <option>Kocaeli</option>
+                  <option>Bursa</option>
+                  <option>Eskişehir</option>
                   <option>Konya</option>
-                  <option>Kütahya</option>
-                  <option>Malatya</option>
-                  <option>Manisa</option>
-                  <option>Mardin</option>
+                  <option>Kayseri</option>
+                  <option>Samsun</option>
+                  <option>Trabzon</option>
+                  <option>Gaziantep</option>
                   <option>Mersin</option>
                   <option>Muğla</option>
-                  <option>Muş</option>
-                  <option>Nevşehir</option>
-                  <option>Niğde</option>
-                  <option>Ordu</option>
-                  <option>Osmaniye</option>
-                  <option>Rize</option>
-                  <option>Sakarya</option>
-                  <option>Samsun</option>
-                  <option>Siirt</option>
-                  <option>Sinop</option>
-                  <option>Sivas</option>
-                  <option>Şanlıurfa</option>
-                  <option>Şırnak</option>
-                  <option>Tekirdağ</option>
-                  <option>Tokat</option>
-                  <option>Trabzon</option>
-                  <option>Tunceli</option>
-                  <option>Uşak</option>
-                  <option>Van</option>
-                  <option>Yalova</option>
-                  <option>Yozgat</option>
-                  <option>Zonguldak</option>
+                  <option>Kocaeli</option>
                   <option>Yurtdışı</option>
                 </select>
 
@@ -544,7 +524,9 @@
           <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
               <div>
-                <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">Ana Lobi</div>
+                <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">
+                  Ana Lobi
+                </div>
                 <h1 class="text-3xl md:text-5xl font-black">İçmimar Lobisi</h1>
                 <p class="text-gray-400 mt-3 max-w-2xl">
                   Sistem duyuruları, ortak gündem ve sicil görevleri bu alanda toplanır.
@@ -575,19 +557,33 @@
 
               <div class="grid gap-4">
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6">
-                  <div class="text-[10px] text-kaos font-black uppercase tracking-widest">Aşama 1</div>
+                  <div class="text-[10px] text-kaos font-black uppercase tracking-widest">
+                    Aşama 1
+                  </div>
                   <h3 class="text-lg font-black mt-1">Sicilini Tamamla</h3>
-                  <p class="text-sm text-gray-400 mt-2">Telefon ve belge inceleme başvurusu ile tam erişime hazırlan.</p>
+                  <p class="text-sm text-gray-400 mt-2">
+                    Telefon ve belge inceleme başvurusu ile tam erişime hazırlan.
+                  </p>
                 </div>
+
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6">
-                  <div class="text-[10px] text-kaos font-black uppercase tracking-widest">Aşama 2</div>
+                  <div class="text-[10px] text-kaos font-black uppercase tracking-widest">
+                    Aşama 2
+                  </div>
                   <h3 class="text-lg font-black mt-1">Sandığa Katıl</h3>
-                  <p class="text-sm text-gray-400 mt-2">Destek ver, oy kullan, önerge oluştur ve mesleki gündeme katkı sun.</p>
+                  <p class="text-sm text-gray-400 mt-2">
+                    Destek ver, oy kullan, önerge oluştur ve mesleki gündeme katkı sun.
+                  </p>
                 </div>
+
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6">
-                  <div class="text-[10px] text-kaos font-black uppercase tracking-widest">Aşama 3</div>
+                  <div class="text-[10px] text-kaos font-black uppercase tracking-widest">
+                    Aşama 3
+                  </div>
                   <h3 class="text-lg font-black mt-1">Ortak Akıl Üret</h3>
-                  <p class="text-sm text-gray-400 mt-2">Soru sor, cevap ver, çözümleri görünür hale getir.</p>
+                  <p class="text-sm text-gray-400 mt-2">
+                    Soru sor, cevap ver, çözümleri görünür hale getir.
+                  </p>
                 </div>
               </div>
             </div>
@@ -598,9 +594,13 @@
           <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
               <div>
-                <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">Otonom Sandık</div>
+                <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">
+                  Otonom Sandık
+                </div>
                 <h1 class="text-3xl md:text-5xl font-black">Ortak Sandık</h1>
-                <p class="text-gray-400 mt-3">Önergeler destek toplar; gündeme giren başlıklar oylamaya açılır.</p>
+                <p class="text-gray-400 mt-3">
+                  Önergeler destek toplar; gündeme giren başlıklar oylamaya açılır.
+                </p>
               </div>
 
               <button
@@ -638,9 +638,13 @@
           <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
               <div>
-                <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">Söz Sende</div>
+                <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">
+                  Söz Sende
+                </div>
                 <h1 class="text-3xl md:text-5xl font-black">Ortak Akıl Kürsüsü</h1>
-                <p class="text-gray-400 mt-3">Soru, cevap ve çözüm kayıtları burada oluşur.</p>
+                <p class="text-gray-400 mt-3">
+                  Soru, cevap ve çözüm kayıtları burada oluşur.
+                </p>
               </div>
 
               <button
@@ -681,40 +685,60 @@
         <section id="view-stadium" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
-              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">Canlı Stadyum</div>
+              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">
+                Canlı Stadyum
+              </div>
               <h1 class="text-3xl md:text-5xl font-black">Dijital Stadyum</h1>
-              <p class="text-gray-400 mt-3">Şehir tribünleri ve canlı kürsü alanı.</p>
+              <p class="text-gray-400 mt-3">
+                Şehir tribünleri ve canlı kürsü alanı.
+              </p>
             </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
-                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Şu An Stadyumda</div>
+                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                  Şu An Stadyumda
+                </div>
                 <div id="stat-total-online" class="text-3xl font-black text-kaos mt-2">0</div>
               </div>
+
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
-                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Mezun Koltuğu</div>
+                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                  Mezun Koltuğu
+                </div>
                 <div id="stat-mezun-online" class="text-3xl font-black text-white mt-2">0</div>
               </div>
+
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
-                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Öğrenci Koltuğu</div>
+                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                  Öğrenci Koltuğu
+                </div>
                 <div id="stat-ogrenci-online" class="text-3xl font-black text-white mt-2">0</div>
               </div>
+
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
-                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Lider Tribün</div>
-                <div id="stat-lider-tribun" class="text-xl font-black text-kaos mt-2">Bekleniyor</div>
+                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                  Lider Tribün
+                </div>
+                <div id="stat-lider-tribun" class="text-xl font-black text-kaos mt-2">
+                  Bekleniyor
+                </div>
               </div>
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-[1fr_0.85fr] gap-6">
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
                 <div id="stadyum-tribunler" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[300px]">
-                  <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">Tribünler hazırlanıyor...</div>
+                  <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">
+                    Tribünler hazırlanıyor...
+                  </div>
                 </div>
               </div>
 
               <div class="grid gap-5">
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center relative overflow-hidden">
                   <div id="saha-dalgalar" class="absolute inset-0 opacity-0 bg-green-500/5"></div>
+
                   <div
                     id="sahne-avatar"
                     class="relative mx-auto w-24 h-24 rounded-full border border-slate-700 bg-slate-900 flex items-center justify-center mb-4 transition"
@@ -722,8 +746,12 @@
                     <i id="sahne-mic-icon" class="fa-solid fa-microphone-slash text-3xl text-gray-600"></i>
                   </div>
 
-                  <div id="sahne-kisi-isim" class="text-xl font-black text-gray-500">Saha Boş</div>
-                  <div id="sahne-kisi-rol" class="text-[10px] text-gray-600 font-black uppercase tracking-widest mt-1">Kimse Konuşmuyor</div>
+                  <div id="sahne-kisi-isim" class="text-xl font-black text-gray-500">
+                    Saha Boş
+                  </div>
+                  <div id="sahne-kisi-rol" class="text-[10px] text-gray-600 font-black uppercase tracking-widest mt-1">
+                    Kimse Konuşmuyor
+                  </div>
 
                   <div class="mt-6 flex gap-2 justify-center">
                     <button
@@ -772,7 +800,9 @@
                   <div id="chat-cooldown-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur rounded-3xl flex items-center justify-center">
                     <div class="text-center">
                       <div class="text-3xl font-black text-kaos" id="chat-cooldown-timer">60</div>
-                      <div class="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-2">Saniye Bekle</div>
+                      <div class="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-2">
+                        Saniye Bekle
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -784,9 +814,13 @@
         <section id="view-tribun" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
-              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">Tribün Ligi</div>
+              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">
+                Tribün Ligi
+              </div>
               <h1 class="text-3xl md:text-5xl font-black">Şehir Güç Sıralaması</h1>
-              <p class="text-gray-400 mt-3">Şehirlerin katılım, önerge, oy ve katkı gücü.</p>
+              <p class="text-gray-400 mt-3">
+                Şehirlerin katılım, önerge, oy ve katkı gücü.
+              </p>
             </div>
 
             <div id="tribun-champions-container" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"></div>
@@ -795,10 +829,15 @@
               <table class="w-full">
                 <thead>
                   <tr class="border-b border-slate-800 bg-slate-900/50">
-                    <th class="p-4 text-left text-[10px] text-gray-500 font-black uppercase tracking-widest">Şehir</th>
-                    <th class="p-4 text-right text-[10px] text-gray-500 font-black uppercase tracking-widest">Güç Puanı</th>
+                    <th class="p-4 text-left text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                      Şehir
+                    </th>
+                    <th class="p-4 text-right text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                      Güç Puanı
+                    </th>
                   </tr>
                 </thead>
+
                 <tbody id="tribun-ligi-body">
                   <tr>
                     <td colspan="2" class="p-4 text-center text-gray-500 text-xs uppercase tracking-widest">
@@ -814,7 +853,9 @@
         <section id="view-koruma" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
-              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">İçmimar Koruma Hattı</div>
+              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">
+                İçmimar Koruma Hattı
+              </div>
               <h1 class="text-3xl md:text-5xl font-black">Mesleki Kimlik Koruma Hattı</h1>
               <p class="text-gray-400 mt-3 max-w-3xl">
                 Ünvan güvenliği, belge kontrolü ve mesleki kimlik koruması için oluşturulmuş bildirim ve ön inceleme sistemi.
@@ -853,7 +894,9 @@
 
                 <div class="grid gap-4">
                   <label class="grid gap-2">
-                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Bildirim Türü</span>
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                      Bildirim Türü
+                    </span>
                     <select
                       id="input-koruma-turu"
                       class="bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-kaos"
@@ -867,7 +910,9 @@
                   </label>
 
                   <label class="grid gap-2">
-                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Bildirilen Kişi / Kurum</span>
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                      Bildirilen Kişi / Kurum
+                    </span>
                     <input
                       id="input-koruma-kisi"
                       type="text"
@@ -877,7 +922,9 @@
                   </label>
 
                   <label class="grid gap-2">
-                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Web Sitesi / Sosyal Medya</span>
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                      Web Sitesi / Sosyal Medya
+                    </span>
                     <input
                       id="input-koruma-link"
                       type="url"
@@ -887,7 +934,9 @@
                   </label>
 
                   <label class="grid gap-2">
-                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Durum Açıklaması</span>
+                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                      Durum Açıklaması
+                    </span>
                     <textarea
                       id="input-koruma-aciklama"
                       rows="5"
@@ -896,13 +945,6 @@
                     ></textarea>
                   </label>
 
-                  <div class="bg-slate-900/70 border border-slate-700 rounded-2xl p-4">
-                    <div class="text-[10px] text-kaos font-black uppercase tracking-widest mb-2">Delil Bağlantısı Tercih Edilir</div>
-                    <p class="text-xs text-gray-400 leading-relaxed">
-                      Dosya yükleme altyapısı canlıda henüz aktif değildir. Lütfen delili bağlantı olarak Web Sitesi / Sosyal Medya alanına ekleyin.
-                    </p>
-                  </div>
-
                   <label class="flex items-center gap-3">
                     <input id="input-koruma-anonim" type="checkbox" class="w-4 h-4 accent-yellow-400" />
                     <span class="text-sm text-gray-300">Başvurumu anonim olarak yap</span>
@@ -910,7 +952,9 @@
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label class="grid gap-2">
-                      <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Adınız Soyadınız</span>
+                      <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                        Adınız Soyadınız
+                      </span>
                       <input
                         id="input-koruma-ad"
                         type="text"
@@ -920,7 +964,9 @@
                     </label>
 
                     <label class="grid gap-2">
-                      <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">İletişim Tel/E-posta</span>
+                      <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                        İletişim Tel/E-posta
+                      </span>
                       <input
                         id="input-koruma-iletisim"
                         type="text"
@@ -953,7 +999,9 @@
         <section id="view-profil" class="view-section hidden p-4 md:p-8">
           <div class="max-w-7xl mx-auto">
             <div class="mb-8">
-              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">Sicil & Ayarlar</div>
+              <div class="text-kaos text-[10px] font-black uppercase tracking-widest mb-2">
+                Sicil & Ayarlar
+              </div>
               <h1 class="text-3xl md:text-5xl font-black">Sicilim & Ayarlarım</h1>
             </div>
 
@@ -967,13 +1015,21 @@
                   </div>
 
                   <div id="ui-user-id" class="text-3xl font-black text-kaos">TR-IA-???</div>
-                  <div id="ui-user-role" class="text-sm text-gray-400 font-bold uppercase tracking-widest mt-2">Kimlik Bekleniyor</div>
-                  <div id="ui-user-city" class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Seçilmedi Tribünü</div>
+                  <div id="ui-user-role" class="text-sm text-gray-400 font-bold uppercase tracking-widest mt-2">
+                    Kimlik Bekleniyor
+                  </div>
+                  <div id="ui-user-city" class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">
+                    Seçilmedi Tribünü
+                  </div>
 
                   <div class="mt-6 grid grid-cols-1 gap-3">
                     <div class="bg-black/40 border border-slate-800 rounded-2xl p-4">
-                      <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Erişim Seviyesi</div>
-                      <div id="ui-vote-power" class="text-lg font-black text-white mt-1">Sınırlı</div>
+                      <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                        Erişim Seviyesi
+                      </div>
+                      <div id="ui-vote-power" class="text-lg font-black text-white mt-1">
+                        Sınırlı
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -999,23 +1055,6 @@
 
               <div class="grid gap-6">
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 md:p-7">
-                  <h2 class="text-xl font-black mb-3">Sistem Teması</h2>
-                  <p class="text-sm text-gray-400 leading-relaxed mb-4">
-                    Sistemin her girişte renk değiştirmesini istemiyorsanız, kendi renginizi seçip sabitleyebilirsiniz.
-                  </p>
-
-                  <div class="flex gap-2">
-                    <button type="button" class="bg-slate-900 border border-slate-700 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest">
-                      Rengi Sabitle
-                    </button>
-
-                    <button type="button" class="bg-slate-900 border border-slate-700 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest">
-                      Kaosa Dön
-                    </button>
-                  </div>
-                </div>
-
-                <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 md:p-7">
                   <div class="flex items-center justify-between gap-4 mb-5">
                     <h2 class="text-xl font-black">Kontenjan & Referans</h2>
                     <div id="ui-vip-status" class="text-[9px] text-gray-500 font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700">
@@ -1035,8 +1074,12 @@
                   </div>
 
                   <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 mb-4">
-                    <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Davet Linkin</div>
-                    <div id="ui-invite-link" class="text-xs text-kaos break-all font-mono">https://me26.mustafaerciyas.workers.dev/?ref=TR-IA-BEKLEYEN</div>
+                    <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">
+                      Davet Linkin
+                    </div>
+                    <div id="ui-invite-link" class="text-xs text-kaos break-all font-mono">
+                      https://me26.mustafaerciyas.workers.dev/?ref=TR-IA-BEKLEYEN
+                    </div>
                   </div>
 
                   <div class="flex flex-col sm:flex-row gap-2">
@@ -1112,26 +1155,32 @@
           <i class="fa-solid fa-landmark text-kaos"></i>
           Lobi
         </button>
+
         <button type="button" data-target="view-sandik" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-square-poll-vertical"></i>
           Sandık
         </button>
+
         <button type="button" data-target="view-kursu" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-comments"></i>
           Söz
         </button>
+
         <button type="button" data-target="view-stadium" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-city"></i>
           Stad
         </button>
+
         <button type="button" data-target="view-tribun" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-ranking-star"></i>
           Tribün
         </button>
+
         <button type="button" data-target="view-koruma" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-shield-halved"></i>
           Koruma
         </button>
+
         <button type="button" data-target="view-profil" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-id-card"></i>
           Ayarlar
@@ -1158,12 +1207,20 @@
 
       <div class="p-5">
         <div class="grid grid-cols-2 gap-2 bg-slate-900 rounded-xl p-1 mb-5">
-          <button id="tab-btn-onerge" type="button" class="flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition bg-slate-800 text-white shadow-md">
+          <button
+            id="tab-btn-onerge"
+            type="button"
+            class="flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition bg-slate-800 text-white shadow-md"
+          >
             Sandığa Önerge Sun
           </button>
 
-          <button id="tab-btn-soru" type="button" class="flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition text-gray-500 hover:text-white bg-transparent">
-            ❓ Ortak Akla Soru Sor
+          <button
+            id="tab-btn-soru"
+            type="button"
+            class="flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition text-gray-500 hover:text-white bg-transparent"
+          >
+            Ortak Akla Soru Sor
           </button>
         </div>
 
@@ -1202,7 +1259,9 @@
           </div>
 
           <label class="grid gap-2">
-            <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Oylama Süresi</span>
+            <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+              Oylama Süresi
+            </span>
             <select
               id="input-kursu-duration"
               class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-kaos"
@@ -1328,9 +1387,15 @@
 
         <label class="block bg-slate-900 border border-dashed border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-kaos transition mb-4">
           <input id="input-pdf-file" type="file" accept="application/pdf,.pdf" class="hidden" />
-          <div class="text-kaos text-2xl mb-2"><i class="fa-solid fa-file-pdf"></i></div>
-          <div class="text-xs font-black uppercase tracking-widest">PDF Dosyası Seç</div>
-          <div class="text-[10px] text-gray-500 mt-2">Maksimum 10 MB</div>
+          <div class="text-kaos text-2xl mb-2">
+            <i class="fa-solid fa-file-pdf"></i>
+          </div>
+          <div class="text-xs font-black uppercase tracking-widest">
+            PDF Dosyası Seç
+          </div>
+          <div class="text-[10px] text-gray-500 mt-2">
+            Maksimum 10 MB
+          </div>
         </label>
 
         <button
@@ -1362,14 +1427,18 @@
 
       <div class="p-5">
         <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 mb-5">
-          <h3 class="text-kaos font-black text-sm uppercase tracking-widest mb-2">VIP Ekranı Kilitli</h3>
+          <h3 class="text-kaos font-black text-sm uppercase tracking-widest mb-2">
+            VIP Ekranı Kilitli
+          </h3>
           <p class="text-xs text-gray-400 leading-relaxed">
-            Bu alana erişmek ve kendi kurucu numaranızı seçmek için, davet bağlantınızla en az 3 gerçek meslektaş kaydı gerekir.
+            Bu alana erişmek ve kendi kurucu numaranızı seçmek için davet bağlantınızla en az 3 gerçek meslektaş kaydı gerekir.
           </p>
         </div>
 
         <label class="grid gap-2 mb-4">
-          <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Kurucu Numara</span>
+          <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+            Kurucu Numara
+          </span>
           <input
             id="input-vip-number"
             type="number"
@@ -1393,12 +1462,11 @@
 
   <!-- ======================================================
        SCRIPTS
-       Sıra önemli:
-       app.js ana giriş/kayıt için önce çalışır.
-       ui.js, qa.js ve stadium.js yardımcı modüller olarak yüklenir.
+       Sıra önemli.
   ======================================================= -->
   <script type="module" src="./app.js"></script>
   <script type="module" src="./ui.js"></script>
+  <script type="module" src="./vip.js"></script>
   <script type="module" src="./qa.js"></script>
   <script type="module" src="./stadium.js"></script>
 </body>
