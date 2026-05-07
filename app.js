@@ -1,11 +1,20 @@
 /* ==========================================================================
-   ME26 AĞI - ANA MOTOR (app.js)
-   Güvenli Giriş + Supabase Kayıt + Panel Geçiş Sürümü
+   ME26 AĞI - app.js
+   Temiz Güvenli Sürüm
 
-   ÖNEMLİ:
-   - Bu dosya auth.js / ui.js / supabase.js / state.js import etmez.
-   - Sebep: Bu dosyalarda kopyalama kaynaklı string/syntax bozulması var.
-   - Amaç: Kayıt Ol / Giriş Yap butonlarını kesin çalıştırmak.
+   Çalışan ana hat:
+   - Kayıt Ol / Giriş Yap
+   - Firebase Google popup giriş
+   - Supabase users kaydı / okuması
+   - SaaS panele geçiş
+   - Profil render
+   - Şehir seçimi
+   - Davet linki kopyalama
+   - Telefon modalı için auth.js opsiyonel yükleme
+   - PDF belge başvurusu
+   - Önerge gönderimi
+   - Destek ver
+   - Koruma hattı bildirimi
 ========================================================================== */
 
 import { ME26_CONFIG, auth } from './config.js';
@@ -20,7 +29,7 @@ import {
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // ------------------------------------------------------
-// SUPABASE CLIENT
+// SUPABASE
 // ------------------------------------------------------
 
 const supabase = createClient(ME26_CONFIG.supabaseUrl, ME26_CONFIG.supabaseKey, {
@@ -36,13 +45,16 @@ const supabase = createClient(ME26_CONFIG.supabaseUrl, ME26_CONFIG.supabaseKey, 
 // ------------------------------------------------------
 
 const STORAGE_KEY = 'me26_user';
+const DEFAULT_BASE_URL = 'https://me26.mustafaerciyas.workers.dev';
 
 let currentUser = null;
-let loginLock = false;
 let appStarted = false;
+let loginLock = false;
+let activeKursuMode = 'onerge';
+let authModuleLoaded = false;
 
 // ------------------------------------------------------
-// KISA YARDIMCILAR
+// YARDIMCILAR
 // ------------------------------------------------------
 
 const $ = (id) => document.getElementById(id);
@@ -57,9 +69,25 @@ const toNumber = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const safeSetText = (id, value) => {
+const escapeHtml = (value) => {
+  return cleanText(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+const setText = (id, value) => {
   const el = $(id);
   if (el) el.textContent = value;
+};
+
+const getBaseUrl = () => {
+  return cleanText(
+    ME26_CONFIG.inviteBaseUrl || ME26_CONFIG.officialBaseUrl || DEFAULT_BASE_URL,
+    DEFAULT_BASE_URL
+  ).replace(/\/+$/, '');
 };
 
 const showToast = (message, type = 'info') => {
@@ -97,6 +125,26 @@ const showToast = (message, type = 'info') => {
   setTimeout(() => {
     toast.remove();
   }, 3500);
+};
+
+const setLoading = (button, text = 'İşleniyor...') => {
+  if (!button) return '';
+
+  const oldText = button.innerHTML;
+
+  button.disabled = true;
+  button.innerHTML = text;
+  button.classList.add('opacity-70', 'cursor-wait');
+
+  return oldText;
+};
+
+const restoreButton = (button, oldText = '') => {
+  if (!button) return;
+
+  button.disabled = false;
+  button.innerHTML = oldText || button.innerHTML;
+  button.classList.remove('opacity-70', 'cursor-wait');
 };
 
 const saveLocalUser = (user) => {
@@ -150,6 +198,48 @@ const createInviteCode = (uid = '') => {
   }
 };
 
+const getReadableError = (error, fallback = 'İşlem sırasında hata oluştu.') => {
+  const code = cleanText(error?.code);
+  const message = cleanText(error?.message || error);
+
+  if (code === 'auth/popup-closed-by-user') return 'Google giriş penceresi kapatıldı.';
+  if (code === 'auth/popup-blocked') return 'Tarayıcı popup penceresini engelledi. Popup izni verin.';
+  if (code === 'auth/cancelled-popup-request') return 'Aynı anda iki giriş isteği oluştu. Tekrar deneyin.';
+  if (code === 'auth/unauthorized-domain') return 'Bu domain Firebase Authentication içinde yetkilendirilmemiş. Firebase Authorized domains alanına workers.dev domainini ekleyin.';
+  if (code === 'auth/too-many-requests') return 'Çok fazla deneme yapıldı. Biraz bekleyip tekrar deneyin.';
+
+  const map = {
+    already_voted: 'Bu önergeye zaten oy verdiniz.',
+    already_supported: 'Bu önergeyi zaten desteklediniz.',
+    duplicate_record: 'Bu işlem daha önce yapılmış görünüyor.',
+    missing_uid: 'Oturum kimliği bulunamadı.',
+    missing_city: 'Şehir seçimi eksik.',
+    missing_proposal_id: 'Önerge kimliği okunamadı.',
+    user_not_found: 'Kullanıcı kaydı bulunamadı.'
+  };
+
+  return map[message] || message || fallback;
+};
+
+// ------------------------------------------------------
+// KULLANICI NORMALİZE
+// ------------------------------------------------------
+
+const getDigitalIdFromDbUser = (dbUser = {}) => {
+  const userNo =
+    dbUser.vip_kurucu_no ||
+    dbUser.kurucu_no ||
+    dbUser.userNo ||
+    dbUser.user_no ||
+    'BEKLEYEN';
+
+  if (userNo && userNo !== 'BEKLEYEN') return `TR-IA-${userNo}`;
+  if (dbUser.digital_id) return dbUser.digital_id;
+  if (dbUser.digitalId) return dbUser.digitalId;
+
+  return 'TR-IA-BEKLEYEN';
+};
+
 const normalizeUser = (dbUser = {}) => {
   const userNo =
     dbUser.vip_kurucu_no ||
@@ -158,8 +248,7 @@ const normalizeUser = (dbUser = {}) => {
     dbUser.user_no ||
     'BEKLEYEN';
 
-  const digitalId =
-    userNo && userNo !== 'BEKLEYEN' ? `TR-IA-${userNo}` : 'TR-IA-BEKLEYEN';
+  const digitalId = getDigitalIdFromDbUser(dbUser);
 
   return {
     uid: dbUser.id || dbUser.uid || null,
@@ -176,6 +265,7 @@ const normalizeUser = (dbUser = {}) => {
       dbUser.d_kod ||
       digitalId,
     hasPhone: Boolean(dbUser.telefon || dbUser.has_phone || dbUser.hasPhone),
+    phone: dbUser.telefon || dbUser.phone || null,
     documentStatus: dbUser.belge_durumu || 'Bekliyor',
     votePower: toNumber(dbUser.oy_gucu || dbUser.vote_power, 0),
     inviteCount: toNumber(
@@ -188,10 +278,32 @@ const normalizeUser = (dbUser = {}) => {
 };
 
 // ------------------------------------------------------
+// AUTH.JS OPSİYONEL YÜKLEME
+// ------------------------------------------------------
+
+async function loadOptionalAuthModule() {
+  if (authModuleLoaded) return true;
+
+  try {
+    await import('./auth.js');
+    authModuleLoaded = true;
+
+    if (window.ME26_AUTH?.telefonuUlkeMenusuHazirla) {
+      window.ME26_AUTH.telefonuUlkeMenusuHazirla();
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('auth.js yüklenemedi. Ana giriş etkilenmedi:', error);
+    return false;
+  }
+}
+
+// ------------------------------------------------------
 // EKRAN GEÇİŞLERİ
 // ------------------------------------------------------
 
-const showLanding = () => {
+function showLanding() {
   const landing = $('landing-view');
   const saas = $('saas-view');
 
@@ -203,9 +315,9 @@ const showLanding = () => {
   }
 
   document.body.classList.remove('overflow-hidden');
-};
+}
 
-const showSaas = () => {
+function showSaas() {
   const landing = $('landing-view');
   const saas = $('saas-view');
 
@@ -217,9 +329,9 @@ const showSaas = () => {
   }
 
   document.body.classList.add('overflow-hidden');
-};
+}
 
-const switchSaasTab = (targetId) => {
+function switchSaasTab(targetId) {
   document.querySelectorAll('.view-section').forEach((section) => {
     section.classList.add('hidden');
     section.classList.remove('block');
@@ -247,41 +359,45 @@ const switchSaasTab = (targetId) => {
   const scrollParent = document.querySelector('#saas-view main');
   if (scrollParent) scrollParent.scrollTo({ top: 0, behavior: 'smooth' });
 
-  if (targetId === 'view-sandik') {
-    loadProposals();
-  }
+  if (targetId === 'view-sandik') loadProposals();
+  if (targetId === 'view-tribun') loadTribunLigi();
+}
 
-  if (targetId === 'view-tribun') {
-    loadTribunLigi();
-  }
-};
-
-const openModal = (modalId) => {
+async function openModal(modalId) {
   const modal = $(modalId);
   if (!modal) return;
 
   modal.classList.remove('hidden');
   modal.classList.add('flex');
   modal.setAttribute('aria-hidden', 'false');
-};
 
-const closeModal = (modalId) => {
+  if (modalId === 'phone-modal') {
+    await loadOptionalAuthModule();
+
+    if (window.ME26_AUTH?.telefonuUlkeMenusuHazirla) {
+      window.ME26_AUTH.telefonuUlkeMenusuHazirla();
+    }
+  }
+}
+
+function closeModal(modalId) {
   const modal = $(modalId);
   if (!modal) return;
 
   modal.classList.add('hidden');
   modal.classList.remove('flex');
   modal.setAttribute('aria-hidden', 'true');
-};
+}
 
 // ------------------------------------------------------
-// PROFİL RENDER
+// PROFİL
 // ------------------------------------------------------
 
-const renderProfile = () => {
+function renderProfile() {
   if (!currentUser) return;
 
   const digitalId = currentUser.digitalId || 'TR-IA-BEKLEYEN';
+
   const role =
     currentUser.role && currentUser.role !== 'Belirsiz'
       ? currentUser.role
@@ -294,23 +410,23 @@ const renderProfile = () => {
 
   const access = currentUser.votePower > 0 ? 'Tam' : 'Sınırlı';
 
-  const inviteLink = `${ME26_CONFIG.inviteBaseUrl}/?ref=${encodeURIComponent(
+  const inviteLink = `${getBaseUrl()}/?ref=${encodeURIComponent(
     currentUser.inviteCode || digitalId
   )}`;
 
-  safeSetText('sidebar-user-id', digitalId);
-  safeSetText('mobile-user-id', digitalId);
-  safeSetText('ui-user-id', digitalId);
+  setText('sidebar-user-id', digitalId);
+  setText('mobile-user-id', digitalId);
+  setText('ui-user-id', digitalId);
 
-  safeSetText('ui-user-role', role);
-  safeSetText('sidebar-user-role', role);
+  setText('ui-user-role', role);
+  setText('sidebar-user-role', role);
 
-  safeSetText('ui-user-city', city);
-  safeSetText('ui-vote-power', access);
-  safeSetText('sidebar-vote-power', `Erişim Seviyesi ${access}`);
+  setText('ui-user-city', city);
+  setText('ui-vote-power', access);
+  setText('sidebar-vote-power', `Erişim Seviyesi ${access}`);
 
-  safeSetText('ui-invite-link', inviteLink);
-  safeSetText('ui-vip-invite-count', `${currentUser.inviteCount || 0} / 3 Paylaşım`);
+  setText('ui-invite-link', inviteLink);
+  setText('ui-vip-invite-count', `${currentUser.inviteCount || 0} / 3 Paylaşım`);
 
   const progressBar = $('ui-vip-progress-bar');
   if (progressBar) {
@@ -324,6 +440,7 @@ const renderProfile = () => {
   }
 
   const roleBadge = $('ui-role-badge');
+
   if (roleBadge) {
     if (currentUser.isVip) {
       roleBadge.textContent = 'VIP KURUCU';
@@ -341,6 +458,7 @@ const renderProfile = () => {
   }
 
   const systemText = $('ui-sistem-durumu');
+
   if (systemText) {
     if (currentUser.votePower > 0) {
       systemText.textContent =
@@ -350,13 +468,13 @@ const renderProfile = () => {
         'Kullanıcı kaydınız Supabase içine işlendi. Şehir, telefon ve belge adımları tamamlandıkça erişim seviyesi artacak.';
     }
   }
-};
+}
 
 // ------------------------------------------------------
-// SUPABASE KULLANICI OLUŞTUR / OKU
+// SUPABASE KULLANICI
 // ------------------------------------------------------
 
-const loadOrCreateSupabaseUser = async (firebaseUser) => {
+async function loadOrCreateSupabaseUser(firebaseUser) {
   if (!firebaseUser || !firebaseUser.uid) {
     throw new Error('Google kullanıcı kimliği alınamadı.');
   }
@@ -367,13 +485,8 @@ const loadOrCreateSupabaseUser = async (firebaseUser) => {
     .eq('id', firebaseUser.uid)
     .maybeSingle();
 
-  if (selectError) {
-    throw selectError;
-  }
-
-  if (existingUser) {
-    return existingUser;
-  }
+  if (selectError) throw selectError;
+  if (existingUser) return existingUser;
 
   const payload = {
     uid: firebaseUser.uid,
@@ -393,12 +506,31 @@ const loadOrCreateSupabaseUser = async (firebaseUser) => {
     }
   );
 
-  if (rpcError) {
-    throw rpcError;
-  }
+  if (rpcError) throw rpcError;
 
   return createdUser;
-};
+}
+
+async function refreshCurrentUser(uid = null) {
+  const userId = uid || currentUser?.uid || auth.currentUser?.uid;
+
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  currentUser = normalizeUser(data);
+  saveLocalUser(currentUser);
+  renderProfile();
+
+  return currentUser;
+}
 
 // ------------------------------------------------------
 // GOOGLE GİRİŞ
@@ -410,7 +542,8 @@ async function loginWithGoogle(event = null) {
     event.stopImmediatePropagation();
   }
 
-  if (loginLock) return;
+  if (loginLock || window.__ME26_LOGIN_LOCK__ === true) return;
+
   loginLock = true;
   window.__ME26_LOGIN_LOCK__ = true;
 
@@ -437,24 +570,13 @@ async function loginWithGoogle(event = null) {
   } catch (error) {
     console.error('ME26 Google giriş hatası:', error);
 
-    const code = cleanText(error?.code);
-    let message = error?.message || 'Google giriş tamamlanamadı.';
+    const message = getReadableError(error, 'Google giriş tamamlanamadı.');
 
-    if (code === 'auth/popup-closed-by-user') {
-      message = 'Google giriş penceresi kapatıldı.';
+    if (error?.code !== 'auth/popup-closed-by-user') {
+      alert(message);
     }
 
-    if (code === 'auth/popup-blocked') {
-      message = 'Tarayıcı Google giriş penceresini engelledi. Popup izni verin.';
-    }
-
-    if (code === 'auth/unauthorized-domain') {
-      message =
-        'Bu domain Firebase Authentication içinde yetkilendirilmemiş. Firebase Authorized domains alanına workers.dev domainini ekleyin.';
-    }
-
-    showToast(message, 'error');
-    alert(message);
+    showToast(message, error?.code === 'auth/popup-closed-by-user' ? 'info' : 'error');
   } finally {
     setTimeout(() => {
       loginLock = false;
@@ -497,12 +619,7 @@ async function saveCity() {
   }
 
   const btn = $('btn-save-profile-city');
-  const oldText = btn ? btn.textContent : '';
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Kaydediliyor...';
-  }
+  const oldText = setLoading(btn, 'Kaydediliyor...');
 
   try {
     const { error: rpcError } = await supabase.rpc('me26_sehir_guncelle', {
@@ -526,17 +643,14 @@ async function saveCity() {
     showToast(`${selectedCity} tribününe katıldınız.`, 'success');
   } catch (error) {
     console.error('Şehir kaydetme hatası:', error);
-    showToast(error?.message || 'Şehir kaydedilemedi.', 'error');
+    showToast(getReadableError(error, 'Şehir kaydedilemedi.'), 'error');
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = oldText || 'Kaydet';
-    }
+    restoreButton(btn, oldText || 'Kaydet');
   }
 }
 
 // ------------------------------------------------------
-// DAVET KOPYALA
+// DAVET LİNKİ
 // ------------------------------------------------------
 
 async function copyInviteLink() {
@@ -551,15 +665,82 @@ async function copyInviteLink() {
     await navigator.clipboard.writeText(text);
     showToast('Davet bağlantısı kopyalandı.', 'success');
   } catch {
-    showToast('Davet bağlantısı kopyalanamadı.', 'error');
+    const input = document.createElement('input');
+    input.value = text;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    input.remove();
+
+    showToast('Davet bağlantısı kopyalandı.', 'success');
   }
 }
 
 // ------------------------------------------------------
-// ÖNERGE / SORU MODAL
+// TELEFON / PDF
 // ------------------------------------------------------
 
-let activeKursuMode = 'onerge';
+async function openPhoneModal() {
+  await openModal('phone-modal');
+}
+
+async function openPdfModal() {
+  await loadOptionalAuthModule();
+  openModal('pdf-modal');
+}
+
+async function submitPdf() {
+  const fileInput = $('input-pdf-file');
+  const file = fileInput?.files?.[0];
+
+  if (!file) {
+    showToast('Önce bir PDF dosyası seçin.', 'error');
+    return;
+  }
+
+  if (!currentUser?.uid) {
+    showToast('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+    return;
+  }
+
+  const btn = $('btn-submit-pdf');
+  const oldText = setLoading(btn, 'İncelemeye gönderiliyor...');
+
+  try {
+    await loadOptionalAuthModule();
+
+    if (window.ME26_AUTH?.eDevletBelgesiOku) {
+      await window.ME26_AUTH.eDevletBelgesiOku(file, currentUser.uid);
+    } else {
+      const { error } = await supabase.rpc('me26_belge_yukle', {
+        p_uid: currentUser.uid,
+        p_belge: {
+          dosya_adi: file.name,
+          tur: file.type || 'application/pdf',
+          belge_durumu: 'Onay Bekliyor'
+        }
+      });
+
+      if (error) throw error;
+    }
+
+    showToast('Belge başvurunuz inceleme kuyruğuna alındı.', 'success');
+    closeModal('pdf-modal');
+
+    if (fileInput) fileInput.value = '';
+
+    await refreshCurrentUser(currentUser.uid);
+  } catch (error) {
+    console.error('PDF gönderim hatası:', error);
+    showToast(getReadableError(error, 'Belge gönderilemedi.'), 'error');
+  } finally {
+    restoreButton(btn, oldText || 'Belge İnceleme Başvurusu Gönder');
+  }
+}
+
+// ------------------------------------------------------
+// ÖNERGE / SORU
+// ------------------------------------------------------
 
 function switchKursuTab(mode) {
   activeKursuMode = mode === 'soru' ? 'soru' : 'onerge';
@@ -580,6 +761,7 @@ function switchKursuTab(mode) {
 
     if (duration) duration.classList.add('hidden');
     if (submitBtn) submitBtn.textContent = 'SORUYU ORTAK AKLA GÖNDER';
+
     return;
   }
 
@@ -614,12 +796,7 @@ async function submitKursu() {
   }
 
   const btn = $('btn-submit-kursu');
-  const oldText = btn ? btn.textContent : '';
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Gönderiliyor...';
-  }
+  const oldText = setLoading(btn, 'Gönderiliyor...');
 
   try {
     if (activeKursuMode === 'soru') {
@@ -629,13 +806,16 @@ async function submitKursu() {
         throw new Error('Soru içeriği en az 50 karakter olmalıdır.');
       }
 
-      const { error } = await supabase.rpc('me26_soru_gonder', {
-        p_uid: currentUser.uid,
-        p_yazar_dijital_id: currentUser.digitalId || 'TR-IA-BEKLEYEN',
-        p_baslik: baslik,
-        p_icerik: icerik,
-        p_hedef_kitle: hedefKitle
-      });
+      const { error } = await supabase.from('me26_sorular').insert([
+        {
+          yazar_uid: currentUser.uid,
+          yazar_dijital_id: currentUser.digitalId || 'TR-IA-BEKLEYEN',
+          baslik,
+          icerik,
+          hedef_kitle: hedefKitle,
+          cozuldu_mu: false
+        }
+      ]);
 
       if (error) throw error;
 
@@ -643,24 +823,21 @@ async function submitKursu() {
     } else {
       const sorun = cleanText($('input-kursu-problem')?.value);
       const cozum = cleanText($('input-kursu-solution')?.value);
-      const sure = toNumber($('input-kursu-duration')?.value, 2);
 
-      if (sorun.length < 20) {
-        throw new Error('Sorun alanı en az 20 karakter olmalıdır.');
-      }
+      if (sorun.length < 20) throw new Error('Sorun alanı en az 20 karakter olmalıdır.');
+      if (cozum.length < 20) throw new Error('Çözüm alanı en az 20 karakter olmalıdır.');
 
-      if (cozum.length < 20) {
-        throw new Error('Çözüm alanı en az 20 karakter olmalıdır.');
-      }
-
-      const { error } = await supabase.rpc('me26_onerge_gonder', {
-        p_uid: currentUser.uid,
-        p_baslik: baslik,
-        p_sorun: sorun,
-        p_cozum: cozum,
-        p_hedef_kitle: hedefKitle,
-        p_sure: sure
-      });
+      const { error } = await supabase.from('onergeler').insert([
+        {
+          yazar_uid: currentUser.uid,
+          baslik,
+          sorun,
+          cozum,
+          hedef_kitle: hedefKitle,
+          destek_sayisi: 0,
+          durum: 'bekliyor'
+        }
+      ]);
 
       if (error) throw error;
 
@@ -668,7 +845,12 @@ async function submitKursu() {
       await loadProposals();
     }
 
-    ['input-kursu-title', 'input-kursu-problem', 'input-kursu-solution', 'input-kursu-content'].forEach((id) => {
+    [
+      'input-kursu-title',
+      'input-kursu-problem',
+      'input-kursu-solution',
+      'input-kursu-content'
+    ].forEach((id) => {
       const el = $(id);
       if (el) el.value = '';
     });
@@ -679,71 +861,77 @@ async function submitKursu() {
     closeModal('ortak-kursu-modal');
   } catch (error) {
     console.error('Kürsü gönderim hatası:', error);
-    showToast(error?.message || 'Gönderim yapılamadı.', 'error');
+    showToast(getReadableError(error, 'Gönderim yapılamadı.'), 'error');
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = oldText || 'Gönder';
-    }
+    restoreButton(btn, oldText || 'Gönder');
   }
 }
 
 // ------------------------------------------------------
-// ÖNERGELERİ GETİR
+// ÖNERGELER
 // ------------------------------------------------------
+
+function emptyState(text) {
+  return `
+    <div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">
+      ${escapeHtml(text)}
+    </div>
+  `;
+}
+
+async function fetchProposals() {
+  const tableTries = ['onergeler', 'me26_onergeler'];
+
+  for (const table of tableTries) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .order('olusturulma_tarihi', { ascending: false });
+
+    if (!error) return Array.isArray(data) ? data : [];
+  }
+
+  return [];
+}
 
 async function loadProposals() {
   const proposalsContainer = $('proposals-container');
   const gundemContainer = $('gundem-container');
 
-  if (proposalsContainer) {
-    proposalsContainer.innerHTML =
-      '<div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">Önergeler yükleniyor...</div>';
-  }
-
-  if (gundemContainer) {
-    gundemContainer.innerHTML =
-      '<div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">Gündem yükleniyor...</div>';
-  }
+  if (proposalsContainer) proposalsContainer.innerHTML = emptyState('Önergeler yükleniyor...');
+  if (gundemContainer) gundemContainer.innerHTML = emptyState('Gündem yükleniyor...');
 
   try {
-    const { data, error } = await supabase
-      .from('onergeler')
-      .select('*')
-      .order('olusturulma_tarihi', { ascending: false });
-
-    if (error) throw error;
-
-    const list = Array.isArray(data) ? data : [];
+    const list = await fetchProposals();
 
     if (proposalsContainer) proposalsContainer.innerHTML = '';
     if (gundemContainer) gundemContainer.innerHTML = '';
 
     if (list.length === 0) {
-      if (proposalsContainer) {
-        proposalsContainer.innerHTML =
-          '<div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">Henüz önerge yok.</div>';
-      }
-
-      if (gundemContainer) {
-        gundemContainer.innerHTML =
-          '<div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">Henüz gündem yok.</div>';
-      }
-
+      if (proposalsContainer) proposalsContainer.innerHTML = emptyState('Henüz önerge yok.');
+      if (gundemContainer) gundemContainer.innerHTML = emptyState('Henüz gündem yok.');
       return;
     }
 
+    let proposalCount = 0;
+    let agendaCount = 0;
+
     list.forEach((item) => {
-      const destekSayisi = toNumber(item.destek_sayisi || item.support_count, 0);
-      const isAgenda = destekSayisi >= 50 || ['gundem', 'gündem', 'voting', 'oylama'].includes(cleanText(item.status || item.durum).toLowerCase());
+      const destekSayisi = toNumber(item.destek_sayisi || item.destekSayisi || item.support_count, 0);
+      const status = cleanText(item.status || item.durum).toLowerCase();
+      const isAgenda = destekSayisi >= 50 || ['gundem', 'gündem', 'voting', 'oylama'].includes(status);
 
       const target = isAgenda ? gundemContainer : proposalsContainer;
       if (!target) return;
 
       const card = document.createElement('div');
 
-      card.className =
-        'bg-black/50 border border-slate-800 p-5 rounded-2xl shadow-lg';
+      card.className = 'bg-black/50 border border-slate-800 p-5 rounded-2xl shadow-lg';
+      card.setAttribute('data-onerge-card', item.id);
+
+      const title = item.baslik || item.title || 'Başlıksız Önerge';
+      const problem = item.sorun || item.problem || item.aciklama || 'Açıklama yok.';
+      const solution = item.cozum || item.solution || '';
 
       card.innerHTML = `
         <div class="text-[9px] font-black uppercase tracking-widest text-kaos mb-3">
@@ -751,12 +939,18 @@ async function loadProposals() {
         </div>
 
         <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
-          ${escapeHtml(item.baslik || item.title || 'Başlıksız Önerge')}
+          ${escapeHtml(title)}
         </h3>
 
-        <p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-4">
-          ${escapeHtml(item.sorun || item.problem || 'Açıklama yok.')}
+        <p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-3">
+          ${escapeHtml(problem)}
         </p>
+
+        ${solution ? `
+          <p class="text-xs md:text-sm text-gray-300 leading-relaxed mb-4 border-l-2 border-kaos/60 pl-3">
+            ${escapeHtml(solution)}
+          </p>
+        ` : ''}
 
         <div class="flex items-center justify-between gap-3">
           <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
@@ -765,7 +959,7 @@ async function loadProposals() {
 
           <button
             type="button"
-            data-id="${item.id}"
+            data-id="${escapeHtml(item.id)}"
             class="btn-destekle bg-slate-800 border border-slate-600 hover:border-kaos hover:text-kaos text-white rounded-xl px-5 py-3 text-[10px] font-black uppercase tracking-widest transition"
           >
             Destekle
@@ -774,29 +968,26 @@ async function loadProposals() {
       `;
 
       target.appendChild(card);
+
+      if (isAgenda) agendaCount += 1;
+      else proposalCount += 1;
     });
+
+    if (proposalsContainer && proposalCount === 0) {
+      proposalsContainer.innerHTML = emptyState('Destek bekleyen önerge yok.');
+    }
+
+    if (gundemContainer && agendaCount === 0) {
+      gundemContainer.innerHTML = emptyState('Gündeme alınmış önerge yok.');
+    }
   } catch (error) {
     console.error('Önergeler alınamadı:', error);
 
-    if (proposalsContainer) {
-      proposalsContainer.innerHTML =
-        '<div class="text-center py-10 border border-red-800 rounded-2xl text-red-400 text-xs font-bold uppercase tracking-widest bg-red-950/20">Önergeler alınamadı.</div>';
-    }
+    if (proposalsContainer) proposalsContainer.innerHTML = emptyState('Önergeler alınamadı.');
+
+    showToast('Önergeler alınamadı.', 'error');
   }
 }
-
-function escapeHtml(value) {
-  return cleanText(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-// ------------------------------------------------------
-// DESTEK VER
-// ------------------------------------------------------
 
 async function destekVer(button) {
   if (!currentUser || !currentUser.uid) {
@@ -811,9 +1002,7 @@ async function destekVer(button) {
     return;
   }
 
-  const oldText = button.textContent;
-  button.disabled = true;
-  button.textContent = '...';
+  const oldText = setLoading(button, '...');
 
   try {
     const { error } = await supabase.rpc('me26_destek_ver', {
@@ -827,18 +1016,9 @@ async function destekVer(button) {
     await loadProposals();
   } catch (error) {
     console.error('Destek verme hatası:', error);
-
-    if (
-      String(error?.message || '').toLowerCase().includes('already') ||
-      String(error?.message || '').toLowerCase().includes('duplicate')
-    ) {
-      showToast('Bu önergeyi zaten desteklediniz.', 'info');
-    } else {
-      showToast(error?.message || 'Destek gönderilemedi.', 'error');
-    }
+    showToast(getReadableError(error, 'Destek gönderilemedi.'), 'error');
   } finally {
-    button.disabled = false;
-    button.textContent = oldText || 'Destekle';
+    restoreButton(button, oldText || 'Destekle');
   }
 }
 
@@ -869,7 +1049,7 @@ async function loadTribunLigi() {
     }
 
     list.forEach((item, index) => {
-      const city = item.sehir || item.city || item.name || 'Belirsiz';
+      const city = item.sehir || item.city || item.name || item.il || 'Belirsiz';
       const power = item.guc || item.güç || item.power || item.puan || 0;
 
       const row = document.createElement('tr');
@@ -925,12 +1105,7 @@ async function submitKoruma() {
   }
 
   const btn = $('btn-submit-koruma');
-  const oldText = btn ? btn.textContent : '';
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Gönderiliyor...';
-  }
+  const oldText = setLoading(btn, 'Gönderiliyor...');
 
   try {
     const payload = {
@@ -948,7 +1123,13 @@ async function submitKoruma() {
 
     if (error) throw error;
 
-    ['input-koruma-kisi', 'input-koruma-link', 'input-koruma-aciklama', 'input-koruma-ad', 'input-koruma-iletisim'].forEach((id) => {
+    [
+      'input-koruma-kisi',
+      'input-koruma-link',
+      'input-koruma-aciklama',
+      'input-koruma-ad',
+      'input-koruma-iletisim'
+    ].forEach((id) => {
       const el = $(id);
       if (el) el.value = '';
     });
@@ -959,17 +1140,14 @@ async function submitKoruma() {
     showToast('Bildirim güvenli ağa iletildi.', 'success');
   } catch (error) {
     console.error('Koruma hattı hatası:', error);
-    showToast(error?.message || 'Bildirim gönderilemedi.', 'error');
+    showToast(getReadableError(error, 'Bildirim gönderilemedi.'), 'error');
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = oldText || 'Bildirimi Güvenli Ağa İlet';
-    }
+    restoreButton(btn, oldText || 'Bildirimi Güvenli Ağa İlet');
   }
 }
 
 // ------------------------------------------------------
-// EVENT BAĞLANTILARI
+// EVENTLER
 // ------------------------------------------------------
 
 function bindLoginButtons() {
@@ -982,8 +1160,8 @@ function bindLoginButtons() {
 
   loginIds.forEach((id) => {
     const btn = $(id);
-    if (!btn) return;
 
+    if (!btn) return;
     if (btn.dataset.me26AppLoginBound === '1') return;
 
     btn.dataset.me26AppLoginBound = '1';
@@ -996,11 +1174,7 @@ function bindLoginButtons() {
   document.querySelectorAll('.me26-login-btn, button, a').forEach((el) => {
     const text = cleanText(el.textContent).toUpperCase();
 
-    if (
-      text === 'KAYIT OL' ||
-      text === 'GİRİŞ YAP' ||
-      text === 'GIRIS YAP'
-    ) {
+    if (text === 'KAYIT OL' || text === 'GİRİŞ YAP' || text === 'GIRIS YAP') {
       if (el.dataset.me26AppLoginBound === '1') return;
 
       el.dataset.me26AppLoginBound = '1';
@@ -1020,6 +1194,7 @@ function bindNavigation() {
 
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-target');
+
       if (targetId) switchSaasTab(targetId);
     });
   });
@@ -1028,10 +1203,23 @@ function bindNavigation() {
 function bindStaticButtons() {
   $('btn-logout')?.addEventListener('click', logout);
   $('btn-mobile-logout')?.addEventListener('click', logout);
+
   $('btn-save-profile-city')?.addEventListener('click', saveCity);
   $('btn-copy-invite')?.addEventListener('click', copyInviteLink);
 
+  $('btn-whatsapp-share')?.addEventListener('click', () => {
+    const link = cleanText($('ui-invite-link')?.textContent);
+    if (!link) return;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(link)}`, '_blank');
+  });
+
   $('btn-open-proposal-modal')?.addEventListener('click', () => {
+    switchKursuTab('onerge');
+    openModal('ortak-kursu-modal');
+  });
+
+  $('btn-open-proposal-modal-2')?.addEventListener('click', () => {
     switchKursuTab('onerge');
     openModal('ortak-kursu-modal');
   });
@@ -1041,9 +1229,7 @@ function bindStaticButtons() {
     openModal('ortak-kursu-modal');
   });
 
-  $('btn-close-kursu-modal')?.addEventListener('click', () => {
-    closeModal('ortak-kursu-modal');
-  });
+  $('btn-close-kursu-modal')?.addEventListener('click', () => closeModal('ortak-kursu-modal'));
 
   $('tab-btn-onerge')?.addEventListener('click', () => switchKursuTab('onerge'));
   $('tab-btn-soru')?.addEventListener('click', () => switchKursuTab('soru'));
@@ -1053,19 +1239,11 @@ function bindStaticButtons() {
   $('btn-close-pdf-modal')?.addEventListener('click', () => closeModal('pdf-modal'));
   $('btn-close-vip-modal')?.addEventListener('click', () => closeModal('vip-modal'));
 
-  $('btn-open-phone-modal')?.addEventListener('click', () => {
-    showToast('Telefon doğrulama motorunu sonraki adımda auth.js ile bağlayacağız.', 'info');
-    openModal('phone-modal');
-  });
+  $('btn-open-phone-modal')?.addEventListener('click', openPhoneModal);
+  $('btn-open-pdf-modal')?.addEventListener('click', openPdfModal);
+  $('btn-submit-pdf')?.addEventListener('click', submitPdf);
 
-  $('btn-open-pdf-modal')?.addEventListener('click', () => {
-    showToast('Belge yükleme motorunu sonraki adımda auth.js ile bağlayacağız.', 'info');
-    openModal('pdf-modal');
-  });
-
-  $('btn-open-vip-modal')?.addEventListener('click', () => {
-    openModal('vip-modal');
-  });
+  $('btn-open-vip-modal')?.addEventListener('click', () => openModal('vip-modal'));
 
   $('btn-submit-koruma')?.addEventListener('click', submitKoruma);
 
@@ -1076,6 +1254,17 @@ function bindStaticButtons() {
       event.preventDefault();
       destekVer(destekBtn);
     }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+
+    [
+      'ortak-kursu-modal',
+      'phone-modal',
+      'pdf-modal',
+      'vip-modal'
+    ].forEach(closeModal);
   });
 }
 
@@ -1130,6 +1319,17 @@ window.UI = {
   closeModal
 };
 
+window.ME26_APP = {
+  loginWithGoogle,
+  logout,
+  refreshCurrentUser,
+  loadProposals,
+  loadTribunLigi,
+  copyInviteLink,
+  getCurrentUser: () => currentUser,
+  supabase
+};
+
 window.onergeleriGetir = loadProposals;
 window.loadTribunLigiData = loadTribunLigi;
 window.kopyalaDavetLinki = copyInviteLink;
@@ -1143,13 +1343,16 @@ function startApp() {
   if (appStarted) return;
 
   appStarted = true;
+  window.__ME26_APP_READY__ = true;
 
   bindLoginButtons();
   bindNavigation();
   bindStaticButtons();
   startAuthWatcher();
 
-  console.info('ME26 app.js temiz sürüm başladı.');
+  loadOptionalAuthModule();
+
+  console.info('ME26 app.js temiz kısa sürüm başladı.');
 }
 
 if (document.readyState === 'loading') {
