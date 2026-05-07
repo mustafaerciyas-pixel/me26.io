@@ -12,6 +12,24 @@ window.UI = UI;
 let aktifQaSekme = 'bekleyenler';
 let aktifSoruId = null;
 
+function cleanText(value) {
+    return String(value ?? '').trim();
+}
+
+function escapeHtml(value) {
+    return cleanText(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function safeId(value) {
+    return cleanText(value).replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+
 // ==========================================
 // 1. MOTOR PARÇALARI
 // ==========================================
@@ -122,20 +140,20 @@ window.qaSorulariGetir = async function() {
                             <i class="fas fa-user-astronaut"></i>
                         </div>
                         <div class="${blurClass}">
-                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${yazarId}</div>
-                            <div class="text-[9px] text-gray-500">${tarihStr}</div>
+                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${escapeHtml(yazarId)}</div>
+                            <div class="text-[9px] text-gray-500">${escapeHtml(tarihStr)}</div>
                         </div>
                     </div>
                     ${kitleEtiketi}
                 </div>
-                <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${soru.baslik || 'Başlıksız Soru'}</h4>
-                <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${soru.icerik || 'İçerik bulunamadı.'}</p>
+                <h4 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">${escapeHtml(soru.baslik || 'Başlıksız Soru')}</h4>
+                <p class="text-sm text-gray-400 mb-4 font-medium leading-relaxed line-clamp-2 ${blurClass}">${escapeHtml(soru.icerik || 'İçerik bulunamadı.')}</p>
                 
                 <div class="flex justify-between items-center pt-4 border-t border-slate-700/50 mt-auto relative z-10">
-                    <button onclick="${isAuthorized ? `qaSoruDetayAc('${soru.id}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
+                    <button onclick="${isAuthorized ? `qaSoruDetayAc('${safeId(soru.id)}')` : 'UI.triggerVerificationGate()'}" class="text-kaos hover:text-white text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
                         ${isAuthorized ? 'Kürsüye Git <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> KİLİDİ AÇ'}
                     </button>
-                    <button onclick="qaUygunsuzBildir('${soru.id}', 'soru')" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
+                    <button onclick="qaUygunsuzBildir('${safeId(soru.id)}', 'soru')" class="text-gray-600 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition" title="Topluluk Denetimi (10 Şikayet)">
                         <i class="fas fa-flag"></i> Uygunsuz
                     </button>
                 </div>
@@ -147,7 +165,7 @@ window.qaSorulariGetir = async function() {
         console.error("🔥 CİDDİ HATA:", err);
         listelemeAlani.innerHTML = `<div class="bg-red-900/30 border border-red-500 p-6 rounded-xl text-center">
             <div class="text-red-500 font-black text-lg mb-2">SİSTEM HATASI</div>
-            <div class="text-white font-mono text-xs">${err.message}</div>
+            <div class="text-white font-mono text-xs">${escapeHtml(err.message)}</div>
         </div>`;
     }
 }
@@ -188,20 +206,20 @@ window.qaSoruDetayAc = async function(soruId) {
             const cozumRozeti = cevap.is_cozum ? '<div class="absolute -top-3 -right-3 bg-green-500 text-slate-900 text-[10px] font-black px-3 py-1 rounded shadow-md border border-slate-900 transform rotate-3">USTANIN EL VERMESİ (ÇÖZÜM)</div>' : '';
             
             const cozumButonu = (isOwner && !soru.cozuldu_mu && !cevap.is_cozum) 
-                ? `<button onclick="qaCozumİsaretle('${cevap.id}', '${soru.id}')" class="text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-slate-900 text-[10px] font-bold px-3 py-1 rounded transition">Çözüm Olarak İşaretle</button>` 
+                ? `<button onclick="qaCozumİsaretle('${safeId(cevap.id)}', '${safeId(soru.id)}')" class="text-green-500 border border-green-500/30 hover:bg-green-500 hover:text-slate-900 text-[10px] font-bold px-3 py-1 rounded transition">Çözüm Olarak İşaretle</button>` 
                 : '';
 
             cevaplarHTML += `
                 <div class="bg-black/60 border ${cevap.is_cozum ? 'border-green-500/50' : 'border-slate-700'} p-5 rounded-xl relative mt-4">
                     ${cozumRozeti}
                     <div class="flex justify-between items-start mb-3">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest"><i class="fas fa-comment-dots mr-1 text-slate-600"></i> ${cevap.yazar_dijital_id || 'TR-IA-????'}</div>
-                        <div class="text-[9px] text-gray-500">${cevap.olusturma_tarihi ? new Date(cevap.olusturma_tarihi).toLocaleDateString('tr-TR') : ''}</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest"><i class="fas fa-comment-dots mr-1 text-slate-600"></i> ${escapeHtml(cevap.yazar_dijital_id || 'TR-IA-????')}</div>
+                        <div class="text-[9px] text-gray-500">${escapeHtml(cevap.olusturma_tarihi ? new Date(cevap.olusturma_tarihi).toLocaleDateString('tr-TR') : '')}</div>
                     </div>
-                    <p class="text-sm text-gray-300 font-medium leading-relaxed mb-4 whitespace-pre-wrap">${cevap.icerik || ''}</p>
+                    <p class="text-sm text-gray-300 font-medium leading-relaxed mb-4 whitespace-pre-wrap">${escapeHtml(cevap.icerik || '')}</p>
                     <div class="flex justify-between items-center border-t border-slate-700/50 pt-3">
                         ${cozumButonu}
-                        <button onclick="qaUygunsuzBildir('${cevap.id}', 'cevap')" class="text-gray-600 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition ml-auto">Uygunsuz Bildir</button>
+                        <button onclick="qaUygunsuzBildir('${safeId(cevap.id)}', 'cevap')" class="text-gray-600 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition ml-auto">Uygunsuz Bildir</button>
                     </div>
                 </div>
             `;
@@ -234,7 +252,7 @@ window.qaSoruDetayAc = async function(soruId) {
                 </div>
             `;
         } else {
-            cevapYazmaAlani = `<div class="mt-8 text-center text-red-400 bg-red-900/20 p-4 rounded-xl border border-red-900/50 text-[10px] font-bold uppercase tracking-widest">${yetkisizlikMesaji}</div>`;
+            cevapYazmaAlani = `<div class="mt-8 text-center text-red-400 bg-red-900/20 p-4 rounded-xl border border-red-900/50 text-[10px] font-bold uppercase tracking-widest">${escapeHtml(yetkisizlikMesaji)}</div>`;
         }
     } else {
         cevapYazmaAlani = '<div class="mt-8 text-center text-green-500 bg-green-900/10 p-4 rounded-xl border border-green-900/30 text-[10px] font-bold uppercase tracking-widest">Bu konunun çözümü bulunmuş ve arşivlenmiştir. Kürsü kilitlidir.</div>';
@@ -250,11 +268,11 @@ window.qaSoruDetayAc = async function(soruId) {
             <div class="overflow-y-auto custom-scrollbar flex-grow pr-2 pb-4">
                 <div class="mb-8 border-b border-slate-700 pb-6 mt-4">
                     <div class="flex items-center gap-2 mb-4">
-                        <span class="text-[10px] bg-slate-800 text-gray-300 border border-slate-600 px-2 py-1 rounded font-bold uppercase tracking-widest">Soran: ${soru.yazar_dijital_id || 'TR-IA-????'}</span>
+                        <span class="text-[10px] bg-slate-800 text-gray-300 border border-slate-600 px-2 py-1 rounded font-bold uppercase tracking-widest">Soran: ${escapeHtml(soru.yazar_dijital_id || 'TR-IA-????')}</span>
                         ${soru.cozuldu_mu ? '<span class="text-[10px] bg-green-900/50 text-green-400 border border-green-700 px-2 py-1 rounded font-bold uppercase tracking-widest">ÇÖZÜLDÜ</span>' : ''}
                     </div>
-                    <h2 class="text-xl sm:text-2xl font-black text-white mb-4 leading-tight">${soru.baslik || ''}</h2>
-                    <p class="text-sm sm:text-base text-gray-300 font-medium leading-relaxed bg-black/30 p-5 rounded-xl border border-slate-800 whitespace-pre-wrap">${soru.icerik || ''}</p>
+                    <h2 class="text-xl sm:text-2xl font-black text-white mb-4 leading-tight">${escapeHtml(soru.baslik || '')}</h2>
+                    <p class="text-sm sm:text-base text-gray-300 font-medium leading-relaxed bg-black/30 p-5 rounded-xl border border-slate-800 whitespace-pre-wrap">${escapeHtml(soru.icerik || '')}</p>
                 </div>
 
                 <h3 class="text-xs font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fas fa-layer-group text-kaos"></i> Kürsü Kayıtları (${cevaplar ? cevaplar.length : 0})</h3>

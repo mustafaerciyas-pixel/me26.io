@@ -1,281 +1,76 @@
-/* ==========================================================================
-   ME26 AĞI - ÇELİK KAPI MOTORU (auth.js)
-   Canlı Production Sürümü
-   --------------------------------------------------------------------------
-   Görev:
-   - Google ile giriş / çıkış
-   - Telefon doğrulama
-   - Firebase reCAPTCHA bot koruması
-   - Mesleki belge inceleme başvurusu
-   ========================================================================== */
+// ============================================================================
+// ME26 SİSTEMİ - ÇELİK KAPI (auth.js)
+// Kimlik Doğrulama, SMS Bot Koruması ve Mesleki Belge Kuyruk Motoru
+// ============================================================================
 
-import { STATE } from './state.js';
+import { STATE } from './state.js'; 
 import { auth } from './config.js';
-import { DB } from './supabase.js';
+import { DB } from './supabase.js'; 
+import { signInWithPopup, GoogleAuthProvider, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-import {
-    signInWithPopup,
-    GoogleAuthProvider,
-    signOut,
-    RecaptchaVerifier,
-    linkWithPhoneNumber
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+let confirmationResult = null; 
+let me26Recaptcha = null; 
 
-// ------------------------------------------------------
-// GLOBAL DEĞİŞKENLER
-// ------------------------------------------------------
-let confirmationResult = null;
-let me26Recaptcha = null;
-
-const SMS_LIMIT_KEY = 'me26_sms_limits';
-
-// ------------------------------------------------------
-// KISA YARDIMCILAR
-// ------------------------------------------------------
-const cleanText = (value) => {
-    return String(value || '').trim();
-};
-
-const safeLocalStorageGet = (key) => {
-    try {
-        return localStorage.getItem(key);
-    } catch (error) {
-        return null;
-    }
-};
-
-const safeLocalStorageSet = (key, value) => {
-    try {
-        localStorage.setItem(key, value);
-    } catch (error) {
-        console.warn('LocalStorage yazılamadı:', error);
-    }
-};
-
-const safeLocalStorageRemove = (key) => {
-    try {
-        localStorage.removeItem(key);
-    } catch (error) {
-        console.warn('LocalStorage silinemedi:', error);
-    }
-};
-
-const getRefFromUrl = () => {
-    try {
-        const params = new URLSearchParams(window.location.search);
-        const ref = cleanText(params.get('ref'));
-
-        if (!ref) return null;
-
-        return ref
-            .replace(/[^A-Z0-9\-]/gi, '')
-            .toUpperCase()
-            .slice(0, 40);
-    } catch (error) {
-        return null;
-    }
-};
-
-const createInviteCode = () => {
-    try {
-        const randomArray = new Uint32Array(1);
-        crypto.getRandomValues(randomArray);
-        return `ME26-TR-${randomArray[0].toString(36).toUpperCase().slice(0, 6)}`;
-    } catch (error) {
-        return `ME26-TR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    }
-};
-
-const normalizeTurkishPhone = (phoneNumber) => {
-    let cleanedPhone = cleanText(phoneNumber).replace(/\D/g, '');
-
-    if (cleanedPhone.startsWith('90')) {
-        cleanedPhone = cleanedPhone.substring(2);
-    }
-
-    if (cleanedPhone.startsWith('0')) {
-        cleanedPhone = cleanedPhone.substring(1);
-    }
-
-    if (cleanedPhone.length !== 10 || !cleanedPhone.startsWith('5')) {
-        throw new Error('Lütfen 5 ile başlayan 10 haneli geçerli bir GSM numarası girin.');
-    }
-
-    return `+90${cleanedPhone}`;
-};
-
-const isPdfFile = (file) => {
-    if (!file) return false;
-
-    const fileName = cleanText(file.name).toLowerCase();
-    const fileType = cleanText(file.type).toLowerCase();
-
-    return fileType === 'application/pdf' || fileName.endsWith('.pdf');
-};
-
-const getFirebaseErrorMessage = (error) => {
-    const errCode = error?.code || '';
-    const message = error?.message || '';
-
-    if (errCode === 'auth/popup-closed-by-user') {
-        return 'Google giriş penceresi kapatıldı.';
-    }
-
-    if (errCode === 'auth/cancelled-popup-request') {
-        return 'Google giriş işlemi iptal edildi.';
-    }
-
-    if (errCode === 'auth/popup-blocked') {
-        return 'Tarayıcı Google giriş penceresini engelledi. Lütfen popup izni verin.';
-    }
-
-    if (errCode === 'auth/too-many-requests') {
-        return 'Çok fazla deneme yapıldı. Sistem geçici olarak kilitlendi, lütfen daha sonra deneyin.';
-    }
-
-    if (errCode === 'auth/invalid-phone-number') {
-        return 'Sisteme girilen telefon numarası geçersiz.';
-    }
-
-    if (errCode === 'auth/captcha-check-failed') {
-        return 'Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyin.';
-    }
-
-    if (errCode === 'auth/provider-already-linked') {
-        return 'Bu hesapta telefon doğrulaması zaten yapılmış görünüyor.';
-    }
-
-    if (errCode === 'auth/credential-already-in-use') {
-        return 'Bu telefon numarası başka bir hesaba bağlı görünüyor.';
-    }
-
-    if (errCode === 'auth/invalid-verification-code') {
-        return 'Girdiğiniz doğrulama kodu hatalı.';
-    }
-
-    if (errCode === 'auth/code-expired') {
-        return 'Doğrulama kodunun süresi dolmuş. Lütfen yeniden SMS isteyin.';
-    }
-
-    if (message) {
-        return message;
-    }
-
-    return 'İşlem sırasında beklenmeyen bir hata oluştu.';
-};
-
-// ======================================================
-// 1. GOOGLE İLE GİRİŞ
-// ======================================================
+// ============================================================================
+// 1. GOOGLE İLE GİRİŞ & ÇIKIŞ MOTORLARI
+// ============================================================================
 export async function googleIleGiris() {
     try {
         const provider = new GoogleAuthProvider();
-
-        provider.setCustomParameters({
-            prompt: 'select_account'
-        });
-
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
 
-        if (!user || !user.uid) {
-            throw new Error('Google hesabı doğrulanamadı.');
-        }
-
         const gizliPaket = {
-            uid: user.uid,
-            g_isim: user.displayName || 'İsimsiz',
-            mail: user.email || null,
+            uid: user.uid, 
+            g_isim: user.displayName || 'İsimsiz', 
+            mail: user.email, 
             foto: user.photoURL || '',
-            m_durum: 'Belirsiz',
-            sehir: null,
-            d_kod: createInviteCode(),
-            ref: getRefFromUrl()
+            m_durum: 'Belirsiz', 
+            sehir: null, 
+            d_kod: 'ME26-TR-' + Math.random().toString(36).substring(2, 6).toUpperCase(), 
+            ref: null 
         };
 
         const data = await DB.sistemeGiris(gizliPaket);
-
-        return data;
-    } catch (error) {
-        console.error('Google giriş hatası:', error);
-
-        alert(getFirebaseErrorMessage(error));
-
-        return null;
+        return data; 
+    } catch (error) { 
+        alert("Google giriş hatası veya pencere kapatıldı!"); 
+        return null; 
     }
 }
 
-// ======================================================
-// 2. SİSTEMDEN ÇIKIŞ
-// ======================================================
 export async function sistemdenCikis() {
-    try {
-        await signOut(auth);
-
-        STATE.clearSession();
-
-        safeLocalStorageRemove(SMS_LIMIT_KEY);
-
-        window.location.reload();
-    } catch (error) {
-        console.error('Çıkış yapılırken hata oluştu:', error);
-
-        alert('Çıkış yapılırken bir hata oluştu. Lütfen sayfayı yenileyin.');
+    try { 
+        await signOut(auth); 
+        STATE.clearSession(); 
+        window.location.reload(); 
+    } catch (error) { 
+        console.error("Çıkış yapılırken hata oluştu:", error); 
     }
 }
 
-// ======================================================
-// 3. SMS LİMİT KONTROLÜ
-// ======================================================
-function readSmsLimits() {
-    const raw = safeLocalStorageGet(SMS_LIMIT_KEY);
-
-    if (!raw) {
-        return {
-            count: 0,
-            date: new Date().toDateString(),
-            lastAttempt: 0
-        };
-    }
-
-    try {
-        const parsed = JSON.parse(raw);
-
-        return {
-            count: Number(parsed.count) || 0,
-            date: parsed.date || new Date().toDateString(),
-            lastAttempt: Number(parsed.lastAttempt) || 0
-        };
-    } catch (error) {
-        return {
-            count: 0,
-            date: new Date().toDateString(),
-            lastAttempt: 0
-        };
-    }
-}
+// ============================================================================
+// 2. SMS LİMİT KONTROL MOTORU (GÜNLÜK 5 DENEME / 60 SANİYE KİLİDİ)
+// ============================================================================
+const SMS_LIMIT_KEY = 'me26_sms_limits';
 
 function checkSmsLimits() {
-    let limits = readSmsLimits();
-
+    let limits = JSON.parse(localStorage.getItem(SMS_LIMIT_KEY)) || { count: 0, date: new Date().toDateString(), lastAttempt: 0 };
     const today = new Date().toDateString();
 
+    // Gün değiştiyse limitleri sıfırla
     if (limits.date !== today) {
-        limits = {
-            count: 0,
-            date: today,
-            lastAttempt: 0
-        };
+        limits = { count: 0, date: today, lastAttempt: 0 };
     }
 
     const now = Date.now();
-    const timeDiff = Math.floor((now - limits.lastAttempt) / 1000);
-
+    
     if (limits.count >= 5) {
-        throw new Error('Günlük SMS gönderme limitinizi doldurdunuz. Lütfen yarın tekrar deneyin.');
+        throw new Error("Günlük SMS gönderme limitinizi (5) doldurdunuz. Lütfen yarın tekrar deneyin.");
     }
 
-    if (limits.lastAttempt > 0 && timeDiff < 60) {
+    const timeDiff = Math.floor((now - limits.lastAttempt) / 1000);
+    if (timeDiff < 60) {
         throw new Error(`Lütfen yeni bir SMS istemeden önce ${60 - timeDiff} saniye bekleyin.`);
     }
 
@@ -283,191 +78,139 @@ function checkSmsLimits() {
 }
 
 function updateSmsLimits(limits) {
-    const nextLimits = {
-        count: Number(limits.count || 0) + 1,
-        date: limits.date || new Date().toDateString(),
-        lastAttempt: Date.now()
-    };
-
-    safeLocalStorageSet(SMS_LIMIT_KEY, JSON.stringify(nextLimits));
+    limits.count += 1;
+    limits.lastAttempt = Date.now();
+    localStorage.setItem(SMS_LIMIT_KEY, JSON.stringify(limits));
 }
 
-// ======================================================
-// 4. RECAPTCHA KURULUMU
-// ======================================================
-function clearRecaptcha() {
-    if (!me26Recaptcha) return;
-
-    try {
-        me26Recaptcha.clear();
-    } catch (error) {
-        console.warn('reCAPTCHA temizlenemedi:', error);
-    }
-
-    me26Recaptcha = null;
-}
-
-function ensureRecaptchaContainer() {
-    let recaptchaDiv = document.getElementById('recaptcha-container');
-
-    if (!recaptchaDiv) {
-        recaptchaDiv = document.createElement('div');
-        recaptchaDiv.id = 'recaptcha-container';
-        recaptchaDiv.style.display = 'none';
-        document.body.appendChild(recaptchaDiv);
-    }
-
-    return recaptchaDiv;
-}
-
-async function createInvisibleRecaptcha() {
-    clearRecaptcha();
-
-    ensureRecaptchaContainer();
-
-    me26Recaptcha = new RecaptchaVerifier(
-        auth,
-        'recaptcha-container',
-        {
-            size: 'invisible',
-            callback: () => {
-                console.info('reCAPTCHA doğrulandı.');
-            },
-            'expired-callback': () => {
-                console.warn('reCAPTCHA süresi doldu.');
-                clearRecaptcha();
-            }
-        }
-    );
-
-    try {
-        await me26Recaptcha.render();
-    } catch (error) {
-        console.warn('reCAPTCHA render uyarısı:', error);
-    }
-
-    return me26Recaptcha;
-}
-
-// ======================================================
-// 5. SMS GÖNDERME
-// ======================================================
+// ============================================================================
+// 3. SMS GÖNDERME MOTORU (BOT KORUMASI)
+// ============================================================================
 export async function gercekSmsGonder(phoneNumber) {
     try {
         if (!auth.currentUser) {
-            throw new Error('Güvenlik Hatası: Oturum bulunamadı. Lütfen tekrar giriş yapın.');
+            throw new Error("Güvenlik Hatası: Oturum bulunamadı. Lütfen sayfayı yenileyin.");
         }
 
-        const formattedPhone = normalizeTurkishPhone(phoneNumber);
+        // 1. Limitleri kontrol et (Hata varsa fırlatır ve durdurur)
         const limits = checkSmsLimits();
-        const recaptchaVerifier = await createInvisibleRecaptcha();
 
-        confirmationResult = await linkWithPhoneNumber(
-            auth.currentUser,
-            formattedPhone,
-            recaptchaVerifier
-        );
+        // 2. Telefon Numarasını +90 Formatına Zorla
+        let cleanedPhone = phoneNumber.replace(/\D/g, ''); 
+        if (cleanedPhone.startsWith('90')) cleanedPhone = cleanedPhone.substring(2);
+        if (cleanedPhone.startsWith('0')) cleanedPhone = cleanedPhone.substring(1);
 
-        updateSmsLimits(limits);
-
-        return true;
-    } catch (error) {
-        console.error('SMS gönderme hatası:', error);
-
-        clearRecaptcha();
-
-        const readableMessage = getFirebaseErrorMessage(error);
-
-        if (
-            readableMessage.includes('GSM') ||
-            readableMessage.includes('saniye') ||
-            readableMessage.includes('limit') ||
-            readableMessage.includes('Oturum')
-        ) {
-            throw new Error(readableMessage);
+        if (cleanedPhone.length !== 10 || !cleanedPhone.startsWith('5')) {
+            throw new Error("Lütfen 5 ile başlayan 10 haneli geçerli bir GSM numarası girin.");
         }
 
-        throw new Error(readableMessage || 'Ağ yoğunluğu nedeniyle SMS gönderilemedi. Lütfen tekrar deneyin.');
+        const formattedPhone = `+90${cleanedPhone}`;
+
+        // 3. ReCAPTCHA'yı Her Denemede Temizle ve Yeniden Kur
+        if (me26Recaptcha) {
+            try { me26Recaptcha.clear(); } catch(e) {}
+            me26Recaptcha = null;
+        }
+
+        let recaptchaDiv = document.getElementById('recaptcha-container');
+        if (!recaptchaDiv) {
+            recaptchaDiv = document.createElement('div');
+            recaptchaDiv.id = 'recaptcha-container';
+            recaptchaDiv.style.display = 'none'; 
+            document.body.appendChild(recaptchaDiv);
+        }
+
+        me26Recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+        
+        // 4. SMS Gönder
+        confirmationResult = await linkWithPhoneNumber(auth.currentUser, formattedPhone, me26Recaptcha);
+        
+        // Başarılı olursa limit sayacını güncelle
+        updateSmsLimits(limits);
+        return true;
+
+    } catch (error) {
+        console.error("SMS Hatası Detayı:", error);
+        
+        let errorMsg = error.message || String(error);
+        const errCode = error.code || '';
+
+        // Firebase hatalarını Türkçe'ye çevir
+        if (errCode === 'auth/too-many-requests') {
+            errorMsg = "Çok fazla deneme yapıldı. Sistem geçici olarak kilitlendi, lütfen daha sonra deneyin.";
+        } else if (errCode === 'auth/invalid-phone-number') {
+            errorMsg = "Sisteme girilen telefon numarası geçersiz.";
+        } else if (errCode === 'auth/captcha-check-failed') {
+            errorMsg = "Güvenlik (Bot) doğrulaması başarısız oldu. Lütfen sayfayı yenileyin.";
+        } else if (errCode === 'auth/provider-already-linked' || errCode === 'auth/credential-already-in-use') {
+            errorMsg = "Bu telefon numarası zaten sistemde kayıtlı bir hesaba bağlı.";
+        } else if (!error.message.includes("Google") && !error.message.includes("GSM") && !error.message.includes("saniye") && !error.message.includes("limit")) {
+            errorMsg = "Ağ yoğunluğu nedeniyle SMS gönderilemedi. Lütfen tekrar deneyin.";
+        }
+
+        throw new Error(errorMsg); 
     }
 }
 
-// ======================================================
-// 6. SMS DOĞRULAMA
-// ======================================================
+// ============================================================================
+// 4. SMS DOĞRULAMA MOTORU
+// ============================================================================
 export async function gercekSmsDogrula(code, uid, phoneValue) {
     try {
-        const temizKod = cleanText(code).replace(/\s+/g, '');
-        const temizUid = cleanText(uid);
+        if (!confirmationResult) throw new Error("Önce SMS gönderilmelidir.");
 
-        if (!confirmationResult) {
-            throw new Error('Önce SMS gönderilmelidir.');
-        }
+        // Kodu onayla
+        await confirmationResult.confirm(code);
+        
+        // Supabase karanlık odada veriyi güncelle
+        await DB.telefonuOnayla(uid, phoneValue);
 
-        if (!temizUid) {
-            throw new Error('Oturum kimliği bulunamadı.');
-        }
-
-        if (!temizKod || temizKod.length < 6) {
-            throw new Error('Lütfen 6 haneli doğrulama kodunu girin.');
-        }
-
-        const formattedPhone = normalizeTurkishPhone(phoneValue);
-
-        await confirmationResult.confirm(temizKod);
-
-        await DB.telefonuOnayla(temizUid, formattedPhone);
-
+        // State (Hafıza) üzerinden güvenli mühürleme yap
         STATE.setPhoneVerified();
-
-        confirmationResult = null;
-
-        clearRecaptcha();
 
         return true;
     } catch (error) {
-        console.error('SMS doğrulama hatası:', error);
-
-        throw new Error(getFirebaseErrorMessage(error));
+        console.error("Doğrulama Hatası:", error); 
+        throw new Error("Girdiğiniz kod hatalı veya süresi dolmuş. Lütfen tekrar kontrol edin.");
     }
 }
 
-// ======================================================
-// 7. MESLEKİ BELGE İNCELEME BAŞVURUSU
-// ======================================================
+// ============================================================================
+// 5. MESLEKİ BELGE İNCELEME MOTORU (AĞIR PDF DEŞİFRESİ KALDIRILDI)
+// ============================================================================
 export async function eDevletBelgesiOku(file, userUid) {
-    const temizUid = cleanText(userUid);
-
-    if (!temizUid) {
-        throw new Error('Oturum bulunamadı. Lütfen tekrar giriş yapın.');
-    }
-
     if (!file) {
-        throw new Error('Lütfen incelenmesi için bir PDF dosyası seçin.');
+        throw new Error("Lütfen incelenmesi için bir dosya seçin.");
     }
 
-    if (!isPdfFile(file)) {
-        throw new Error('Sadece PDF formatında mesleki belge yükleyebilirsiniz.');
+    // GÜNCELLEME: Sadece PDF kabul edilecek
+    const validTypes = ['application/pdf'];
+    if (!validTypes.includes(file.type)) {
+        throw new Error("Sadece PDF formatında mesleki belge yükleyebilirsiniz.");
     }
 
+    // Dosya boyutu sınırı (Örn: 10MB)
     if (file.size > 10 * 1024 * 1024) {
-        throw new Error('Yüklediğiniz dosyanın boyutu çok yüksek. Lütfen 10 MB altında bir dosya seçin.');
+        throw new Error("Yüklediğiniz dosyanın boyutu çok yüksek. Lütfen 10MB'ın altında bir dosya seçin.");
     }
 
     try {
-        const belgeData = {
-            dosya_adi: cleanText(file.name).slice(0, 180),
-            tur: cleanText(file.type) || 'application/pdf',
-            belge_durumu: 'Onay Bekliyor'
+        // Backend (Karanlık Oda) için hazırlanacak temel belge paketi
+        const belgeData = { 
+            dosya_adi: file.name,
+            tur: file.type,
+            belge_durumu: "Onay Bekliyor"
         };
 
-        await DB.belgeyiSirayaAl(temizUid, belgeData);
+        // Supabase'e belge inceleme talebini yaz (DB motorundan hata gelirse yakalar)
+        await DB.belgeyiSirayaAl(userUid, belgeData);
 
+        // State (Hafıza) üzerinden güvenli mühürleme yap ve durumu "document_pending"e çek
         STATE.setDocumentPending();
 
         return true;
-    } catch (error) {
-        console.error('Belge inceleme kuyruğu hatası:', error);
-
-        throw new Error('Belgeniz inceleme kuyruğuna alınırken bir iletişim hatası oluştu. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
+    } catch (error) { 
+        console.error("Kuyruk Hatası:", error);
+        throw new Error("Belgeniz inceleme kuyruğuna alınırken bir iletişim hatası oluştu. Lütfen bağlantınızı kontrol edip tekrar deneyin.");
     }
 }
