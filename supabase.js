@@ -1,12 +1,18 @@
 /* ==========================================================================
    ME26 AĞI - SUPABASE VERİTABANI KÖPRÜSÜ (supabase.js)
-   Canlı Production Sürümü
+   Cloudflare Workers Canlı Test Sürümü
    --------------------------------------------------------------------------
-   KRİTİK NOT:
+   Görev:
+   - Frontend ile Supabase arasındaki güvenli köprü
+   - Kullanıcı giriş/kayıt RPC
+   - Telefon / belge / şehir / numara işlemleri
+   - Önerge ve soru gönderimini RPC üzerinden yapmak
+   - Oy, destek, tribün ve koruma hattı işlemleri
+
+   KRİTİK:
    - Bu dosyada service_role key ASLA kullanılmaz.
-   - Frontend'de yalnızca Supabase anon / publishable key kullanılabilir.
-   - Gerçek güvenlik Supabase RLS + RPC fonksiyonlarıyla sağlanmalıdır.
-   - VIP numara, oy ve destek gibi işlemler veritabanında benzersiz kilitlenmelidir.
+   - Frontend'de yalnızca anon / publishable key kullanılabilir.
+   - Önerge ve soru gönderimi doğrudan tablo insert değil, RPC üzerinden yapılır.
    ========================================================================== */
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -45,6 +51,11 @@ const cleanNumber = (value, fallback = 0) => {
     return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const cleanInteger = (value, fallback = 0) => {
+    const parsed = Number.parseInt(String(value), 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 const cleanVoteChoice = (value) => {
     const choice = cleanString(value);
 
@@ -59,56 +70,70 @@ const normalizeDbError = (error, fallbackMessage = 'database_error') => {
     if (!error) return new Error(fallbackMessage);
 
     const code = cleanString(error.code);
-    const message = cleanString(error.message).toLowerCase();
-    const details = cleanString(error.details).toLowerCase();
+    const messageRaw = cleanString(error.message);
+    const detailsRaw = cleanString(error.details);
 
-    // PostgreSQL unique violation
+    const message = messageRaw.toLowerCase();
+    const details = detailsRaw.toLowerCase();
+
     if (code === '23505') {
         return new Error('duplicate_record');
     }
 
     if (
-        message.includes('unique constraint') ||
         message.includes('duplicate key') ||
+        message.includes('unique constraint') ||
         details.includes('already exists')
     ) {
         return new Error('duplicate_record');
     }
 
-    // RPC tarafında özel hata mesajları dönerse yakala
-    if (
-        message.includes('already_voted') ||
-        message.includes('zaten oy') ||
-        message.includes('already voted')
-    ) {
+    const knownMessages = [
+        'missing_uid',
+        'missing_city',
+        'missing_phone',
+        'missing_document_payload',
+        'missing_document_name',
+        'missing_user_payload',
+        'missing_proposal_id',
+        'missing_question_id',
+        'missing_problem',
+        'missing_solution',
+        'title_too_short',
+        'title_too_long',
+        'problem_too_short',
+        'solution_too_short',
+        'content_too_short',
+        'content_too_long',
+        'user_not_found',
+        'already_voted',
+        'already_supported',
+        'vip_number_taken',
+        'not_enough_invites',
+        'already_has_number',
+        'invalid_vip_number',
+        'invalid_vote_power'
+    ];
+
+    for (const known of knownMessages) {
+        if (message.includes(known) || details.includes(known)) {
+            return new Error(known);
+        }
+    }
+
+    if (message.includes('already voted') || message.includes('zaten oy')) {
         return new Error('already_voted');
     }
 
-    if (
-        message.includes('already_supported') ||
-        message.includes('zaten destek') ||
-        message.includes('already supported')
-    ) {
+    if (message.includes('already supported') || message.includes('zaten destek')) {
         return new Error('already_supported');
     }
 
-    if (
-        message.includes('vip_number_taken') ||
-        message.includes('vip numara') ||
-        message.includes('number taken')
-    ) {
+    if (message.includes('number taken') || message.includes('vip numara')) {
         return new Error('vip_number_taken');
     }
 
-    if (
-        message.includes('missing_uid') ||
-        message.includes('invalid_vip_number') ||
-        message.includes('invalid_vote_power')
-    ) {
-        return new Error(message);
-    }
-
-    return error || new Error(fallbackMessage);
+    return error instanceof Error ? error : new Error(messageRaw || fallbackMessage);
 };
 
 const safeRpc = async (rpcName, params = {}) => {
@@ -147,7 +172,7 @@ const safeMaybeSingle = async (query) => {
 export const DB = {
     // --------------------------------------------------
     // 1. SİSTEME GİRİŞ
-    // Google giriş sonrası kullanıcıyı veritabanında bulur veya oluşturur.
+    // Google giriş sonrası kullanıcıyı bulur veya oluşturur.
     // --------------------------------------------------
     sistemeGiris: async (gizliPaket) => {
         if (!gizliPaket || !gizliPaket.uid) {
@@ -206,7 +231,6 @@ export const DB = {
 
     // --------------------------------------------------
     // 3. BELGE İNCELEME KUYRUĞU
-    // Fiziksel dosya yüklemez; belge başvurusunu inceleme kuyruğuna alır.
     // --------------------------------------------------
     belgeyiSirayaAl: async (uid, belgeData) => {
         const temizUid = cleanString(uid);
@@ -264,13 +288,10 @@ export const DB = {
 
     // --------------------------------------------------
     // 6. VIP NUMARA ALMA
-    // vip.js bu fonksiyonu kullanır.
-    // Veritabanında me26_vip_numara_al RPC fonksiyonu olmalıdır.
-    // Bu RPC aynı numarayı iki kişiye vermeyecek şekilde kilitlemelidir.
     // --------------------------------------------------
     vipNumaraAl: async (uid, vipNumber) => {
         const temizUid = cleanString(uid);
-        const temizNo = cleanNumber(vipNumber, 0);
+        const temizNo = cleanInteger(vipNumber, 0);
 
         if (!temizUid) throw new Error('missing_uid');
         if (temizNo <= 0) throw new Error('invalid_vip_number');
@@ -296,6 +317,8 @@ export const DB = {
 
     // --------------------------------------------------
     // 7. ÖNERGE GÖNDERME
+    // Artık doğrudan tabloya insert atmaz.
+    // Supabase RPC: me26_onerge_gonder
     // --------------------------------------------------
     onergeGonder: async (uid, baslik, sorun, cozum, hedefKitle, sure) => {
         const temizUid = cleanString(uid);
@@ -303,38 +326,53 @@ export const DB = {
         const temizSorun = cleanString(sorun);
         const temizCozum = cleanString(cozum);
         const temizHedefKitle = cleanString(hedefKitle, 'Herkes');
+        const temizSure = cleanInteger(sure, 2);
 
         if (!temizUid) throw new Error('missing_uid');
         if (temizBaslik.length < 15) throw new Error('title_too_short');
         if (temizBaslik.length > 150) throw new Error('title_too_long');
-        if (!temizSorun) throw new Error('missing_problem');
-        if (!temizCozum) throw new Error('missing_solution');
+        if (temizSorun.length < 20) throw new Error('problem_too_short');
+        if (temizCozum.length < 20) throw new Error('solution_too_short');
 
-        const sureSayisi = Number.parseInt(String(sure), 10);
-        const temizSure = Number.isFinite(sureSayisi) ? sureSayisi : 2;
-
-        const yeniOnerge = {
-            yazar_uid: temizUid,
-            baslik: temizBaslik,
-            sorun: temizSorun,
-            cozum: temizCozum,
-            hedef_kitle: temizHedefKitle,
-            sure: temizSure
-        };
-
-        const { error } = await supabase
-            .from('onergeler')
-            .insert([yeniOnerge]);
-
-        if (error) {
-            throw normalizeDbError(error, 'proposal_insert_failed');
-        }
-
-        return true;
+        return await safeRpc('me26_onerge_gonder', {
+            p_uid: temizUid,
+            p_baslik: temizBaslik,
+            p_sorun: temizSorun,
+            p_cozum: temizCozum,
+            p_hedef_kitle: temizHedefKitle,
+            p_sure: temizSure
+        });
     },
 
     // --------------------------------------------------
-    // 8. ÖNERGELERİ GETİRME
+    // 8. SORU GÖNDERME
+    // Artık doğrudan tabloya insert atmaz.
+    // Supabase RPC: me26_soru_gonder
+    // --------------------------------------------------
+    soruGonder: async (uid, yazarDijitalId, baslik, icerik, hedefKitle) => {
+        const temizUid = cleanString(uid);
+        const temizDijitalId = cleanString(yazarDijitalId, 'TR-IA-BEKLEYEN');
+        const temizBaslik = cleanString(baslik);
+        const temizIcerik = cleanString(icerik);
+        const temizHedefKitle = cleanString(hedefKitle, 'Herkes');
+
+        if (!temizUid) throw new Error('missing_uid');
+        if (temizBaslik.length < 15) throw new Error('title_too_short');
+        if (temizBaslik.length > 150) throw new Error('title_too_long');
+        if (temizIcerik.length < 50) throw new Error('content_too_short');
+        if (temizIcerik.length > 3000) throw new Error('content_too_long');
+
+        return await safeRpc('me26_soru_gonder', {
+            p_uid: temizUid,
+            p_yazar_dijital_id: temizDijitalId,
+            p_baslik: temizBaslik,
+            p_icerik: temizIcerik,
+            p_hedef_kitle: temizHedefKitle
+        });
+    },
+
+    // --------------------------------------------------
+    // 9. ÖNERGELERİ GETİRME
     // --------------------------------------------------
     onergeleriGetir: async () => {
         return await safeSelect(
@@ -347,7 +385,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 9. ÖNERGEYE DESTEK VERME
+    // 10. ÖNERGEYE DESTEK VERME
     // --------------------------------------------------
     destekVer: async (uid, onergeId) => {
         const temizUid = cleanString(uid);
@@ -376,7 +414,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 10. OY KULLANMA
+    // 11. OY KULLANMA
     // --------------------------------------------------
     oyKullan: async (uid, onergeId, kullanilanOy, oyGucu) => {
         const temizUid = cleanString(uid);
@@ -416,7 +454,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 11. OY SONUÇLARI
+    // 12. OY SONUÇLARI
     // --------------------------------------------------
     oySonuclariniGetir: async (onergeId) => {
         const temizOnergeId = cleanString(onergeId);
@@ -433,7 +471,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 12. TRİBÜN LİGİ
+    // 13. TRİBÜN LİGİ
     // --------------------------------------------------
     tribunLigiGetir: async () => {
         const users = await safeSelect(
@@ -554,8 +592,7 @@ export const DB = {
     },
 
     // --------------------------------------------------
-    // 13. KORUMA HATTI BİLDİRİMİ
-    // koruma.js bu fonksiyonu kullanır.
+    // 14. KORUMA HATTI BİLDİRİMİ
     // --------------------------------------------------
     korumaBildir: async (payload) => {
         if (!payload || typeof payload !== 'object') {
