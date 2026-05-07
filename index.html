@@ -145,179 +145,413 @@
             </div>
         </nav>
 
+        <!-- ANA SAYFA -->
         <div id="view-landing-home" class="landing-section block animate-fadeIn flex-grow">
-            <header class="text-center px-4 pt-16 pb-12 relative">
-                <div class="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
+            <header class="text-center px-4 pt-16 pb-12 relative overflow-hidden">
+                <div class="absolute inset-0 pointer-events-none opacity-40">
+                    <div class="absolute top-12 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full blur-3xl" style="background: rgba(var(--neon-rgb), 0.10);"></div>
+                </div>
+
+                <div class="max-w-5xl mx-auto relative z-10 flex flex-col items-center">
+                    <div class="inline-flex items-center gap-2 bg-black/50 border border-slate-700 rounded-full px-4 py-2 mb-8 shadow-md">
+                        <span class="w-2 h-2 rounded-full bg-kaos animate-pulse"></span>
+                        <span class="text-[10px] md:text-xs text-gray-300 font-black uppercase tracking-widest">
+                            Geçici canlı test sürümü açık
+                        </span>
+                    </div>
+
                     <h1 class="text-4xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tighter drop-shadow-lg">
                         11.000 kişi içeride.<br>
                         95.000 kişi dışarıda.<br>
                         <span class="text-kaos">Sistemi yeniden kuruyoruz.</span>
                     </h1>
 
-                    <p class="text-lg md:text-2xl text-white font-bold max-w-3xl mx-auto mb-3 uppercase tracking-widest drop-shadow-md">
+                    <p class="text-lg md:text-2xl text-white font-bold max-w-3xl mx-auto mb-4 uppercase tracking-widest drop-shadow-md">
                         İçmimarlık Mezunları ve Öğrencileri için dijital meclis açılıyor.
                     </p>
 
-                    <p class="text-xs md:text-sm text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                    <p class="text-sm md:text-base text-gray-400 max-w-3xl mx-auto leading-relaxed">
                         ME26; belge kontrollü, aidatsız, başkansız ve bağımsız bir ortak akıl altyapısıdır.
                         Bu yapı bir oda, dernek, federasyon veya seçim kampanyası değildir.
                     </p>
                 </div>
             </header>
 
-            <main class="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 w-full mb-20 items-center">
-                <div class="flex flex-col justify-center">
-                    <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md mb-5 flex items-center gap-3">
-                        <span class="text-4xl">🌍</span>
-                        AİDATSIZ. BAŞKANSIZ. OTONOM.
-                    </h2>
+            <main class="max-w-6xl mx-auto px-4 w-full mb-20">
+                <div class="grid lg:grid-cols-2 gap-12 items-center mb-14">
+                    <div class="flex flex-col justify-center">
+                        <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md mb-5 flex items-center gap-3">
+                            <span class="text-4xl">🌍</span>
+                            AİDATSIZ. BAŞKANSIZ. OTONOM.
+                        </h2>
 
-                    <p class="text-gray-200 text-lg md:text-xl font-bold bg-black/30 p-8 rounded-2xl border border-slate-700 leading-relaxed">
-                        Bugün mesleki sistem sınırlı bir temsil alanıyla çalışıyor.
-                        Dışarıda binlerce İçmimarlık Mezunu ve İçmimarlık Öğrencisi var.
-                        <br><br>
-                        <span class="text-kaos">
-                            ME26, İçmimarlık Mezunlarını ve İçmimarlık Öğrencilerini belge kontrollü tek dijital mecliste buluşturmayı hedefler.
-                        </span>
-                    </p>
-                </div>
-
-                <div class="bg-slate-900/95 border border-kaos p-8 md:p-10 rounded-3xl shadow-kaos-lg w-full max-w-md relative text-center mx-auto">
-                    <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-4 py-1.5 rounded-bl-lg uppercase tracking-widest">
-                        Sistem Açık
+                        <p class="text-gray-200 text-lg md:text-xl font-bold bg-black/30 p-8 rounded-2xl border border-slate-700 leading-relaxed">
+                            Bugün mesleki sistem sınırlı bir temsil alanıyla çalışıyor.
+                            Dışarıda binlerce İçmimarlık Mezunu ve İçmimarlık Öğrencisi var.
+                            <br><br>
+                            <span class="text-kaos">
+                                ME26, İçmimarlık Mezunlarını ve İçmimarlık Öğrencilerini belge kontrollü tek dijital mecliste buluşturmayı hedefler.
+                            </span>
+                        </p>
                     </div>
 
-                    <h3 class="text-2xl font-black text-white uppercase tracking-tight mb-8 mt-2">
-                        ORTAK AKLA KATIL
-                    </h3>
+                    <div class="bg-slate-900/95 border border-kaos p-8 md:p-10 rounded-3xl shadow-kaos-lg w-full max-w-md relative text-center mx-auto">
+                        <div class="absolute top-0 right-0 bg-kaos text-black text-[10px] font-black px-4 py-1.5 rounded-bl-lg uppercase tracking-widest">
+                            Sistem Açık
+                        </div>
 
-                    <div class="w-full flex flex-col gap-3 mb-5">
-                        <button 
-                            type="button" 
-                            id="btn-register-hero" 
-                            class="w-full bg-white text-black font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-gray-200 transition flex items-center justify-center gap-2"
-                        >
-                            <i class="fas fa-user-plus text-lg"></i>
-                            KAYIT OL
-                        </button>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-tight mb-8 mt-2">
+                            ORTAK AKLA KATIL
+                        </h3>
 
-                        <button 
-                            type="button" 
-                            id="btn-login-hero" 
-                            class="w-full bg-slate-800 text-white border border-slate-600 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-slate-700 transition flex items-center justify-center gap-2"
-                        >
-                            <i class="fas fa-sign-in-alt text-lg"></i>
-                            GİRİŞ YAP
-                        </button>
+                        <div class="w-full flex flex-col gap-3 mb-5">
+                            <button 
+                                type="button" 
+                                id="btn-register-hero" 
+                                class="w-full bg-white text-black font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-gray-200 transition flex items-center justify-center gap-2"
+                            >
+                                <i class="fas fa-user-plus text-lg"></i>
+                                KAYIT OL
+                            </button>
+
+                            <button 
+                                type="button" 
+                                id="btn-login-hero" 
+                                class="w-full bg-slate-800 text-white border border-slate-600 font-black tracking-widest uppercase py-4 rounded-xl shadow-md hover:bg-slate-700 transition flex items-center justify-center gap-2"
+                            >
+                                <i class="fas fa-sign-in-alt text-lg"></i>
+                                GİRİŞ YAP
+                            </button>
+                        </div>
+
+                        <p class="text-[10px] text-gray-500 leading-relaxed uppercase tracking-widest">
+                            Gerçek kimlik sistem tarafından doğrulanır. Topluluk içinde yalnızca Global ID görünür.
+                        </p>
                     </div>
-
-                    <p class="text-[10px] text-gray-500 leading-relaxed uppercase tracking-widest">
-                        Gerçek kimlik sistem tarafından doğrulanır. Topluluk içinde yalnızca Global ID görünür.
-                    </p>
                 </div>
-            </main>
-        </div>
 
-        <div id="view-landing-dao" class="landing-section hidden animate-fadeIn flex-grow px-4 py-16">
-            <div class="max-w-4xl mx-auto">
-                <h1 class="text-center text-4xl md:text-5xl font-black mb-8">
-                    Ne <span class="text-kaos">Yapacağız?</span>
-                </h1>
-
-                <div class="grid md:grid-cols-3 gap-5">
-                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                <div class="grid md:grid-cols-3 gap-5 mb-14">
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 shadow-lg">
+                        <div class="text-3xl mb-4">🗳️</div>
                         <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Ortak Sandık</h3>
                         <p class="text-xs text-gray-400 leading-relaxed">
                             Mesleki sorunlar önergeye dönüşür. Yeterli destek alan başlıklar ortak sandığa taşınır.
                         </p>
                     </div>
 
-                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 shadow-lg">
+                        <div class="text-3xl mb-4">🎙️</div>
                         <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Söz Sende</h3>
                         <p class="text-xs text-gray-400 leading-relaxed">
-                            Öğrenciler ve mezunlar deneyim, soru ve çözüm başlıklarını ortak akla açabilir.
+                            Öğrenciler ve mezunlar soru sorar, deneyim aktarır, çözüm üreten bilgi kütüphanesi oluşur.
                         </p>
                     </div>
 
-                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 shadow-lg">
+                        <div class="text-3xl mb-4">🛡️</div>
                         <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Koruma Hattı</h3>
                         <p class="text-xs text-gray-400 leading-relaxed">
                             Ünvan kullanımı, belge kontrolü ve mesleki kimlik güvenliği için ön inceleme bildirimleri alınır.
                         </p>
                     </div>
                 </div>
-            </div>
+
+                <div class="bg-panel border border-slate-700 rounded-3xl p-8 md:p-10 shadow-2xl">
+                    <div class="grid lg:grid-cols-3 gap-8 items-start">
+                        <div>
+                            <h3 class="text-2xl font-black uppercase tracking-tight text-white mb-3">
+                                Neden <span class="text-kaos">Gizli Profil?</span>
+                            </h3>
+                            <p class="text-xs text-gray-500 leading-relaxed uppercase tracking-widest">
+                                Çünkü küçük sektörlerde insanlar fikir söylerken çevre, iş, oda, firma ve müşteri baskısından çekinir.
+                            </p>
+                        </div>
+
+                        <div class="lg:col-span-2 grid md:grid-cols-2 gap-4">
+                            <div class="bg-black/40 border border-slate-800 rounded-2xl p-5">
+                                <h4 class="text-xs font-black uppercase tracking-widest text-kaos mb-2">Sistem Seni Tanır</h4>
+                                <p class="text-xs text-gray-400 leading-relaxed">
+                                    Telefon, belge ve üyelik kaydı sistem tarafında tutulur. Sahte hesap ve manipülasyon engellenir.
+                                </p>
+                            </div>
+
+                            <div class="bg-black/40 border border-slate-800 rounded-2xl p-5">
+                                <h4 class="text-xs font-black uppercase tracking-widest text-kaos mb-2">Topluluk ID Görür</h4>
+                                <p class="text-xs text-gray-400 leading-relaxed">
+                                    Üyeler birbirini ad-soyadla değil; TR-IA kimliği, şehir tribünü, rol ve katkı bilgileriyle görür.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
 
-        <div id="view-landing-kurallar" class="landing-section hidden animate-fadeIn flex-grow px-4 py-16">
-            <div class="max-w-4xl mx-auto">
-                <h1 class="text-center text-4xl md:text-5xl font-black mb-8">
-                    Kurallarımız
-                </h1>
+        <!-- NE YAPACAĞIZ -->
+        <div id="view-landing-dao" class="landing-section hidden animate-fadeIn flex-grow px-4 py-16">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl md:text-6xl font-black mb-5 tracking-tight">
+                        Ne <span class="text-kaos">Yapacağız?</span>
+                    </h1>
 
-                <div class="bg-black/40 border border-slate-700 rounded-3xl p-8 space-y-5 text-sm text-gray-300 leading-relaxed">
-                    <p>
-                        ME26; mesleki tartışmaları kişisel kavga, linç, iftira veya hedef gösterme zeminine dönüştürmemek için kurulmuştur.
+                    <p class="text-gray-400 max-w-3xl mx-auto text-sm md:text-base leading-relaxed">
+                        ME26, İçmimarlık Mezunları ve İçmimarlık Öğrencileri için merkezi bir başkanlık düzeni değil;
+                        belge kontrollü, kurallı ve otonom bir mesleki ortak akıl altyapısıdır.
                     </p>
+                </div>
 
-                    <p>
-                        Gerçek kimlik sistem tarafından doğrulanır; topluluk içinde ad-soyad yerine Global ID görünür.
-                    </p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 hover:border-kaos/60 transition shadow-lg">
+                        <div class="text-3xl mb-4">🏛️</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">İçmimar Lobisi</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Mesleğin genel durumunu, gündem başlıklarını ve sistem duyurularını tek alanda toplar.
+                        </p>
+                    </div>
 
-                    <p>
-                        Oy, destek, soru, cevap ve bildirim süreçleri belge, kurallar ve liyakat mantığıyla yürütülür.
-                    </p>
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 hover:border-kaos/60 transition shadow-lg">
+                        <div class="text-3xl mb-4">🗳️</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Ortak Sandık</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Öneriler destek toplar. Yeterli desteğe ulaşan başlıklar oylamaya açılır.
+                        </p>
+                    </div>
 
-                    <p class="text-kaos font-bold">
-                        İnsan yönetici yok. Kurallar, kayıtlar ve liyakat var.
-                    </p>
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 hover:border-kaos/60 transition shadow-lg">
+                        <div class="text-3xl mb-4">🎙️</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Söz Sende</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Soru, cevap, deneyim ve çözüm kayıtları zamanla mesleki bilgi kütüphanesine dönüşür.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 hover:border-kaos/60 transition shadow-lg">
+                        <div class="text-3xl mb-4">🏟️</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Canlı Stadyum</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Kimlerin hangi şehir tribününden sisteme katıldığını canlı ve anonim şekilde gösterir.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 hover:border-kaos/60 transition shadow-lg">
+                        <div class="text-3xl mb-4">🔥</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Tribün Ligi</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Şehirlerin katılım, önerge, oy ve katkı gücünü görünür hale getirir.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 hover:border-kaos/60 transition shadow-lg">
+                        <div class="text-3xl mb-4">🛡️</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">Koruma Hattı</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Ünvan güvenliği, belge kontrolü ve mesleki kimlik koruması için bildirimleri ön incelemeye alır.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-panel border border-kaos/40 rounded-3xl p-8 md:p-10 shadow-kaos-lg">
+                    <div class="grid lg:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h2 class="text-2xl md:text-4xl font-black tracking-tight text-white mb-4">
+                                Bu sistem bir <span class="text-kaos">seçim kampanyası</span> değildir.
+                            </h2>
+                            <p class="text-sm text-gray-400 leading-relaxed">
+                                ME26, oda, dernek veya federasyon yerine geçmez. Ama mesleğin dağınık bilgi, temsil ve ortak karar sorunlarına
+                                dijital bir altyapı cevabı üretmeyi hedefler.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-black/50 border border-slate-700 rounded-2xl p-5 text-center">
+                                <div class="text-2xl font-black text-kaos">0₺</div>
+                                <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Aidat</div>
+                            </div>
+
+                            <div class="bg-black/50 border border-slate-700 rounded-2xl p-5 text-center">
+                                <div class="text-2xl font-black text-kaos">0</div>
+                                <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Başkan</div>
+                            </div>
+
+                            <div class="bg-black/50 border border-slate-700 rounded-2xl p-5 text-center">
+                                <div class="text-2xl font-black text-kaos">ID</div>
+                                <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Gizli Profil</div>
+                            </div>
+
+                            <div class="bg-black/50 border border-slate-700 rounded-2xl p-5 text-center">
+                                <div class="text-2xl font-black text-kaos">PDF</div>
+                                <div class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Belge Kontrol</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- KURALLAR -->
+        <div id="view-landing-kurallar" class="landing-section hidden animate-fadeIn flex-grow px-4 py-16">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl md:text-6xl font-black mb-5 tracking-tight">
+                        Kurallarımız
+                    </h1>
+
+                    <p class="text-gray-400 max-w-3xl mx-auto text-sm md:text-base leading-relaxed">
+                        ME26’nin gücü kişilere değil; açık kurallara, doğrulanmış kayıtlara ve katkı üretme sorumluluğuna dayanır.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-5 mb-10">
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-kaos mb-3">1. Gerçek Kimlik, Gizli Profil</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Sistem gerçek kullanıcıyı doğrular; topluluk içinde ad-soyad yerine Global ID görünür.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-kaos mb-3">2. Belge Kontrollü Erişim</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Tam erişim, mesleki belge inceleme başvurusu ve telefon doğrulaması sonrasında açılır.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-kaos mb-3">3. Oy Gücü Kurallıdır</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Oy, destek ve katkı işlemleri veritabanı kayıtlarıyla kilitlenir. Aynı başlıkta çift oy engellenir.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-kaos mb-3">4. İftira ve Hedef Gösterme Yok</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Kişisel saldırı, hakaret, iftira, linç ve mesleki itibarı haksız zedeleyen içerikler sistem dışı bırakılır.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-kaos mb-3">5. Koruma Hattı Kesin Hüküm Vermez</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            ME26 yargı mercii veya meslek odası değildir. Bildirimleri sadece belgeye dayalı ön inceleme amacıyla kayıt altına alır.
+                        </p>
+                    </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-kaos mb-3">6. Başkan Yok, Kural Var</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Sistemin amacı kişileri öne çıkarmak değil; kurallı, izlenebilir ve liyakate dayalı ortak akıl üretmektir.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-700 rounded-3xl p-8">
+                    <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-widest mb-5">
+                        Topluluk Sözümüz
+                    </h2>
+
+                    <div class="space-y-4 text-sm text-gray-300 leading-relaxed">
+                        <p>
+                            ME26’de mesleki eleştiri yapılabilir; kişisel itibarsızlaştırma yapılamaz.
+                        </p>
+
+                        <p>
+                            Sorunlar somutlaştırılır, öneriler kayıt altına alınır, oylar kurallara göre sayılır.
+                        </p>
+
+                        <p>
+                            Her katkı, mesleğin ortak hafızasına yazılır. Her kullanıcı, Global ID ile sorumluluk taşır.
+                        </p>
+
+                        <p class="text-kaos font-black uppercase tracking-widest text-xs">
+                            İnsan yönetici yok. Kurallar, kayıtlar ve liyakat var.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GİZLİLİK -->
         <div id="view-landing-gizlilik" class="landing-section hidden animate-fadeIn flex-grow px-4 py-16">
-            <div class="max-w-4xl mx-auto">
-                <h1 class="text-center text-4xl md:text-5xl font-black mb-8">
-                    Gizlilik <span class="text-kaos">Zırhı</span>
-                </h1>
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl md:text-6xl font-black mb-5 tracking-tight">
+                        Gizlilik <span class="text-kaos">Zırhı</span>
+                    </h1>
 
-                <div class="grid md:grid-cols-2 gap-5">
+                    <p class="text-gray-400 max-w-3xl mx-auto text-sm md:text-base leading-relaxed">
+                        ME26’de özgür katkı için iki şey birlikte korunur: sistemin kullanıcıyı doğrulaması ve topluluğun gerçek kimliği görmemesi.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-5 mb-10">
                     <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <div class="text-3xl mb-4">🆔</div>
                         <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">
-                            Profil Gizliliği
+                            Global ID
                         </h3>
                         <p class="text-xs text-gray-400 leading-relaxed">
-                            Üyeler birbirini ad-soyadla değil, Global ID, şehir tribünü, rol ve katkı bilgileriyle görür.
+                            Topluluk içinde kullanıcılar ad-soyadla değil; TR-IA kimliği, şehir tribünü, rol ve katkı geçmişiyle görünür.
                         </p>
                     </div>
 
                     <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <div class="text-3xl mb-4">📱</div>
                         <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">
-                            Belge Kontrollü Sistem
+                            Telefon Doğrulama
                         </h3>
                         <p class="text-xs text-gray-400 leading-relaxed">
-                            Mesleki belge başvurusu, tam erişim hakkı için ön inceleme kuyruğuna alınır.
+                            Çoklu hesap, sahte kayıt ve manipülasyon riskini azaltmak için telefon doğrulaması istenir.
                         </p>
                     </div>
 
-                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6 md:col-span-2">
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <div class="text-3xl mb-4">📜</div>
                         <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">
-                            Hukuki Sınır
+                            Belge İnceleme
                         </h3>
                         <p class="text-xs text-gray-400 leading-relaxed">
-                            ME26 kesin hüküm vermez, yargı mercii veya meslek odası değildir. Bildirimleri belgeye dayalı ön inceleme amacıyla kayıt altına alır.
+                            Mesleki belge başvurusu otomatik hüküm üretmez. Ön inceleme kuyruğuna alınır.
                         </p>
                     </div>
+
+                    <div class="bg-black/40 border border-slate-700 rounded-2xl p-6">
+                        <div class="text-3xl mb-4">🛡️</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-3">
+                            Koruma Hattı
+                        </h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Bildirim sahibinin bilgileri gizli tutulur. Süreçler anonim ve istatistiksel biçimde değerlendirilebilir.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-panel border border-kaos/30 rounded-3xl p-8 md:p-10 shadow-kaos-lg">
+                    <h2 class="text-2xl md:text-3xl font-black text-white uppercase tracking-widest mb-5">
+                        Hukuki Sınır
+                    </h2>
+
+                    <p class="text-sm text-gray-300 leading-relaxed mb-4">
+                        ME26 kesin hüküm vermez, yargı mercii veya meslek odası değildir.
+                        Bildirimleri belgeye dayalı ön inceleme amacıyla kayıt altına alır.
+                    </p>
+
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Bu geçici canlı test sürümünde dosya yükleme, belge onayı ve hukuki bildirim süreçleri kontrollü olarak izlenmelidir.
+                        Resmi lansman öncesinde KVKK Aydınlatma Metni, Kullanım Şartları, Gizlilik Politikası ve Topluluk Kuralları ayrıca yayınlanmalıdır.
+                    </p>
                 </div>
             </div>
         </div>
 
         <footer class="mt-auto bg-[#050505] border-t border-slate-800 text-gray-500 py-8 text-center shrink-0 z-50">
             <div class="text-[10px] font-mono opacity-70 uppercase tracking-widest">
-                &copy; 2026 ME26 TEKNOLOJİ A.Ş. · İnsan Yönetici Yok. Kurallar Var.
+                &copy; 2026 ME26 Teknoloji · İnsan Yönetici Yok. Kurallar Var.
             </div>
+
             <div class="text-[9px] text-gray-600 mt-3 uppercase tracking-widest">
-                Resmi adres: me26.io
+                Geçici canlı adres: me26-io.vercel.app
             </div>
         </footer>
     </div>
@@ -439,7 +673,7 @@
                         İçmimar <span class="text-kaos">Lobisi</span>
                     </h2>
 
-                    <div class="bg-panel border border-slate-700 p-6 rounded-2xl">
+                    <div class="bg-panel border border-slate-700 p-6 rounded-2xl mb-6">
                         <h3 class="text-white text-xs font-black tracking-widest uppercase mb-3">
                             <i class="fas fa-info-circle mr-2 text-gray-400"></i>
                             Sistem Durumu
@@ -447,6 +681,26 @@
                         <p id="ui-sistem-durumu" class="text-sm text-gray-300 leading-relaxed">
                             Profilinden mesleki belge inceleme başvurusu göndererek tam erişim kazanabilir ve kendi önergelerini sunabilirsin.
                         </p>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-black/40 border border-slate-700 rounded-2xl p-5">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-kaos mb-2">Aşama 1</h3>
+                            <p class="text-sm font-bold text-white mb-2">Sicilini Tamamla</p>
+                            <p class="text-xs text-gray-500 leading-relaxed">Telefon ve belge inceleme başvurusu ile tam erişime hazırlan.</p>
+                        </div>
+
+                        <div class="bg-black/40 border border-slate-700 rounded-2xl p-5">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-kaos mb-2">Aşama 2</h3>
+                            <p class="text-sm font-bold text-white mb-2">Sandığa Katıl</p>
+                            <p class="text-xs text-gray-500 leading-relaxed">Destek ver, oy kullan, önerge oluştur ve mesleki gündeme katkı sun.</p>
+                        </div>
+
+                        <div class="bg-black/40 border border-slate-700 rounded-2xl p-5">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-kaos mb-2">Aşama 3</h3>
+                            <p class="text-sm font-bold text-white mb-2">Ortak Akıl Üret</p>
+                            <p class="text-xs text-gray-500 leading-relaxed">Soru sor, cevap ver, çözümleri görünür hale getir.</p>
+                        </div>
                     </div>
                 </section>
 
@@ -549,6 +803,11 @@
 
                     <div class="bg-slate-900 border border-slate-700 p-4 md:p-8 rounded-3xl shadow-2xl relative">
                         <div id="stadyum-merkez-saha" class="w-full max-w-md mx-auto h-40 md:h-48 bg-black border-2 border-slate-600 rounded-[100px] mb-4 relative flex items-center justify-center shadow-[0_0_50px_rgba(246,193,4,0.05)] overflow-hidden transition-all duration-500">
+                            <div id="saha-dalgalar" class="absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none">
+                                <div class="absolute inset-8 rounded-full border border-kaos/20 animate-ping"></div>
+                                <div class="absolute inset-14 rounded-full border border-kaos/10 animate-pulse"></div>
+                            </div>
+
                             <div class="z-10 text-center flex flex-col items-center">
                                 <div id="sahne-avatar" class="w-16 h-16 md:w-20 md:h-20 border-2 border-slate-700 bg-slate-900 rounded-full flex items-center justify-center mb-2 shadow-lg transition-colors duration-300">
                                     <i id="sahne-mic-icon" class="fas fa-microphone-slash text-gray-600 text-2xl md:text-3xl transition-colors"></i>
@@ -627,7 +886,7 @@
                                 </h4>
 
                                 <p class="text-[11px] md:text-xs text-gray-400 leading-relaxed font-medium">
-                                    ME26 Teknoloji A.Ş.; İçmimar Koruma Hattı üzerinden iletilen bildirimleri ön incelemeye tabi tutar. 
+                                    ME26; İçmimar Koruma Hattı üzerinden iletilen bildirimleri ön incelemeye tabi tutar. 
                                     Gerekli görülen başvurular ilgili mercilere iletilmek üzere kayıt altına alınır. 
                                     ME26 kesin hüküm vermez, yalnızca belgeye dayalı bildirimlerin güvenli aktarımına aracılık eder.
                                 </p>
@@ -882,7 +1141,7 @@
                                 </div>
 
                                 <div class="bg-slate-900 border border-slate-600 p-3 rounded-lg text-kaos font-mono text-xs text-center select-all mb-4 cursor-pointer" id="ui-invite-link">
-                                    https://me26.io/?ref=TR-IA-BEKLEYEN
+                                    https://me26-io.vercel.app/?ref=TR-IA-BEKLEYEN
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3 mb-4">
@@ -1051,9 +1310,7 @@
         </div>
     </div>
 
-    <!-- ======================================================
-         PHONE MODAL
-    ======================================================= -->
+    <!-- PHONE MODAL -->
     <div id="phone-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-2xl">
             <button type="button" id="btn-close-phone-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl z-20">
@@ -1090,9 +1347,7 @@
         </div>
     </div>
 
-    <!-- ======================================================
-         PDF MODAL
-    ======================================================= -->
+    <!-- PDF MODAL -->
     <div id="pdf-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-8 md:p-10 rounded-3xl max-w-md w-full text-center relative shadow-2xl">
             <button type="button" id="btn-close-pdf-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl z-20">
@@ -1128,9 +1383,7 @@
         </div>
     </div>
 
-    <!-- ======================================================
-         VIP MODAL
-    ======================================================= -->
+    <!-- VIP MODAL -->
     <div id="vip-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[99999] flex-col items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-600 p-6 md:p-10 rounded-3xl max-w-4xl w-full text-center relative shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <button type="button" id="btn-close-vip-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl z-20">
@@ -1172,12 +1425,8 @@
         </div>
     </div>
 
-    <!-- Firebase reCAPTCHA -->
     <div id="recaptcha-container"></div>
 
-    <!-- ======================================================
-         SAYFA İÇİ MİNİ SCRIPTLER
-    ======================================================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const colorInput = document.getElementById('input-theme-color');
@@ -1248,9 +1497,6 @@
         });
     </script>
 
-    <!-- ======================================================
-         MODÜL SCRIPTLER
-    ======================================================= -->
     <script type="module" src="app.js"></script>
     <script type="module" src="qa.js"></script>
     <script type="module" src="stadium.js"></script>
@@ -1280,11 +1526,6 @@
 
         .pb-safe {
             padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .mask-image-bottom {
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 100%);
-            mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 100%);
         }
 
         .animate-slideUpFade {
