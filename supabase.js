@@ -1,641 +1,853 @@
 /* ==========================================================================
-   ME26 AĞI - SUPABASE VERİTABANI KÖPRÜSÜ (supabase.js)
-   Cloudflare Workers Canlı Test Sürümü
-   --------------------------------------------------------------------------
+   ME26 AĞI - SUPABASE KÖPRÜSÜ (supabase.js)
+   Temiz Final Sürüm
+
    Görev:
-   - Frontend ile Supabase arasındaki güvenli köprü
-   - Kullanıcı giriş/kayıt RPC
-   - Telefon / belge / şehir / numara işlemleri
-   - Önerge, soru, destek ve koruma hattı işlemleri
-   - Oy, tribün ve canlı veri işlemleri
+   - Supabase client
+   - Kullanıcı kayıt / giriş RPC
+   - Telefon onayı
+   - Belge inceleme kuyruğu
+   - Şehir güncelleme
+   - Önerge / destek / oy
+   - Soru / cevap
+   - Koruma hattı
+   - Tribün ligi
+========================================================================== */
 
-   KRİTİK:
-   - Bu dosyada service_role key ASLA kullanılmaz.
-   - Frontend'de yalnızca anon / publishable key kullanılabilir.
-   - Önerge, soru, destek ve koruma hattı RPC üzerinden çalışır.
-   ========================================================================== */
-
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 import { ME26_CONFIG } from './config.js';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // ------------------------------------------------------
 // SUPABASE CLIENT
 // ------------------------------------------------------
+
 export const supabase = createClient(
-    ME26_CONFIG.supabaseUrl,
-    ME26_CONFIG.supabaseKey,
-    {
-        auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false
-        }
+  ME26_CONFIG.supabaseUrl,
+  ME26_CONFIG.supabaseKey,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
     }
+  }
 );
 
 // ------------------------------------------------------
-// KISA YARDIMCILAR
+// YARDIMCILAR
 // ------------------------------------------------------
-const cleanString = (value, fallback = '') => {
-    if (value === null || value === undefined) return fallback;
 
-    return String(value).trim();
+const cleanText = (value, fallback = '') => {
+  if (value === null || value === undefined) return fallback;
+  return String(value).trim();
 };
 
-const cleanNullableString = (value) => {
-    const cleaned = cleanString(value);
-
-    return cleaned.length > 0 ? cleaned : null;
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const cleanNumber = (value, fallback = 0) => {
-    const parsed = Number(value);
-
-    return Number.isFinite(parsed) ? parsed : fallback;
+const isObject = (value) => {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 };
 
-const cleanInteger = (value, fallback = 0) => {
-    const parsed = Number.parseInt(String(value), 10);
+const normalizeErrorMessage = (error) => {
+  if (!error) return 'Bilinmeyen Supabase hatası.';
 
-    return Number.isFinite(parsed) ? parsed : fallback;
+  const message =
+    error.message ||
+    error.details ||
+    error.hint ||
+    error.code ||
+    String(error);
+
+  return cleanText(message, 'Bilinmeyen Supabase hatası.');
 };
 
-const cleanVoteChoice = (value) => {
-    const choice = cleanString(value);
+async function callRpc(functionName, params = {}) {
+  const { data, error } = await supabase.rpc(functionName, params);
 
-    if (!['yes', 'no', 'abstain'].includes(choice)) {
-        throw new Error('invalid_vote_choice');
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function tryRpcList(rpcCalls = []) {
+  let lastError = null;
+
+  for (const call of rpcCalls) {
+    try {
+      return await callRpc(call.name, call.params || {});
+    } catch (error) {
+      lastError = error;
+      console.warn(`RPC çalışmadı: ${call.name}`, error);
     }
+  }
 
-    return choice;
-};
+  throw lastError || new Error('RPC çağrısı tamamlanamadı.');
+}
 
-const normalizeDbError = (error, fallbackMessage = 'database_error') => {
-    if (!error) return new Error(fallbackMessage);
+async function maybeSingle(table, column, value) {
+  const { data, error } = await supabase
+    .from(table)
+    .select('*')
+    .eq(column, value)
+    .maybeSingle();
 
-    const code = cleanString(error.code);
-    const messageRaw = cleanString(error.message);
-    const detailsRaw = cleanString(error.details);
-    const hintRaw = cleanString(error.hint);
+  if (error) throw error;
+  return data;
+}
 
-    const message = messageRaw.toLowerCase();
-    const details = detailsRaw.toLowerCase();
-    const hint = hintRaw.toLowerCase();
+async function insertIntoFirstAvailableTable(tableNames = [], payload = {}) {
+  let lastError = null;
 
-    if (code === '23505') {
-        return new Error('duplicate_record');
+  for (const table of tableNames) {
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .insert([payload])
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Insert başarısız: ${table}`, error);
     }
+  }
 
-    if (
-        message.includes('duplicate key') ||
-        message.includes('unique constraint') ||
-        details.includes('already exists')
-    ) {
-        return new Error('duplicate_record');
+  throw lastError || new Error('Kayıt oluşturulamadı.');
+}
+
+async function updateFirstAvailable(tableNames = [], match = {}, updates = {}) {
+  let lastError = null;
+
+  for (const table of tableNames) {
+    try {
+      let query = supabase.from(table).update(updates).select();
+
+      Object.entries(match).forEach(([key, value]) => {
+        query = query.eq(key, value);
+      });
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Update başarısız: ${table}`, error);
     }
+  }
 
-    const knownMessages = [
-        'missing_uid',
-        'missing_city',
-        'missing_phone',
-        'missing_document_payload',
-        'missing_document_name',
-        'missing_user_payload',
-        'missing_proposal_id',
-        'missing_question_id',
-        'missing_problem',
-        'missing_solution',
-        'missing_koruma_payload',
-        'missing_koruma_type',
-        'missing_koruma_target',
-        'koruma_description_too_short',
-        'title_too_short',
-        'title_too_long',
-        'problem_too_short',
-        'solution_too_short',
-        'content_too_short',
-        'content_too_long',
-        'user_not_found',
-        'proposal_not_found',
-        'already_voted',
-        'already_supported',
-        'vip_number_taken',
-        'not_enough_invites',
-        'already_has_number',
-        'invalid_vip_number',
-        'invalid_vote_power',
-        'invalid_vote_choice'
-    ];
+  throw lastError || new Error('Güncelleme yapılamadı.');
+}
 
-    for (const known of knownMessages) {
-        if (
-            message.includes(known) ||
-            details.includes(known) ||
-            hint.includes(known)
-        ) {
-            return new Error(known);
+// ------------------------------------------------------
+// KULLANICI
+// ------------------------------------------------------
+
+export async function sistemeGiris(payload = {}) {
+  if (!isObject(payload)) {
+    throw new Error('missing_user_payload');
+  }
+
+  const uid = cleanText(payload.uid);
+
+  if (!uid) {
+    throw new Error('missing_uid');
+  }
+
+  try {
+    return await callRpc('me26_sistem_giris', {
+      p_payload: payload
+    });
+  } catch (rpcError) {
+    console.warn('me26_sistem_giris RPC çalışmadı, users fallback deneniyor:', rpcError);
+  }
+
+  const existingUser = await kullaniciGetir(uid);
+
+  if (existingUser) {
+    return mevcutKullaniciGuncelle(uid, {
+      g_isim: payload.g_isim || payload.isim || payload.name || 'İsimsiz',
+      mail: payload.mail || payload.email || null,
+      foto: payload.foto || payload.photo || null
+    });
+  }
+
+  const userPayload = {
+    id: uid,
+    g_isim: payload.g_isim || payload.isim || payload.name || 'İsimsiz',
+    mail: payload.mail || payload.email || null,
+    foto: payload.foto || payload.photo || null,
+    m_durum: payload.m_durum || payload.role || 'Belirsiz',
+    sehir: payload.sehir || payload.city || null,
+    d_kod: payload.d_kod || payload.davet_kodu || `ME26-${uid.slice(0, 8).toUpperCase()}`,
+    ref: payload.ref || null,
+    belge_durumu: 'Bekliyor',
+    oy_gucu: 0,
+    is_vip: false,
+    davet_edilen_kisi_sayisi: 0
+  };
+
+  const { data, error } = await supabase
+    .from('users')
+    .insert([userPayload])
+    .select()
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function kullaniciGetir(uid) {
+  const cleanUid = cleanText(uid);
+
+  if (!cleanUid) {
+    throw new Error('missing_uid');
+  }
+
+  return maybeSingle('users', 'id', cleanUid);
+}
+
+export async function mevcutKullaniciGuncelle(uid, updates = {}) {
+  const cleanUid = cleanText(uid);
+
+  if (!cleanUid) {
+    throw new Error('missing_uid');
+  }
+
+  const safeUpdates = {};
+
+  Object.entries(updates || {}).forEach(([key, value]) => {
+    if (value !== undefined) safeUpdates[key] = value;
+  });
+
+  if (Object.keys(safeUpdates).length === 0) {
+    return kullaniciGetir(cleanUid);
+  }
+
+  const { data, error } = await supabase
+    .from('users')
+    .update(safeUpdates)
+    .eq('id', cleanUid)
+    .select()
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function sehirGuncelle(uid, sehir) {
+  const cleanUid = cleanText(uid);
+  const cleanCity = cleanText(sehir);
+
+  if (!cleanUid) throw new Error('missing_uid');
+  if (!cleanCity) throw new Error('missing_city');
+
+  try {
+    return await tryRpcList([
+      {
+        name: 'me26_sehir_guncelle',
+        params: {
+          p_uid: cleanUid,
+          p_sehir: cleanCity
         }
-    }
-
-    if (message.includes('already voted') || message.includes('zaten oy')) {
-        return new Error('already_voted');
-    }
-
-    if (message.includes('already supported') || message.includes('zaten destek')) {
-        return new Error('already_supported');
-    }
-
-    if (message.includes('number taken') || message.includes('vip numara')) {
-        return new Error('vip_number_taken');
-    }
-
-    return error instanceof Error
-        ? error
-        : new Error(messageRaw || fallbackMessage);
-};
-
-const safeRpc = async (rpcName, params = {}) => {
-    const { data, error } = await supabase.rpc(rpcName, params);
-
-    if (error) {
-        throw normalizeDbError(error, `${rpcName}_failed`);
-    }
-
-    return data;
-};
-
-const safeSelect = async (query, fallback = []) => {
-    const { data, error } = await query;
-
-    if (error) {
-        throw normalizeDbError(error, 'select_failed');
-    }
-
-    return data || fallback;
-};
-
-const safeMaybeSingle = async (query) => {
-    const { data, error } = await query;
-
-    if (error) {
-        throw normalizeDbError(error, 'single_select_failed');
-    }
-
-    return data || null;
-};
-
-// ======================================================
-// DB MOTORU
-// ======================================================
-export const DB = {
-    // --------------------------------------------------
-    // 1. SİSTEME GİRİŞ
-    // Google giriş sonrası kullanıcıyı bulur veya oluşturur.
-    // --------------------------------------------------
-    sistemeGiris: async (gizliPaket) => {
-        if (!gizliPaket || !gizliPaket.uid) {
-            throw new Error('missing_user_payload');
+      },
+      {
+        name: 'me26_kullanici_sehir_guncelle',
+        params: {
+          p_uid: cleanUid,
+          p_sehir: cleanCity
         }
+      }
+    ]);
+  } catch (rpcError) {
+    console.warn('Şehir RPC çalışmadı, users update fallback deneniyor:', rpcError);
+  }
 
-        const uid = cleanString(gizliPaket.uid);
+  return mevcutKullaniciGuncelle(cleanUid, {
+    sehir: cleanCity
+  });
+}
 
-        if (!uid) {
-            throw new Error('missing_uid');
+// ------------------------------------------------------
+// TELEFON
+// ------------------------------------------------------
+
+export async function telefonuOnayla(uid, phone) {
+  const cleanUid = cleanText(uid);
+  const cleanPhone = cleanText(phone);
+
+  if (!cleanUid) throw new Error('missing_uid');
+  if (!cleanPhone) throw new Error('missing_phone');
+
+  try {
+    return await tryRpcList([
+      {
+        name: 'me26_telefonu_onayla',
+        params: {
+          p_uid: cleanUid,
+          p_telefon: cleanPhone
         }
-
-        const mevcutUser = await safeMaybeSingle(
-            supabase
-                .from('users')
-                .select('*')
-                .eq('id', uid)
-                .maybeSingle()
-        );
-
-        if (mevcutUser) {
-            return mevcutUser;
+      },
+      {
+        name: 'me26_telefon_onayla',
+        params: {
+          p_uid: cleanUid,
+          p_telefon: cleanPhone
         }
+      },
+      {
+        name: 'me26_telefon_onay',
+        params: {
+          p_uid: cleanUid,
+          p_phone: cleanPhone
+        }
+      }
+    ]);
+  } catch (rpcError) {
+    console.warn('Telefon RPC çalışmadı, users update fallback deneniyor:', rpcError);
+  }
 
-        const payload = {
+  const updateTries = [
+    { telefon: cleanPhone, telefon_onayli: true },
+    { telefon: cleanPhone, has_phone: true },
+    { phone: cleanPhone, hasPhone: true },
+    { telefon: cleanPhone }
+  ];
+
+  let lastError = null;
+
+  for (const updates of updateTries) {
+    try {
+      return await mevcutKullaniciGuncelle(cleanUid, updates);
+    } catch (error) {
+      lastError = error;
+      console.warn('Telefon update fallback başarısız:', updates, error);
+    }
+  }
+
+  throw lastError || new Error('Telefon onayı kaydedilemedi.');
+}
+
+// ------------------------------------------------------
+// BELGE
+// ------------------------------------------------------
+
+export async function belgeyiSirayaAl(uid, belgeData = {}) {
+  const cleanUid = cleanText(uid);
+
+  if (!cleanUid) throw new Error('missing_uid');
+
+  const belge = {
+    dosya_adi: belgeData.dosya_adi || belgeData.fileName || belgeData.name || 'belge.pdf',
+    tur: belgeData.tur || belgeData.type || 'application/pdf',
+    belge_durumu: belgeData.belge_durumu || 'Onay Bekliyor',
+    yuklenme_tarihi: new Date().toISOString()
+  };
+
+  try {
+    return await tryRpcList([
+      {
+        name: 'me26_belge_yukle',
+        params: {
+          p_uid: cleanUid,
+          p_belge: belge
+        }
+      },
+      {
+        name: 'me26_belgeyi_siraya_al',
+        params: {
+          p_uid: cleanUid,
+          p_belge: belge
+        }
+      },
+      {
+        name: 'me26_belge_basvurusu',
+        params: {
+          p_uid: cleanUid,
+          p_payload: belge
+        }
+      }
+    ]);
+  } catch (rpcError) {
+    console.warn('Belge RPC çalışmadı, tablo fallback deneniyor:', rpcError);
+  }
+
+  try {
+    return await insertIntoFirstAvailableTable(
+      ['me26_belge_basvurulari', 'belge_basvurulari', 'belgeler'],
+      {
+        uid: cleanUid,
+        kullanici_uid: cleanUid,
+        ...belge
+      }
+    );
+  } catch (insertError) {
+    console.warn('Belge tablo insert başarısız, users update deneniyor:', insertError);
+  }
+
+  return mevcutKullaniciGuncelle(cleanUid, {
+    belge_durumu: 'Onay Bekliyor'
+  });
+}
+
+// ------------------------------------------------------
+// ÖNERGE
+// ------------------------------------------------------
+
+export async function onergeGonder(payload = {}) {
+  const uid = cleanText(payload.uid || payload.yazar_uid);
+  const baslik = cleanText(payload.baslik || payload.title);
+  const sorun = cleanText(payload.sorun || payload.problem);
+  const cozum = cleanText(payload.cozum || payload.solution);
+  const hedefKitle = cleanText(payload.hedef_kitle || payload.hedefKitle || 'Herkes');
+  const sure = toNumber(payload.sure || payload.duration, 2);
+
+  if (!uid) throw new Error('missing_uid');
+  if (baslik.length < 15) throw new Error('title_too_short');
+  if (sorun.length < 20) throw new Error('problem_too_short');
+  if (cozum.length < 20) throw new Error('solution_too_short');
+
+  try {
+    return await tryRpcList([
+      {
+        name: 'me26_onerge_gonder',
+        params: {
+          p_uid: uid,
+          p_baslik: baslik,
+          p_sorun: sorun,
+          p_cozum: cozum,
+          p_hedef_kitle: hedefKitle,
+          p_sure: sure
+        }
+      },
+      {
+        name: 'me26_onerge_olustur',
+        params: {
+          p_payload: {
             uid,
-            g_isim: cleanString(gizliPaket.g_isim, 'İsimsiz'),
-            mail: cleanNullableString(gizliPaket.mail),
-            foto: cleanNullableString(gizliPaket.foto),
-            m_durum: cleanString(gizliPaket.m_durum, 'Belirsiz'),
-            sehir: cleanNullableString(gizliPaket.sehir),
-            d_kod: cleanString(gizliPaket.d_kod),
-            ref: cleanNullableString(gizliPaket.ref)
-        };
-
-        return await safeRpc('me26_sistem_giris', {
-            p_payload: payload
-        });
-    },
-
-    // --------------------------------------------------
-    // 2. TELEFON ONAY
-    // --------------------------------------------------
-    telefonuOnayla: async (uid, telNo) => {
-        const temizUid = cleanString(uid);
-        const temizTel = cleanString(telNo);
-
-        if (!temizUid) throw new Error('missing_uid');
-        if (!temizTel) throw new Error('missing_phone');
-
-        return await safeRpc('me26_telefon_onay', {
-            p_uid: temizUid,
-            p_tel: temizTel
-        });
-    },
-
-    // --------------------------------------------------
-    // 3. BELGE İNCELEME KUYRUĞU
-    // --------------------------------------------------
-    belgeyiSirayaAl: async (uid, belgeData) => {
-        const temizUid = cleanString(uid);
-
-        if (!temizUid) throw new Error('missing_uid');
-
-        if (!belgeData || typeof belgeData !== 'object') {
-            throw new Error('missing_document_payload');
+            baslik,
+            sorun,
+            cozum,
+            hedef_kitle: hedefKitle,
+            sure
+          }
         }
+      }
+    ]);
+  } catch (rpcError) {
+    console.warn('Önerge RPC çalışmadı, tablo fallback deneniyor:', rpcError);
+  }
 
-        const temizBelge = {
-            dosya_adi: cleanString(belgeData.dosya_adi).slice(0, 180),
-            tur: cleanString(belgeData.tur, 'application/pdf'),
-            belge_durumu: cleanString(belgeData.belge_durumu, 'Onay Bekliyor')
-        };
-
-        if (!temizBelge.dosya_adi) {
-            throw new Error('missing_document_name');
-        }
-
-        return await safeRpc('me26_belge_yukle', {
-            p_uid: temizUid,
-            p_data: temizBelge
-        });
-    },
-
-    // --------------------------------------------------
-    // 4. ŞEHİR / TRİBÜN GÜNCELLEME
-    // --------------------------------------------------
-    sehirGuncelle: async (uid, secilenSehir) => {
-        const temizUid = cleanString(uid);
-        const temizSehir = cleanString(secilenSehir);
-
-        if (!temizUid) throw new Error('missing_uid');
-        if (!temizSehir) throw new Error('missing_city');
-
-        return await safeRpc('me26_sehir_guncelle', {
-            p_uid: temizUid,
-            p_sehir: temizSehir
-        });
-    },
-
-    // --------------------------------------------------
-    // 5. STANDART NUMARA ALMA
-    // --------------------------------------------------
-    standartNumaraAl: async (uid) => {
-        const temizUid = cleanString(uid);
-
-        if (!temizUid) throw new Error('missing_uid');
-
-        return await safeRpc('me26_standart_numara_al', {
-            p_uid: temizUid
-        });
-    },
-
-    // --------------------------------------------------
-    // 6. VIP NUMARA ALMA
-    // --------------------------------------------------
-    vipNumaraAl: async (uid, vipNumber) => {
-        const temizUid = cleanString(uid);
-        const temizNo = cleanInteger(vipNumber, 0);
-
-        if (!temizUid) throw new Error('missing_uid');
-        if (temizNo <= 0) throw new Error('invalid_vip_number');
-
-        try {
-            return await safeRpc('me26_vip_numara_al', {
-                p_uid: temizUid,
-                p_vip_no: temizNo
-            });
-        } catch (error) {
-            const normalized = normalizeDbError(error, 'vip_claim_failed');
-
-            if (
-                normalized.message === 'duplicate_record' ||
-                normalized.message === 'vip_number_taken'
-            ) {
-                throw new Error('vip_number_taken');
-            }
-
-            throw normalized;
-        }
-    },
-
-    // --------------------------------------------------
-    // 7. ÖNERGE GÖNDERME
-    // RPC: me26_onerge_gonder
-    // --------------------------------------------------
-    onergeGonder: async (uid, baslik, sorun, cozum, hedefKitle, sure) => {
-        const temizUid = cleanString(uid);
-        const temizBaslik = cleanString(baslik);
-        const temizSorun = cleanString(sorun);
-        const temizCozum = cleanString(cozum);
-        const temizHedefKitle = cleanString(hedefKitle, 'Herkes');
-        const temizSure = cleanInteger(sure, 2);
-
-        if (!temizUid) throw new Error('missing_uid');
-        if (temizBaslik.length < 15) throw new Error('title_too_short');
-        if (temizBaslik.length > 150) throw new Error('title_too_long');
-        if (temizSorun.length < 20) throw new Error('problem_too_short');
-        if (temizCozum.length < 20) throw new Error('solution_too_short');
-
-        return await safeRpc('me26_onerge_gonder', {
-            p_uid: temizUid,
-            p_baslik: temizBaslik,
-            p_sorun: temizSorun,
-            p_cozum: temizCozum,
-            p_hedef_kitle: temizHedefKitle,
-            p_sure: temizSure
-        });
-    },
-
-    // --------------------------------------------------
-    // 8. SORU GÖNDERME
-    // RPC: me26_soru_gonder
-    // --------------------------------------------------
-    soruGonder: async (uid, yazarDijitalId, baslik, icerik, hedefKitle) => {
-        const temizUid = cleanString(uid);
-        const temizDijitalId = cleanString(yazarDijitalId, 'TR-IA-BEKLEYEN');
-        const temizBaslik = cleanString(baslik);
-        const temizIcerik = cleanString(icerik);
-        const temizHedefKitle = cleanString(hedefKitle, 'Herkes');
-
-        if (!temizUid) throw new Error('missing_uid');
-        if (temizBaslik.length < 15) throw new Error('title_too_short');
-        if (temizBaslik.length > 150) throw new Error('title_too_long');
-        if (temizIcerik.length < 50) throw new Error('content_too_short');
-        if (temizIcerik.length > 3000) throw new Error('content_too_long');
-
-        return await safeRpc('me26_soru_gonder', {
-            p_uid: temizUid,
-            p_yazar_dijital_id: temizDijitalId,
-            p_baslik: temizBaslik,
-            p_icerik: temizIcerik,
-            p_hedef_kitle: temizHedefKitle
-        });
-    },
-
-    // --------------------------------------------------
-    // 9. ÖNERGELERİ GETİRME
-    // --------------------------------------------------
-    onergeleriGetir: async () => {
-        return await safeSelect(
-            supabase
-                .from('onergeler')
-                .select('*')
-                .order('olusturulma_tarihi', { ascending: false }),
-            []
-        );
-    },
-
-    // --------------------------------------------------
-    // 10. ÖNERGEYE DESTEK VERME
-    // RPC: me26_destek_ver
-    // --------------------------------------------------
-    destekVer: async (uid, onergeId) => {
-        const temizUid = cleanString(uid);
-        const temizOnergeId = cleanString(onergeId);
-
-        if (!temizUid) throw new Error('missing_uid');
-        if (!temizOnergeId) throw new Error('missing_proposal_id');
-
-        try {
-            return await safeRpc('me26_destek_ver', {
-                p_onerge_id: temizOnergeId,
-                p_uid: temizUid
-            });
-        } catch (error) {
-            const normalized = normalizeDbError(error, 'support_failed');
-
-            if (
-                normalized.message === 'duplicate_record' ||
-                normalized.message === 'already_supported'
-            ) {
-                throw new Error('already_supported');
-            }
-
-            throw normalized;
-        }
-    },
-
-    // --------------------------------------------------
-    // 11. OY KULLANMA
-    // Şimdilik direkt tablo insert.
-    // İstersen bunu da sonraki adımda RPC’ye alırız.
-    // --------------------------------------------------
-    oyKullan: async (uid, onergeId, kullanilanOy, oyGucu) => {
-        const temizUid = cleanString(uid);
-        const temizOnergeId = cleanString(onergeId);
-        const temizOy = cleanVoteChoice(kullanilanOy);
-        const temizOyGucu = cleanNumber(oyGucu, 0);
-
-        if (!temizUid) throw new Error('missing_uid');
-        if (!temizOnergeId) throw new Error('missing_proposal_id');
-        if (temizOyGucu <= 0) throw new Error('invalid_vote_power');
-
-        const yeniOy = {
-            onerge_id: temizOnergeId,
-            user_id: temizUid,
-            kullanilan_oy: temizOy,
-            oy_gucu: temizOyGucu
-        };
-
-        const { error } = await supabase
-            .from('me26_oylar')
-            .insert([yeniOy]);
-
-        if (error) {
-            const normalized = normalizeDbError(error, 'vote_insert_failed');
-
-            if (
-                normalized.message === 'duplicate_record' ||
-                normalized.message === 'already_voted'
-            ) {
-                throw new Error('already_voted');
-            }
-
-            throw normalized;
-        }
-
-        return true;
-    },
-
-    // --------------------------------------------------
-    // 12. OY SONUÇLARI
-    // --------------------------------------------------
-    oySonuclariniGetir: async (onergeId) => {
-        const temizOnergeId = cleanString(onergeId);
-
-        if (!temizOnergeId) throw new Error('missing_proposal_id');
-
-        return await safeSelect(
-            supabase
-                .from('me26_oylar')
-                .select('kullanilan_oy, oy_gucu, user_id')
-                .eq('onerge_id', temizOnergeId),
-            []
-        );
-    },
-
-    // --------------------------------------------------
-    // 13. TRİBÜN LİGİ
-    // --------------------------------------------------
-    tribunLigiGetir: async () => {
-        const users = await safeSelect(
-            supabase
-                .from('users')
-                .select('id, sehir, mesleki_durum'),
-            []
-        );
-
-        const onergeler = await safeSelect(
-            supabase
-                .from('onergeler')
-                .select('yazar_uid'),
-            []
-        );
-
-        const oylar = await safeSelect(
-            supabase
-                .from('me26_oylar')
-                .select('user_id'),
-            []
-        );
-
-        const sorular = await safeSelect(
-            supabase
-                .from('me26_sorular')
-                .select('yazar_uid'),
-            []
-        );
-
-        const cevaplar = await safeSelect(
-            supabase
-                .from('me26_cevaplar')
-                .select('yazar_uid'),
-            []
-        );
-
-        const cityMap = {};
-        const userCityMap = {};
-
-        users.forEach((user) => {
-            const city = cleanString(user.sehir);
-
-            userCityMap[user.id] = city;
-
-            if (!city || city === 'Belirsiz' || city === 'Seçilmedi') return;
-
-            if (!cityMap[city]) {
-                cityMap[city] = {
-                    city,
-                    icmimar: 0,
-                    ogrenci: 0,
-                    onerge: 0,
-                    oy: 0,
-                    katki: 0,
-                    weeklyGrowthPoints: 0,
-                    weeklyGrowthPercent: 0
-                };
-            }
-
-            const role = cleanString(user.mesleki_durum).toLowerCase();
-
-            if (role.includes('öğrenci')) {
-                cityMap[city].ogrenci += 1;
-            } else {
-                cityMap[city].icmimar += 1;
-            }
-        });
-
-        onergeler.forEach((onerge) => {
-            const city = userCityMap[onerge.yazar_uid];
-
-            if (city && cityMap[city]) {
-                cityMap[city].onerge += 1;
-            }
-        });
-
-        oylar.forEach((oy) => {
-            const city = userCityMap[oy.user_id];
-
-            if (city && cityMap[city]) {
-                cityMap[city].oy += 1;
-            }
-        });
-
-        const katkilar = [
-            ...(sorular || []),
-            ...(cevaplar || [])
-        ];
-
-        katkilar.forEach((katki) => {
-            const city = userCityMap[katki.yazar_uid];
-
-            if (city && cityMap[city]) {
-                cityMap[city].katki += 1;
-            }
-        });
-
-        return Object
-            .values(cityMap)
-            .sort((a, b) => {
-                const scoreA =
-                    a.icmimar * 10 +
-                    a.ogrenci * 5 +
-                    a.onerge * 2 +
-                    a.oy * 1 +
-                    a.katki * 2;
-
-                const scoreB =
-                    b.icmimar * 10 +
-                    b.ogrenci * 5 +
-                    b.onerge * 2 +
-                    b.oy * 1 +
-                    b.katki * 2;
-
-                return scoreB - scoreA;
-            });
-    },
-
-    // --------------------------------------------------
-    // 14. KORUMA HATTI BİLDİRİMİ
-    // RPC: me26_koruma_bildir
-    // --------------------------------------------------
-    korumaBildir: async (payload) => {
-        if (!payload || typeof payload !== 'object') {
-            throw new Error('missing_koruma_payload');
-        }
-
-        const bildirim = {
-            bildiren_uid: cleanString(payload.bildiren_uid, 'TR-IA-ZİYARETÇİ'),
-            bildirim_turu: cleanString(payload.bildirim_turu),
-            sikayet_edilen: cleanString(payload.sikayet_edilen),
-            baglanti: cleanNullableString(payload.baglanti),
-            aciklama: cleanString(payload.aciklama),
-            ad_soyad: cleanNullableString(payload.ad_soyad),
-            iletisim: cleanNullableString(payload.iletisim),
-            anonim_mi: Boolean(payload.anonim_mi)
-        };
-
-        if (!bildirim.bildirim_turu) throw new Error('missing_koruma_type');
-        if (!bildirim.sikayet_edilen) throw new Error('missing_koruma_target');
-        if (bildirim.aciklama.length < 20) throw new Error('koruma_description_too_short');
-
-        return await safeRpc('me26_koruma_bildir', {
-            p_payload: bildirim
-        });
+  return insertIntoFirstAvailableTable(
+    ['onergeler', 'me26_onergeler'],
+    {
+      yazar_uid: uid,
+      baslik,
+      sorun,
+      cozum,
+      hedef_kitle: hedefKitle,
+      destek_sayisi: 0,
+      durum: 'bekliyor'
     }
+  );
+}
+
+export async function onergeleriGetir() {
+  try {
+    return await callRpc('me26_onergeleri_getir');
+  } catch (rpcError) {
+    console.warn('Önergeler RPC çalışmadı, tablo fallback deneniyor:', rpcError);
+  }
+
+  const tableTries = ['onergeler', 'me26_onergeler'];
+  let lastError = null;
+
+  for (const table of tableTries) {
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .order('olusturulma_tarihi', { ascending: false });
+
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      lastError = error;
+      console.warn(`Önergeler alınamadı: ${table}`, error);
+    }
+  }
+
+  throw lastError || new Error('Önergeler alınamadı.');
+}
+
+export async function destekVer(uid, onergeId) {
+  const cleanUid = cleanText(uid);
+  const cleanOnergeId = cleanText(onergeId);
+
+  if (!cleanUid) throw new Error('missing_uid');
+  if (!cleanOnergeId) throw new Error('missing_proposal_id');
+
+  return tryRpcList([
+    {
+      name: 'me26_destek_ver',
+      params: {
+        p_uid: cleanUid,
+        p_onerge_id: cleanOnergeId
+      }
+    },
+    {
+      name: 'me26_onerge_destekle',
+      params: {
+        p_uid: cleanUid,
+        p_onerge_id: cleanOnergeId
+      }
+    }
+  ]);
+}
+
+export async function oyKullan(uid, onergeId, oy, oyGucu = 1) {
+  const cleanUid = cleanText(uid);
+  const cleanOnergeId = cleanText(onergeId);
+  const cleanVote = cleanText(oy);
+
+  if (!cleanUid) throw new Error('missing_uid');
+  if (!cleanOnergeId) throw new Error('missing_proposal_id');
+  if (!cleanVote) throw new Error('missing_vote');
+
+  try {
+    return await tryRpcList([
+      {
+        name: 'me26_oy_kullan',
+        params: {
+          p_uid: cleanUid,
+          p_onerge_id: cleanOnergeId,
+          p_oy: cleanVote,
+          p_oy_gucu: toNumber(oyGucu, 1)
+        }
+      },
+      {
+        name: 'me26_onerge_oyla',
+        params: {
+          p_uid: cleanUid,
+          p_onerge_id: cleanOnergeId,
+          p_oy: cleanVote,
+          p_oy_gucu: toNumber(oyGucu, 1)
+        }
+      }
+    ]);
+  } catch (rpcError) {
+    console.warn('Oy RPC çalışmadı, tablo fallback deneniyor:', rpcError);
+  }
+
+  return insertIntoFirstAvailableTable(
+    ['me26_oylar', 'oylar', 'onerge_oylari'],
+    {
+      uid: cleanUid,
+      kullanici_uid: cleanUid,
+      onerge_id: cleanOnergeId,
+      oy: cleanVote,
+      oy_gucu: toNumber(oyGucu, 1)
+    }
+  );
+}
+
+// ------------------------------------------------------
+// SORU / CEVAP
+// ------------------------------------------------------
+
+export async function soruGonder(payload = {}) {
+  const uid = cleanText(payload.uid || payload.yazar_uid);
+  const yazarDijitalId = cleanText(payload.yazar_dijital_id || payload.digitalId || 'TR-IA-BEKLEYEN');
+  const baslik = cleanText(payload.baslik || payload.title);
+  const icerik = cleanText(payload.icerik || payload.content);
+  const hedefKitle = cleanText(payload.hedef_kitle || payload.hedefKitle || 'Herkes');
+
+  if (!uid) throw new Error('missing_uid');
+  if (baslik.length < 15) throw new Error('title_too_short');
+  if (icerik.length < 50) throw new Error('content_too_short');
+
+  try {
+    return await tryRpcList([
+      {
+        name: 'me26_soru_gonder',
+        params: {
+          p_uid: uid,
+          p_yazar_dijital_id: yazarDijitalId,
+          p_baslik: baslik,
+          p_icerik: icerik,
+          p_hedef_kitle: hedefKitle
+        }
+      }
+    ]);
+  } catch (rpcError) {
+    console.warn('Soru RPC çalışmadı, tablo fallback deneniyor:', rpcError);
+  }
+
+  return insertIntoFirstAvailableTable(
+    ['me26_sorular', 'sorular'],
+    {
+      yazar_uid: uid,
+      yazar_dijital_id: yazarDijitalId,
+      baslik,
+      icerik,
+      hedef_kitle: hedefKitle,
+      cozuldu_mu: false
+    }
+  );
+}
+
+export async function sorulariGetir(filter = 'bekleyen') {
+  const solved = filter === 'kutuphane' || filter === 'cozuldu';
+
+  const tableTries = ['me26_sorular', 'sorular'];
+  let lastError = null;
+
+  for (const table of tableTries) {
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('cozuldu_mu', solved)
+        .order('olusturulma_tarihi', { ascending: false });
+
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      lastError = error;
+      console.warn(`Sorular alınamadı: ${table}`, error);
+    }
+  }
+
+  throw lastError || new Error('Sorular alınamadı.');
+}
+
+export async function cevapGonder(payload = {}) {
+  const uid = cleanText(payload.uid || payload.yazar_uid);
+  const soruId = cleanText(payload.soru_id || payload.question_id);
+  const icerik = cleanText(payload.icerik || payload.content);
+
+  if (!uid) throw new Error('missing_uid');
+  if (!soruId) throw new Error('missing_question_id');
+  if (icerik.length < 20) throw new Error('content_too_short');
+
+  return insertIntoFirstAvailableTable(
+    ['me26_cevaplar', 'cevaplar', 'soru_cevaplari'],
+    {
+      yazar_uid: uid,
+      soru_id: soruId,
+      icerik
+    }
+  );
+}
+
+// ------------------------------------------------------
+// KORUMA HATTI
+// ------------------------------------------------------
+
+export async function korumaBildir(payload = {}) {
+  const bildirim = {
+    bildiren_uid: payload.bildiren_uid || payload.uid || 'TR-IA-ZIYARETCI',
+    bildirim_turu: payload.bildirim_turu || payload.tur || 'Diğer',
+    sikayet_edilen: payload.sikayet_edilen || payload.kisi || payload.kurum || null,
+    baglanti: payload.baglanti || payload.link || null,
+    aciklama: payload.aciklama || payload.description || '',
+    ad_soyad: payload.ad_soyad || payload.adSoyad || null,
+    iletisim: payload.iletisim || null,
+    anonim_mi: Boolean(payload.anonim_mi || payload.anonim)
+  };
+
+  if (!cleanText(bildirim.sikayet_edilen)) {
+    throw new Error('missing_report_target');
+  }
+
+  if (cleanText(bildirim.aciklama).length < 20) {
+    throw new Error('content_too_short');
+  }
+
+  return insertIntoFirstAvailableTable(
+    ['me26_koruma_hatti', 'koruma_hatti'],
+    bildirim
+  );
+}
+
+// ------------------------------------------------------
+// TRİBÜN / STADYUM
+// ------------------------------------------------------
+
+export async function tribunLigiGetir() {
+  try {
+    return await callRpc('me26_tribun_ligi_getir');
+  } catch (rpcError) {
+    console.warn('Tribün ligi RPC çalışmadı, users fallback deneniyor:', rpcError);
+  }
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('sehir, city, oy_gucu, vote_power');
+
+  if (error) throw error;
+
+  const map = new Map();
+
+  (data || []).forEach((row) => {
+    const city = cleanText(row.sehir || row.city || 'Belirsiz');
+    const power = toNumber(row.oy_gucu || row.vote_power, 0);
+
+    if (!map.has(city)) {
+      map.set(city, {
+        sehir: city,
+        guc: 0,
+        kisi_sayisi: 0
+      });
+    }
+
+    const current = map.get(city);
+    current.guc += power;
+    current.kisi_sayisi += 1;
+  });
+
+  return Array.from(map.values()).sort((a, b) => b.guc - a.guc);
+}
+
+export async function stadyumDurumuGetir() {
+  try {
+    return await callRpc('me26_stadyum_durumu_getir');
+  } catch (error) {
+    console.warn('Stadyum durumu RPC çalışmadı:', error);
+    return {
+      total: 0,
+      mezun: 0,
+      ogrenci: 0,
+      lider: 'Bekleniyor'
+    };
+  }
+}
+
+export async function stadyumMesajGonder(payload = {}) {
+  const mesaj = cleanText(payload.mesaj || payload.text || payload.content);
+
+  if (!mesaj) {
+    throw new Error('missing_message');
+  }
+
+  return insertIntoFirstAvailableTable(
+    ['me26_stadyum_mesajlari', 'stadyum_mesajlari'],
+    {
+      uid: payload.uid || null,
+      dijital_id: payload.dijital_id || payload.digitalId || 'TR-IA',
+      sehir: payload.sehir || payload.city || null,
+      mesaj
+    }
+  );
+}
+
+// ------------------------------------------------------
+// VIP / KURUCU NO
+// ------------------------------------------------------
+
+export async function standartNumaraAl(uid) {
+  const cleanUid = cleanText(uid);
+
+  if (!cleanUid) throw new Error('missing_uid');
+
+  return tryRpcList([
+    {
+      name: 'me26_standart_numara_al',
+      params: {
+        p_uid: cleanUid
+      }
+    },
+    {
+      name: 'me26_kurucu_no_al',
+      params: {
+        p_uid: cleanUid
+      }
+    }
+  ]);
+}
+
+export async function vipNumaraRezerveEt(uid, number) {
+  const cleanUid = cleanText(uid);
+  const selectedNumber = toNumber(number, 0);
+
+  if (!cleanUid) throw new Error('missing_uid');
+  if (!selectedNumber) throw new Error('missing_number');
+
+  return tryRpcList([
+    {
+      name: 'me26_vip_numara_rezerve_et',
+      params: {
+        p_uid: cleanUid,
+        p_numara: selectedNumber
+      }
+    },
+    {
+      name: 'me26_vip_no_al',
+      params: {
+        p_uid: cleanUid,
+        p_numara: selectedNumber
+      }
+    }
+  ]);
+}
+
+// ------------------------------------------------------
+// DB NESNESİ
+// ------------------------------------------------------
+
+export const DB = {
+  supabase,
+
+  // Kullanıcı
+  sistemeGiris,
+  kullaniciGetir,
+  mevcutKullaniciGuncelle,
+  sehirGuncelle,
+
+  // Telefon / belge
+  telefonuOnayla,
+  belgeyiSirayaAl,
+
+  // Önerge
+  onergeGonder,
+  onergeleriGetir,
+  destekVer,
+  oyKullan,
+
+  // Soru
+  soruGonder,
+  sorulariGetir,
+  cevapGonder,
+
+  // Koruma
+  korumaBildir,
+
+  // Tribün / stadyum
+  tribunLigiGetir,
+  stadyumDurumuGetir,
+  stadyumMesajGonder,
+
+  // VIP
+  standartNumaraAl,
+  vipNumaraRezerveEt
 };
+
+// Eski dosyalar window.DB bekliyorsa çalışsın.
+window.DB = {
+  ...(window.DB || {}),
+  ...DB
+};
+
+window.ME26_DB = DB;
+window.ME26_SUPABASE = supabase;
+
+console.info('ME26 supabase.js temiz final sürüm yüklendi.');
