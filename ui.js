@@ -1,23 +1,16 @@
 /* ==========================================================================
    ME26 AĞI - UI MOTORU (ui.js)
-   Temiz Final Sürüm
+   Temiz, Kısa, Hatasız Final Sürüm
 
-   Görev:
-   - Toast mesajları
-   - Landing / SaaS panel geçişi
-   - Menü sekme geçişleri
-   - Modal aç/kapat
-   - Profil bilgilerini ekrana basma
-   - Önerge / gündem / soru / tribün / stadyum render yardımcıları
-   - Güvenli HTML escape
-
-   Not:
-   - Bu dosya config.js, auth.js, supabase.js veya state.js import etmez.
-   - Tek başına güvenli çalışır.
+   Bu dosya:
+   - Başka dosya import etmez.
+   - Dosyanın ortasında import yoktur.
+   - escapeHtml hatası yoktur.
+   - qa.js ve stadium.js tarafından beklenen exportları verir.
 ========================================================================== */
 
 // ------------------------------------------------------
-// KISA YARDIMCILAR
+// TEMEL YARDIMCILAR
 // ------------------------------------------------------
 
 const $ = (id) => document.getElementById(id);
@@ -27,15 +20,6 @@ const cleanText = (value, fallback = '') => {
   return String(value).trim();
 };
 
-export const escapeHtml = (value) => {
-  return cleanText(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-};
-
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -43,6 +27,15 @@ const toNumber = (value, fallback = 0) => {
 
 const formatNumber = (value) => {
   return Number(value || 0).toLocaleString('tr-TR');
+};
+
+export const escapeHtml = (value) => {
+  return cleanText(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 };
 
 export const setText = (id, value) => {
@@ -163,7 +156,7 @@ export function restoreButton(buttonOrId, oldText = '') {
 }
 
 // ------------------------------------------------------
-// LANDING / SAAS GEÇİŞ
+// LANDING / PANEL GEÇİŞ
 // ------------------------------------------------------
 
 export function showLanding() {
@@ -204,7 +197,7 @@ export function showView(viewName) {
 }
 
 // ------------------------------------------------------
-// SAAS TAB / MENÜ GEÇİŞ
+// PANEL SEKME GEÇİŞİ
 // ------------------------------------------------------
 
 export function switchSaasTab(targetId) {
@@ -404,7 +397,7 @@ export const updateUserPanel = renderProfile;
 export const renderUserInfo = renderProfile;
 
 // ------------------------------------------------------
-// ÖNERGE KARTLARI
+// ÖNERGE RENDER
 // ------------------------------------------------------
 
 export function renderProposalCard(item = {}, options = {}) {
@@ -530,7 +523,7 @@ export const renderOnergeler = renderProposals;
 export const onergeleriCiz = renderProposals;
 
 // ------------------------------------------------------
-// QA / SÖZ SENDE
+// QA / SÖZ SENDE RENDER
 // ------------------------------------------------------
 
 export function renderQuestionCard(item = {}) {
@@ -732,7 +725,7 @@ export function renderStageSpeaker(speaker = null) {
 }
 
 // ------------------------------------------------------
-// GENEL FORM YARDIMCILARI
+// FORM YARDIMCILARI
 // ------------------------------------------------------
 
 export function clearInputs(ids = []) {
@@ -866,4 +859,4 @@ if (document.readyState === 'loading') {
   initUI();
 }
 
-console.info('ME26 ui.js temiz final sürüm yüklendi.');
+console.info('ME26 ui.js temiz kısa final sürüm yüklendi.');
