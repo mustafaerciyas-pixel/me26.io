@@ -2,11 +2,14 @@
    ME26 AĞI - SİSTEM AYARLARI (config.js)
    Cloudflare Workers Canlı Test Sürümü
    --------------------------------------------------------------------------
-   NOT:
-   - Geçici canlı adres:
-     https://me26.mustafaerciyas.workers.dev
-   - me26.io domaini bağlanınca sadece officialBaseUrl ve inviteBaseUrl değişecek.
-   - Bu dosyaya ASLA service_role key, admin key, gizli şifre veya özel token yazma.
+   Geçici canlı adres:
+   https://me26.mustafaerciyas.workers.dev
+
+   me26.io domaini bağlanınca sadece officialBaseUrl ve inviteBaseUrl değişecek.
+
+   ÖNEMLİ:
+   Bu dosyaya ASLA service_role key, admin key, gizli şifre veya özel token yazma.
+   Supabase tarafında sadece anon / publishable key kullanılmalıdır.
    ========================================================================== */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -22,7 +25,7 @@ export const ME26_CONFIG = {
     mode: "production",
 
     // --------------------------------------------------
-    // 2. GEÇİCİ CANLI ADRESLER
+    // 2. CANLI TEST ADRESLERİ
     // --------------------------------------------------
     officialBaseUrl: "https://me26.mustafaerciyas.workers.dev",
     inviteBaseUrl: "https://me26.mustafaerciyas.workers.dev",
@@ -58,7 +61,7 @@ export const ME26_CONFIG = {
 
     // --------------------------------------------------
     // 6. SUPABASE
-    // Bu key anon/publishable key olmalı; service_role ASLA buraya yazılmamalı.
+    // Bu key anon / publishable key olmalı; service_role ASLA buraya yazılmamalı.
     // --------------------------------------------------
     supabaseUrl: "https://ukmkojfntsmueikjcrvz.supabase.co",
     supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw"
