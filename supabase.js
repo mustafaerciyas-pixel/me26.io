@@ -6,13 +6,13 @@
    - Frontend ile Supabase arasındaki güvenli köprü
    - Kullanıcı giriş/kayıt RPC
    - Telefon / belge / şehir / numara işlemleri
-   - Önerge ve soru gönderimini RPC üzerinden yapmak
-   - Oy, destek, tribün ve koruma hattı işlemleri
+   - Önerge, soru, destek ve koruma hattı işlemleri
+   - Oy, tribün ve canlı veri işlemleri
 
    KRİTİK:
    - Bu dosyada service_role key ASLA kullanılmaz.
    - Frontend'de yalnızca anon / publishable key kullanılabilir.
-   - Önerge ve soru gönderimi doğrudan tablo insert değil, RPC üzerinden yapılır.
+   - Önerge, soru, destek ve koruma hattı RPC üzerinden çalışır.
    ========================================================================== */
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -38,21 +38,25 @@ export const supabase = createClient(
 // ------------------------------------------------------
 const cleanString = (value, fallback = '') => {
     if (value === null || value === undefined) return fallback;
+
     return String(value).trim();
 };
 
 const cleanNullableString = (value) => {
     const cleaned = cleanString(value);
+
     return cleaned.length > 0 ? cleaned : null;
 };
 
 const cleanNumber = (value, fallback = 0) => {
     const parsed = Number(value);
+
     return Number.isFinite(parsed) ? parsed : fallback;
 };
 
 const cleanInteger = (value, fallback = 0) => {
     const parsed = Number.parseInt(String(value), 10);
+
     return Number.isFinite(parsed) ? parsed : fallback;
 };
 
@@ -72,9 +76,11 @@ const normalizeDbError = (error, fallbackMessage = 'database_error') => {
     const code = cleanString(error.code);
     const messageRaw = cleanString(error.message);
     const detailsRaw = cleanString(error.details);
+    const hintRaw = cleanString(error.hint);
 
     const message = messageRaw.toLowerCase();
     const details = detailsRaw.toLowerCase();
+    const hint = hintRaw.toLowerCase();
 
     if (code === '23505') {
         return new Error('duplicate_record');
@@ -99,6 +105,10 @@ const normalizeDbError = (error, fallbackMessage = 'database_error') => {
         'missing_question_id',
         'missing_problem',
         'missing_solution',
+        'missing_koruma_payload',
+        'missing_koruma_type',
+        'missing_koruma_target',
+        'koruma_description_too_short',
         'title_too_short',
         'title_too_long',
         'problem_too_short',
@@ -106,17 +116,23 @@ const normalizeDbError = (error, fallbackMessage = 'database_error') => {
         'content_too_short',
         'content_too_long',
         'user_not_found',
+        'proposal_not_found',
         'already_voted',
         'already_supported',
         'vip_number_taken',
         'not_enough_invites',
         'already_has_number',
         'invalid_vip_number',
-        'invalid_vote_power'
+        'invalid_vote_power',
+        'invalid_vote_choice'
     ];
 
     for (const known of knownMessages) {
-        if (message.includes(known) || details.includes(known)) {
+        if (
+            message.includes(known) ||
+            details.includes(known) ||
+            hint.includes(known)
+        ) {
             return new Error(known);
         }
     }
@@ -133,7 +149,9 @@ const normalizeDbError = (error, fallbackMessage = 'database_error') => {
         return new Error('vip_number_taken');
     }
 
-    return error instanceof Error ? error : new Error(messageRaw || fallbackMessage);
+    return error instanceof Error
+        ? error
+        : new Error(messageRaw || fallbackMessage);
 };
 
 const safeRpc = async (rpcName, params = {}) => {
@@ -317,8 +335,7 @@ export const DB = {
 
     // --------------------------------------------------
     // 7. ÖNERGE GÖNDERME
-    // Artık doğrudan tabloya insert atmaz.
-    // Supabase RPC: me26_onerge_gonder
+    // RPC: me26_onerge_gonder
     // --------------------------------------------------
     onergeGonder: async (uid, baslik, sorun, cozum, hedefKitle, sure) => {
         const temizUid = cleanString(uid);
@@ -346,8 +363,7 @@ export const DB = {
 
     // --------------------------------------------------
     // 8. SORU GÖNDERME
-    // Artık doğrudan tabloya insert atmaz.
-    // Supabase RPC: me26_soru_gonder
+    // RPC: me26_soru_gonder
     // --------------------------------------------------
     soruGonder: async (uid, yazarDijitalId, baslik, icerik, hedefKitle) => {
         const temizUid = cleanString(uid);
@@ -386,6 +402,7 @@ export const DB = {
 
     // --------------------------------------------------
     // 10. ÖNERGEYE DESTEK VERME
+    // RPC: me26_destek_ver
     // --------------------------------------------------
     destekVer: async (uid, onergeId) => {
         const temizUid = cleanString(uid);
@@ -415,6 +432,8 @@ export const DB = {
 
     // --------------------------------------------------
     // 11. OY KULLANMA
+    // Şimdilik direkt tablo insert.
+    // İstersen bunu da sonraki adımda RPC’ye alırız.
     // --------------------------------------------------
     oyKullan: async (uid, onergeId, kullanilanOy, oyGucu) => {
         const temizUid = cleanString(uid);
@@ -464,7 +483,7 @@ export const DB = {
         return await safeSelect(
             supabase
                 .from('me26_oylar')
-                .select('kullanilan_oy, oy_gucu')
+                .select('kullanilan_oy, oy_gucu, user_id')
                 .eq('onerge_id', temizOnergeId),
             []
         );
@@ -593,6 +612,7 @@ export const DB = {
 
     // --------------------------------------------------
     // 14. KORUMA HATTI BİLDİRİMİ
+    // RPC: me26_koruma_bildir
     // --------------------------------------------------
     korumaBildir: async (payload) => {
         if (!payload || typeof payload !== 'object') {
@@ -614,14 +634,8 @@ export const DB = {
         if (!bildirim.sikayet_edilen) throw new Error('missing_koruma_target');
         if (bildirim.aciklama.length < 20) throw new Error('koruma_description_too_short');
 
-        const { error } = await supabase
-            .from('me26_koruma_hatti')
-            .insert([bildirim]);
-
-        if (error) {
-            throw normalizeDbError(error, 'koruma_insert_failed');
-        }
-
-        return true;
+        return await safeRpc('me26_koruma_bildir', {
+            p_payload: bildirim
+        });
     }
 };
