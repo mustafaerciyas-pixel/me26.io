@@ -1,13 +1,19 @@
 /* ==========================================================================
    ME26 AĞI - ANA MOTOR VE SAAS MENÜ YÖNLENDİRİCİSİ (app.js)
-   Geçici Vercel Canlı Sürümü
+   Cloudflare Workers Canlı Test Sürümü
    --------------------------------------------------------------------------
    Görev:
    - Google giriş / çıkış akışını başlatmak
    - Telefon ve belge modal işlemlerini yönetmek
    - SaaS menü geçişlerini bağlamak
    - Sandık / önerge / oy / destek sistemini başlatmak
+   - Soru gönderimini RPC üzerinden yapmak
    - Koruma Hattı ve Stadyum motorlarını güvenli başlatmak
+
+   KRİTİK:
+   - Önerge gönderimi: DB.onergeGonder(...)
+   - Soru gönderimi: DB.soruGonder(...)
+   - Frontend doğrudan me26_sorular insert atmaz.
    ========================================================================== */
 
 import { STATE } from './state.js';
@@ -37,6 +43,12 @@ const bind = (id, event, fn) => {
     const el = $(id);
 
     if (!el) return;
+
+    if (el.dataset && el.dataset[`bound${event}`] === '1') return;
+
+    if (el.dataset) {
+        el.dataset[`bound${event}`] = '1';
+    }
 
     el.addEventListener(event, fn);
 };
@@ -123,6 +135,39 @@ const syncCityGate = () => {
     }
 };
 
+const getDigitalId = (user) => {
+    if (!user) return 'TR-IA-BEKLEYEN';
+
+    if (user.userNo && user.userNo !== 'BEKLEYEN') {
+        return `TR-IA-${user.userNo}`;
+    }
+
+    return 'TR-IA-BEKLEYEN';
+};
+
+const getErrorMessage = (error) => {
+    const message = String(error?.message || error || '');
+
+    const messages = {
+        missing_uid: 'Oturum kimliği bulunamadı. Lütfen tekrar giriş yapın.',
+        title_too_short: 'Başlık en az 15 karakter olmalıdır.',
+        title_too_long: 'Başlık en fazla 150 karakter olabilir.',
+        problem_too_short: 'Sorun açıklaması en az 20 karakter olmalıdır.',
+        solution_too_short: 'Çözüm önerisi en az 20 karakter olmalıdır.',
+        content_too_short: 'Soru içeriği en az 50 karakter olmalıdır.',
+        content_too_long: 'Soru içeriği en fazla 3000 karakter olabilir.',
+        user_not_found: 'Kullanıcı kaydı bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın.',
+        already_voted: 'Bu önergeye daha önce oy verdiniz.',
+        already_supported: 'Bu önergeyi daha önce desteklediniz.',
+        vip_number_taken: 'Bu VIP numara az önce başka biri tarafından alındı.',
+        not_enough_invites: 'VIP numara için gerekli gerçek davet sayısına henüz ulaşılmadı.',
+        already_has_number: 'Bu hesap için kurucu numara zaten atanmış.',
+        invalid_vote_power: 'Oy gücünüz henüz aktif değil.'
+    };
+
+    return messages[message] || message || 'İşlem sırasında beklenmeyen bir hata oluştu.';
+};
+
 // ======================================================
 // 1. EVRENSEL MECLİS KALEMİ - ŞİMDİLİK PASİF
 // ======================================================
@@ -175,11 +220,11 @@ window.ortakKursuGonder = async function () {
             const sure = safeValue('input-kursu-duration', '2');
 
             if (!sorun || sorun.length < 20) {
-                throw new Error('Lütfen sorunu en az 20 karakterle açıklayın.');
+                throw new Error('problem_too_short');
             }
 
             if (!cozum || cozum.length < 20) {
-                throw new Error('Lütfen çözüm önerisini en az 20 karakterle açıklayın.');
+                throw new Error('solution_too_short');
             }
 
             await DB.onergeGonder(
@@ -203,29 +248,25 @@ window.ortakKursuGonder = async function () {
             const icerik = safeTrimValue('input-kursu-content');
 
             if (icerik.length < 50 || icerik.length > 3000) {
-                throw new Error('İçerik 50 ile 3000 karakter arasında olmalıdır.');
+                throw new Error(
+                    icerik.length < 50
+                        ? 'content_too_short'
+                        : 'content_too_long'
+                );
             }
 
-            const yeniSoru = {
-                yazar_uid: user.uid,
-                yazar_dijital_id: `TR-IA-${user.userNo || 'ADAY'}`,
-                hedef_kitle: hedefKitle,
+            await DB.soruGonder(
+                user.uid,
+                getDigitalId(user),
                 baslik,
                 icerik,
-                cozuldu_mu: false,
-                sikayet_sayisi: 0
-            };
-
-            const { error } = await supabase
-                .from('me26_sorular')
-                .insert([yeniSoru]);
-
-            if (error) throw error;
+                hedefKitle
+            );
 
             UI.showToast('Sorunuz ortak akla başarıyla iletildi.', 'success');
 
             if (typeof window.qaSorulariGetir === 'function') {
-                window.qaSorulariGetir();
+                await window.qaSorulariGetir();
             }
 
             UI.closeModal('ortak-kursu-modal');
@@ -248,7 +289,7 @@ window.ortakKursuGonder = async function () {
         console.error('Ortak kürsü gönderim hatası:', error);
 
         UI.showToast(
-            error.message || 'Gönderim sırasında bir hata oluştu.',
+            getErrorMessage(error),
             'error'
         );
     } finally {
@@ -269,7 +310,7 @@ export const AUTH = {
             }
         } catch (error) {
             console.error('Google giriş köprüsü hatası:', error);
-            UI.showToast('Google giriş işlemi başlatılamadı.', 'error');
+            UI.showToast(getErrorMessage(error) || 'Google giriş işlemi başlatılamadı.', 'error');
         }
     },
 
@@ -341,7 +382,7 @@ export const AUTH = {
             console.error('Telefon doğrulama gönderim hatası:', error);
 
             UI.showToast(
-                error.message || 'SMS gönderilemedi. Lütfen tekrar deneyin.',
+                getErrorMessage(error),
                 'error'
             );
 
@@ -388,7 +429,7 @@ export const AUTH = {
             console.error('OTP doğrulama hatası:', error);
 
             UI.showToast(
-                error.message || 'Hatalı kod girdiniz.',
+                getErrorMessage(error),
                 'error'
             );
 
@@ -455,7 +496,7 @@ export const AUTH = {
             console.error('PDF başvuru hatası:', error);
 
             UI.showToast(
-                error.message || 'Belge başvurusu sırasında bir hata oluştu.',
+                getErrorMessage(error),
                 'error'
             );
 
@@ -482,11 +523,7 @@ export const Me26VotingSystem = {
 
             onergeler.forEach(async (onerge) => {
                 try {
-                    const btn = document.querySelector(`button[data-id="${onerge.id}"]`);
-                    const cardEl =
-                        btn?.closest('.bg-black\\/40') ||
-                        btn?.closest('.bg-black\\/50') ||
-                        btn?.closest('[data-onerge-card]');
+                    const cardEl = document.querySelector(`[data-onerge-card="${CSS.escape(String(onerge.id))}"]`);
 
                     if (!cardEl) return;
 
@@ -499,6 +536,16 @@ export const Me26VotingSystem = {
             });
         } catch (error) {
             console.error('Önergeler yüklenemedi:', error);
+
+            const proposalsContainer = $('proposals-container');
+
+            if (proposalsContainer) {
+                proposalsContainer.innerHTML = `
+                    <div class="text-center py-10 border border-dashed border-red-800 rounded-2xl text-red-400 text-xs font-bold tracking-widest uppercase">
+                        Önergeler yüklenemedi. Lütfen sayfayı yenileyin.
+                    </div>
+                `;
+            }
         }
     },
 
@@ -626,7 +673,7 @@ export const Me26VotingSystem = {
                     button.classList.add('opacity-30', 'cursor-not-allowed');
                 });
             } else {
-                UI.showToast('Oy gönderilirken bir hata oluştu.', 'error');
+                UI.showToast(getErrorMessage(error) || 'Oy gönderilirken bir hata oluştu.', 'error');
             }
         }
     },
@@ -718,6 +765,14 @@ function statikDinleyicileriBagla() {
 
             UI.switchSaasTab(targetId);
 
+            if (targetId === 'view-tribun-ligi' && typeof window.loadTribunLigiData === 'function') {
+                window.loadTribunLigiData();
+            }
+
+            if (targetId === 'view-kursu' && typeof window.qaSorulariGetir === 'function') {
+                window.qaSorulariGetir();
+            }
+
             if (window.innerWidth < 768) {
                 document.querySelectorAll('.nav-menu-btn i').forEach((icon) => {
                     icon.classList.remove('text-kaos');
@@ -759,7 +814,7 @@ function statikDinleyicileriBagla() {
             await Me26VotingSystem.loadProposals();
         } catch (error) {
             console.error('Şehir kaydetme hatası:', error);
-            UI.showToast('Şehir kaydedilemedi.', 'error');
+            UI.showToast(getErrorMessage(error) || 'Şehir kaydedilemedi.', 'error');
         }
     });
 
@@ -784,7 +839,7 @@ function statikDinleyicileriBagla() {
             UI.showToast(`Numaranız atandı: TR-IA-${yeniNo}`, 'success');
         } catch (error) {
             console.error('Standart numara hatası:', error);
-            UI.showToast('Numara alınamadı.', 'error');
+            UI.showToast(getErrorMessage(error) || 'Numara alınamadı.', 'error');
         }
     });
 
@@ -939,7 +994,7 @@ async function handleDestekle(destekBtn) {
             destekBtn.classList.remove('bg-slate-800', 'border-slate-500', 'hover:bg-slate-700');
             destekBtn.classList.add('bg-green-900/50', 'text-green-400', 'border-green-500');
         } else {
-            UI.showToast('Bir hata oluştu.', 'error');
+            UI.showToast(getErrorMessage(error) || 'Bir hata oluştu.', 'error');
 
             destekBtn.innerHTML = originalText;
             destekBtn.disabled = false;
@@ -956,12 +1011,6 @@ function authRouterKur() {
             STATE.clearSession();
 
             UI.showView('landing');
-
-            try {
-                UI.renderProfile();
-            } catch (error) {
-                // Girişsiz durumda profil render edilmezse sorun değil.
-            }
 
             return;
         }
@@ -1026,7 +1075,7 @@ function authRouterKur() {
             console.error('Oturum yönlendirme hatası:', error);
 
             UI.showToast(
-                'Oturum bilgileri alınamadı. Lütfen sayfayı yenileyin.',
+                getErrorMessage(error) || 'Oturum bilgileri alınamadı. Lütfen sayfayı yenileyin.',
                 'error'
             );
         }
