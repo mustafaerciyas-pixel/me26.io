@@ -1,986 +1,984 @@
 /* ==========================================================================
    ME26 AĞI - CANLI STADYUM MOTORU (stadium.js)
-   Canlı Production Sürümü
-   --------------------------------------------------------------------------
+   Temiz Final Sürüm
+
    Görev:
-   - Supabase Realtime Presence ile çevrimiçi tribün görünümü
-   - Canlı sahne / söz isteme akışı
-   - Chat alanı HTML'de varsa güvenli canlı mesajlaşma
-   - HTML'de eksik id varsa sayfayı kırmadan sessizce çalışmak
-   --------------------------------------------------------------------------
-   Güvenlik:
-   - Kullanıcıdan gelen metinler innerHTML ile basılmaz.
-   - Chat alanı yoksa chat fonksiyonları devre dışı kalır.
-   - Kürsü alanı backend kesin kilidi değildir; temsilî canlı sahne deneyimidir.
-   ========================================================================== */
+   - Canlı stadyum istatistikleri
+   - Şehir tribünleri
+   - Tribün chat mesajları
+   - Söz isteme / kürsüden inme
+   - Supabase varsa canlı kayıt, yoksa güvenli local fallback
 
-import { supabase } from './supabase.js';
-import { STATE } from './state.js';
-import { UI } from './ui.js';
+   Kullanılan ID'ler:
+   - stat-total-online
+   - stat-mezun-online
+   - stat-ogrenci-online
+   - stat-lider-tribun
+   - stadyum-tribunler
+   - stadyum-chat-messages
+   - input-chat-mesaj
+   - btn-chat-gonder
+   - btn-soz-iste
+   - btn-kursuyu-birak
+   - sahne-kisi-isim
+   - sahne-kisi-rol
+   - sahne-mic-icon
+   - saha-dalgalar
+   - chat-cooldown-overlay
+   - chat-cooldown-timer
+========================================================================== */
+
+import { DB } from './supabase.js';
+import {
+  escapeHtml,
+  showToast,
+  renderStadiumStats,
+  renderStadiumTribunes,
+  addStadiumMessage,
+  renderStageSpeaker
+} from './ui.js';
 
 // ------------------------------------------------------
-// ŞEHİR LİSTESİ
+// GLOBAL DURUM
 // ------------------------------------------------------
-const SEHIRLER = [
-    'Adana',
-    'Adıyaman',
-    'Afyonkarahisar',
-    'Ağrı',
-    'Amasya',
-    'Ankara',
-    'Antalya',
-    'Artvin',
-    'Aydın',
-    'Balıkesir',
-    'Bilecik',
-    'Bingöl',
-    'Bitlis',
-    'Bolu',
-    'Burdur',
-    'Bursa',
-    'Çanakkale',
-    'Çankırı',
-    'Çorum',
-    'Denizli',
-    'Diyarbakır',
-    'Edirne',
-    'Elazığ',
-    'Erzincan',
-    'Erzurum',
-    'Eskişehir',
-    'Gaziantep',
-    'Giresun',
-    'Gümüşhane',
-    'Hakkari',
-    'Hatay',
-    'Isparta',
-    'Mersin',
-    'İstanbul',
-    'İzmir',
-    'Kars',
-    'Kastamonu',
-    'Kayseri',
-    'Kırklareli',
-    'Kırşehir',
-    'Kocaeli',
-    'Konya',
-    'Kütahya',
-    'Malatya',
-    'Manisa',
-    'Kahramanmaraş',
-    'Mardin',
-    'Muğla',
-    'Muş',
-    'Nevşehir',
-    'Niğde',
-    'Ordu',
-    'Rize',
-    'Sakarya',
-    'Samsun',
-    'Siirt',
-    'Sinop',
-    'Sivas',
-    'Tekirdağ',
-    'Tokat',
-    'Trabzon',
-    'Tunceli',
-    'Şanlıurfa',
-    'Uşak',
-    'Van',
-    'Yozgat',
-    'Zonguldak',
-    'Aksaray',
-    'Bayburt',
-    'Karaman',
-    'Kırıkkale',
-    'Batman',
-    'Şırnak',
-    'Bartın',
-    'Ardahan',
-    'Iğdır',
-    'Yalova',
-    'Karabük',
-    'Kilis',
-    'Osmaniye',
-    'Düzce',
-    'Yurtdışı'
-];
+
+const CHAT_COOLDOWN_SECONDS = 60;
+const CHAT_LIMIT = 30;
+const PRESENCE_INTERVAL_MS = 30000;
+const STADIUM_REFRESH_INTERVAL_MS = 45000;
+const CHAT_REFRESH_INTERVAL_MS = 20000;
+
+const CHAT_COOLDOWN_KEY = 'me26_stadium_chat_last_time';
+const LOCAL_SPEAKER_KEY = 'me26_stadium_local_speaker';
+
+let stadiumStarted = false;
+let presenceTimer = null;
+let stadiumTimer = null;
+let chatTimer = null;
+let cooldownTimer = null;
+let isOnStage = false;
 
 // ------------------------------------------------------
 // KISA YARDIMCILAR
 // ------------------------------------------------------
+
 const $ = (id) => document.getElementById(id);
 
 const cleanText = (value, fallback = '') => {
-    if (value === null || value === undefined) return fallback;
-    return String(value).trim();
+  if (value === null || value === undefined) return fallback;
+  return String(value).trim();
 };
 
-const slugifyCity = (city) => {
-    return cleanText(city, 'Belirsiz')
-        .replace(/\s+/g, '-')
-        .replace(/[^\p{L}\p{N}\-]/gu, '');
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const getUser = () => {
-    if (typeof STATE.getUser === 'function') return STATE.getUser();
-    return STATE.user || {};
+const safeJsonParse = (value, fallback = null) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 };
 
-const isStudentRole = (role) => {
-    return cleanText(role).toLowerCase().includes('öğrenci');
+const getSupabase = () => {
+  return DB?.supabase || window.ME26_SUPABASE || window.ME26_DB?.supabase || null;
 };
 
-const getCurrentUserIdentity = () => {
-    const user = getUser();
+const getCurrentUser = () => {
+  if (window.ME26_APP && typeof window.ME26_APP.getCurrentUser === 'function') {
+    const user = window.ME26_APP.getCurrentUser();
+    if (user) return user;
+  }
 
-    if (!STATE.isLoggedIn() || !user || !user.uid) {
-        return {
-            uid: `TR-IA-ZİYARETÇİ-${Math.floor(Math.random() * 100000)}`,
-            role: 'Ziyaretçi',
-            city: 'Belirsiz',
-            isLoggedIn: false
-        };
+  try {
+    const raw = localStorage.getItem('me26_user');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+
+  return null;
+};
+
+const getDigitalId = (user = {}) => {
+  return (
+    user.digitalId ||
+    user.digital_id ||
+    user.dijital_id ||
+    user.kendi_davet_kodu ||
+    user.davet_kodu ||
+    'TR-IA-BEKLEYEN'
+  );
+};
+
+const getUserCity = (user = {}) => {
+  return user.city || user.sehir || 'Belirsiz';
+};
+
+const getUserRole = (user = {}) => {
+  return user.role || user.mesleki_durum || user.m_durum || 'Kimlik Bekleniyor';
+};
+
+const nowIso = () => new Date().toISOString();
+
+const isStadiumVisible = () => {
+  const stadium = $('view-stadium');
+  if (!stadium) return false;
+
+  return !stadium.classList.contains('hidden');
+};
+
+// ------------------------------------------------------
+// SUPABASE GÜVENLİ DENEME YARDIMCILARI
+// ------------------------------------------------------
+
+async function trySelectFromTables(tableNames = [], buildQuery) {
+  const supabase = getSupabase();
+
+  if (!supabase) return null;
+
+  let lastError = null;
+
+  for (const table of tableNames) {
+    try {
+      let query = supabase.from(table).select('*');
+
+      if (typeof buildQuery === 'function') {
+        query = buildQuery(query, table);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      lastError = error;
+      console.warn(`Stadium select başarısız: ${table}`, error);
+    }
+  }
+
+  if (lastError) console.warn('Stadium select tamamen başarısız:', lastError);
+
+  return null;
+}
+
+async function tryInsertIntoTables(tableNames = [], payload = {}) {
+  const supabase = getSupabase();
+
+  if (!supabase) return null;
+
+  let lastError = null;
+
+  for (const table of tableNames) {
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .insert([payload])
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Stadium insert başarısız: ${table}`, error);
+    }
+  }
+
+  if (lastError) throw lastError;
+
+  return null;
+}
+
+async function tryUpsertIntoTables(tableNames = [], payload = {}, conflictColumn = 'uid') {
+  const supabase = getSupabase();
+
+  if (!supabase) return null;
+
+  let lastError = null;
+
+  for (const table of tableNames) {
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .upsert([payload], { onConflict: conflictColumn })
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Stadium upsert başarısız: ${table}`, error);
+    }
+  }
+
+  if (lastError) console.warn('Stadium upsert tamamen başarısız:', lastError);
+
+  return null;
+}
+
+async function tryUpdateTables(tableNames = [], match = {}, updates = {}) {
+  const supabase = getSupabase();
+
+  if (!supabase) return null;
+
+  let lastError = null;
+
+  for (const table of tableNames) {
+    try {
+      let query = supabase.from(table).update(updates).select();
+
+      Object.entries(match).forEach(([key, value]) => {
+        query = query.eq(key, value);
+      });
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Stadium update başarısız: ${table}`, error);
+    }
+  }
+
+  if (lastError) console.warn('Stadium update tamamen başarısız:', lastError);
+
+  return null;
+}
+
+// ------------------------------------------------------
+// PRESENCE / ONLINE DURUM
+// ------------------------------------------------------
+
+async function syncPresence() {
+  const user = getCurrentUser();
+
+  if (!user?.uid) return;
+
+  const payload = {
+    uid: user.uid,
+    dijital_id: getDigitalId(user),
+    sehir: getUserCity(user),
+    rol: getUserRole(user),
+    online: true,
+    son_gorulme: nowIso(),
+    updated_at: nowIso()
+  };
+
+  await tryUpsertIntoTables(
+    ['me26_stadyum_presence', 'stadyum_presence', 'stadium_presence'],
+    payload,
+    'uid'
+  );
+}
+
+function startPresenceHeartbeat() {
+  if (presenceTimer) clearInterval(presenceTimer);
+
+  syncPresence();
+
+  presenceTimer = setInterval(() => {
+    syncPresence();
+  }, PRESENCE_INTERVAL_MS);
+}
+
+// ------------------------------------------------------
+// STADYUM İSTATİSTİKLERİ
+// ------------------------------------------------------
+
+async function fetchUsersForFallback() {
+  const supabase = getSupabase();
+
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id,sehir,city,mesleki_durum,m_durum,role,oy_gucu,vote_power');
+
+    if (error) throw error;
+
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn('users fallback okunamadı:', error);
+    return [];
+  }
+}
+
+function buildStatsFromUsers(users = []) {
+  const cityMap = new Map();
+
+  let mezun = 0;
+  let ogrenci = 0;
+
+  users.forEach((user) => {
+    const city = cleanText(user.sehir || user.city || 'Belirsiz');
+    const role = cleanText(user.mesleki_durum || user.m_durum || user.role || '').toLowerCase();
+
+    if (role.includes('öğr') || role.includes('ogr')) {
+      ogrenci += 1;
+    } else {
+      mezun += 1;
     }
 
-    const uid =
-        user.userNo && user.userNo !== 'BEKLEYEN'
-            ? `TR-IA-${user.userNo}`
-            : `TR-IA-ADAY-${String(user.uid).slice(0, 6).toUpperCase()}`;
+    if (!cityMap.has(city)) {
+      cityMap.set(city, {
+        sehir: city,
+        city,
+        count: 0,
+        sayi: 0,
+        online: 0,
+        guc: 0
+      });
+    }
 
-    const role = isStudentRole(user.role)
-        ? 'İçmimarlık Öğrencisi'
-        : 'İçmimarlık Mezunu';
+    const current = cityMap.get(city);
+    current.count += 1;
+    current.sayi += 1;
+    current.online += 1;
+    current.guc += toNumber(user.oy_gucu || user.vote_power, 0);
+  });
 
-    const city =
-        user.city &&
-        user.city !== 'Seçilmedi' &&
-        user.city !== 'TRİBÜN SEÇİLMEDİ'
-            ? user.city
-            : 'Belirsiz';
+  const tribunes = Array.from(cityMap.values()).sort((a, b) => {
+    return (b.count || 0) - (a.count || 0);
+  });
+
+  const leader = tribunes[0]?.sehir || 'Bekleniyor';
+
+  return {
+    stats: {
+      total: users.length,
+      total_online: users.length,
+      mezun,
+      mezun_online: mezun,
+      ogrenci,
+      ogrenci_online: ogrenci,
+      lider: leader,
+      lider_tribun: leader
+    },
+    tribunes
+  };
+}
+
+async function fetchStadiumStats() {
+  try {
+    const data = await DB.stadyumDurumuGetir();
+
+    if (data && typeof data === 'object') {
+      return {
+        total: data.total || data.total_online || 0,
+        total_online: data.total_online || data.total || 0,
+        mezun: data.mezun || data.mezun_online || 0,
+        mezun_online: data.mezun_online || data.mezun || 0,
+        ogrenci: data.ogrenci || data.ogrenci_online || 0,
+        ogrenci_online: data.ogrenci_online || data.ogrenci || 0,
+        lider: data.lider || data.lider_tribun || 'Bekleniyor',
+        lider_tribun: data.lider_tribun || data.lider || 'Bekleniyor'
+      };
+    }
+  } catch (error) {
+    console.warn('DB.stadyumDurumuGetir çalışmadı:', error);
+  }
+
+  const users = await fetchUsersForFallback();
+  return buildStatsFromUsers(users).stats;
+}
+
+async function fetchTribunes() {
+  const supabase = getSupabase();
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.rpc('me26_stadyum_tribunler_getir');
+
+      if (!error && Array.isArray(data)) {
+        return data;
+      }
+    } catch (error) {
+      console.warn('me26_stadyum_tribunler_getir RPC çalışmadı:', error);
+    }
+  }
+
+  const users = await fetchUsersForFallback();
+  return buildStatsFromUsers(users).tribunes;
+}
+
+async function loadStadium() {
+  try {
+    await syncPresence();
+
+    const [stats, tribunes] = await Promise.all([
+      fetchStadiumStats(),
+      fetchTribunes()
+    ]);
+
+    renderStadiumStats(stats);
+    renderStadiumTribunes(tribunes);
+  } catch (error) {
+    console.error('Stadyum yüklenemedi:', error);
+    showToast('Stadyum verileri alınamadı.', 'error');
+  }
+}
+
+function startStadiumRefresh() {
+  if (stadiumTimer) clearInterval(stadiumTimer);
+
+  loadStadium();
+
+  stadiumTimer = setInterval(() => {
+    if (isStadiumVisible()) {
+      loadStadium();
+    }
+  }, STADIUM_REFRESH_INTERVAL_MS);
+}
+
+// ------------------------------------------------------
+// CHAT
+// ------------------------------------------------------
+
+function getLastChatTime() {
+  try {
+    return Number(localStorage.getItem(CHAT_COOLDOWN_KEY) || 0);
+  } catch {
+    return 0;
+  }
+}
+
+function setLastChatTime() {
+  try {
+    localStorage.setItem(CHAT_COOLDOWN_KEY, String(Date.now()));
+  } catch {}
+}
+
+function getCooldownRemaining() {
+  const last = getLastChatTime();
+
+  if (!last) return 0;
+
+  const diff = Math.floor((Date.now() - last) / 1000);
+  return Math.max(CHAT_COOLDOWN_SECONDS - diff, 0);
+}
+
+function updateCooldownOverlay() {
+  const remaining = getCooldownRemaining();
+  const overlay = $('chat-cooldown-overlay');
+  const timer = $('chat-cooldown-timer');
+
+  if (!overlay || !timer) return;
+
+  if (remaining > 0) {
+    overlay.classList.remove('hidden');
+    timer.textContent = String(remaining);
+  } else {
+    overlay.classList.add('hidden');
+
+    if (cooldownTimer) {
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
+    }
+  }
+}
+
+function startCooldownTimer() {
+  if (cooldownTimer) clearInterval(cooldownTimer);
+
+  updateCooldownOverlay();
+
+  cooldownTimer = setInterval(updateCooldownOverlay, 1000);
+}
+
+async function fetchChatMessages() {
+  const supabase = getSupabase();
+
+  if (!supabase) return [];
+
+  const tables = ['me26_stadyum_mesajlari', 'stadyum_mesajlari', 'stadium_messages'];
+  const orderColumns = ['created_at', 'olusturulma_tarihi', 'tarih'];
+
+  let lastError = null;
+
+  for (const table of tables) {
+    for (const orderColumn of orderColumns) {
+      try {
+        const { data, error } = await supabase
+          .from(table)
+          .select('*')
+          .order(orderColumn, { ascending: false })
+          .limit(CHAT_LIMIT);
+
+        if (error) throw error;
+
+        return Array.isArray(data) ? data.reverse() : [];
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .limit(CHAT_LIMIT);
+
+      if (error) throw error;
+
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      lastError = error;
+      console.warn(`Chat mesajları okunamadı: ${table}`, error);
+    }
+  }
+
+  if (lastError) console.warn('Chat tamamen okunamadı:', lastError);
+
+  return [];
+}
+
+function renderChatMessages(messages = []) {
+  const container = $('stadyum-chat-messages');
+
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  const items = Array.isArray(messages) ? messages : [];
+
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="animate-pulse text-gray-500 text-xs font-bold uppercase tracking-widest">
+        Tribün mesajları bekleniyor...
+      </div>
+    `;
+    return;
+  }
+
+  items.forEach((message) => {
+    addStadiumMessage({
+      text: message.mesaj || message.text || message.content || '',
+      author: message.dijital_id || message.author || message.yazar || 'TR-IA',
+      city: message.sehir || message.city || ''
+    });
+  });
+}
+
+async function loadChatMessages() {
+  try {
+    const messages = await fetchChatMessages();
+    renderChatMessages(messages);
+  } catch (error) {
+    console.warn('Chat mesajları yüklenemedi:', error);
+  }
+}
+
+async function sendChatMessage() {
+  const input = $('input-chat-mesaj');
+  const message = cleanText(input?.value);
+
+  if (!message) {
+    showToast('Mesaj yazmadan gönderemezsiniz.', 'error');
+    return;
+  }
+
+  if (message.length < 2) {
+    showToast('Mesaj çok kısa.', 'error');
+    return;
+  }
+
+  if (message.length > 80) {
+    showToast('Mesaj en fazla 80 karakter olabilir.', 'error');
+    return;
+  }
+
+  const remaining = getCooldownRemaining();
+
+  if (remaining > 0) {
+    showToast(`${remaining} saniye sonra tekrar mesaj gönderebilirsiniz.`, 'warning');
+    startCooldownTimer();
+    return;
+  }
+
+  const user = getCurrentUser();
+
+  if (!user?.uid) {
+    showToast('Mesaj göndermek için giriş yapmalısınız.', 'error');
+    return;
+  }
+
+  const button = $('btn-chat-gonder');
+  const oldText = button ? button.innerHTML : '';
+
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '...';
+  }
+
+  try {
+    const payload = {
+      uid: user.uid,
+      dijital_id: getDigitalId(user),
+      sehir: getUserCity(user),
+      city: getUserCity(user),
+      mesaj: message,
+      text: message,
+      created_at: nowIso(),
+      olusturulma_tarihi: nowIso()
+    };
+
+    try {
+      await DB.stadyumMesajGonder(payload);
+    } catch (dbError) {
+      console.warn('DB.stadyumMesajGonder çalışmadı, tablo fallback deneniyor:', dbError);
+
+      await tryInsertIntoTables(
+        ['me26_stadyum_mesajlari', 'stadyum_mesajlari', 'stadium_messages'],
+        payload
+      );
+    }
+
+    input.value = '';
+    setLastChatTime();
+    startCooldownTimer();
+
+    showToast('Mesaj tribüne gönderildi.', 'success');
+    await loadChatMessages();
+  } catch (error) {
+    console.error('Mesaj gönderilemedi:', error);
+    showToast(error?.message || 'Mesaj gönderilemedi.', 'error');
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = oldText || 'Gönder';
+    }
+  }
+}
+
+function startChatRefresh() {
+  if (chatTimer) clearInterval(chatTimer);
+
+  loadChatMessages();
+
+  chatTimer = setInterval(() => {
+    if (isStadiumVisible()) {
+      loadChatMessages();
+    }
+  }, CHAT_REFRESH_INTERVAL_MS);
+}
+
+// ------------------------------------------------------
+// SAHNE / SÖZ İSTEME
+// ------------------------------------------------------
+
+function getLocalSpeaker() {
+  try {
+    const raw = localStorage.getItem(LOCAL_SPEAKER_KEY);
+    return safeJsonParse(raw, null);
+  } catch {
+    return null;
+  }
+}
+
+function setLocalSpeaker(speaker) {
+  try {
+    localStorage.setItem(LOCAL_SPEAKER_KEY, JSON.stringify(speaker));
+  } catch {}
+}
+
+function clearLocalSpeaker() {
+  try {
+    localStorage.removeItem(LOCAL_SPEAKER_KEY);
+  } catch {}
+}
+
+async function fetchCurrentSpeaker() {
+  const rows = await trySelectFromTables(
+    ['me26_stadyum_kursu', 'stadyum_kursu', 'stadium_stage'],
+    (query) => query.eq('aktif', true).limit(1)
+  );
+
+  if (Array.isArray(rows) && rows.length > 0) {
+    const row = rows[0];
 
     return {
-        uid,
-        role,
-        city,
-        isLoggedIn: true
+      uid: row.uid,
+      id: row.dijital_id || row.id || 'TR-IA',
+      name: row.dijital_id || row.name || row.id || 'TR-IA',
+      role: row.rol || row.role || 'Kürsüde',
+      city: row.sehir || row.city || ''
     };
-};
+  }
 
-const createEl = (tag, className = '', text = '') => {
-    const el = document.createElement(tag);
+  return getLocalSpeaker();
+}
 
-    if (className) el.className = className;
-    if (text) el.textContent = text;
+function updateStageButtons(speaker = null) {
+  const user = getCurrentUser();
+  const requestBtn = $('btn-soz-iste');
+  const leaveBtn = $('btn-kursuyu-birak');
 
-    return el;
-};
+  const currentUserIsSpeaker =
+    Boolean(user?.uid && speaker?.uid && user.uid === speaker.uid) ||
+    Boolean(isOnStage);
 
-const setText = (id, value) => {
-    const el = $(id);
-    if (el) el.textContent = value;
-};
+  if (requestBtn) {
+    requestBtn.classList.toggle('hidden', currentUserIsSpeaker);
+  }
 
-const removeChildren = (el) => {
-    if (!el) return;
+  if (leaveBtn) {
+    leaveBtn.classList.toggle('hidden', !currentUserIsSpeaker);
+  }
+}
 
-    while (el.firstChild) {
-        el.removeChild(el.firstChild);
-    }
-};
+async function renderCurrentSpeaker() {
+  try {
+    const speaker = await fetchCurrentSpeaker();
 
-const safeChannelSend = async (channel, payload) => {
-    if (!channel) {
-        throw new Error('missing_realtime_channel');
-    }
-
-    return await channel.send(payload);
-};
-
-const trimMessage = (message) => {
-    return cleanText(message)
-        .replace(/\s+/g, ' ')
-        .slice(0, 120);
-};
-
-const normalizePresenceState = (presenceState) => {
-    const list = [];
-
-    if (!presenceState || typeof presenceState !== 'object') {
-        return list;
+    if (speaker) {
+      renderStageSpeaker(speaker);
+      updateStageButtons(speaker);
+      return;
     }
 
-    Object.keys(presenceState).forEach((key) => {
-        const records = presenceState[key];
+    renderStageSpeaker(null);
+    updateStageButtons(null);
+  } catch (error) {
+    console.warn('Kürsü bilgisi alınamadı:', error);
+    renderStageSpeaker(null);
+    updateStageButtons(null);
+  }
+}
 
-        if (Array.isArray(records) && records.length > 0) {
-            list.push(records[0]);
-        }
+async function requestSpeak() {
+  const user = getCurrentUser();
+
+  if (!user?.uid) {
+    showToast('Söz istemek için giriş yapmalısınız.', 'error');
+    return;
+  }
+
+  const speaker = {
+    uid: user.uid,
+    dijital_id: getDigitalId(user),
+    id: getDigitalId(user),
+    name: getDigitalId(user),
+    rol: getUserRole(user),
+    role: getUserRole(user),
+    sehir: getUserCity(user),
+    city: getUserCity(user),
+    aktif: true,
+    created_at: nowIso(),
+    updated_at: nowIso()
+  };
+
+  const button = $('btn-soz-iste');
+  const oldText = button ? button.innerHTML : '';
+
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = 'Söz Alınıyor...';
+  }
+
+  try {
+    try {
+      await tryInsertIntoTables(
+        ['me26_stadyum_kursu', 'stadyum_kursu', 'stadium_stage'],
+        speaker
+      );
+    } catch (error) {
+      console.warn('Kürsü tablosuna yazılamadı, local fallback kullanılıyor:', error);
+    }
+
+    setLocalSpeaker(speaker);
+    isOnStage = true;
+
+    renderStageSpeaker(speaker);
+    updateStageButtons(speaker);
+
+    showToast('Söz aldınız. Kürsü sizde.', 'success');
+  } catch (error) {
+    console.error('Söz alma hatası:', error);
+    showToast(error?.message || 'Söz alınamadı.', 'error');
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = oldText || 'Söz İste';
+    }
+  }
+}
+
+async function leaveStage() {
+  const user = getCurrentUser();
+
+  if (!user?.uid) {
+    isOnStage = false;
+    clearLocalSpeaker();
+    renderStageSpeaker(null);
+    updateStageButtons(null);
+    return;
+  }
+
+  const button = $('btn-kursuyu-birak');
+  const oldText = button ? button.innerHTML : '';
+
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = 'İniliyor...';
+  }
+
+  try {
+    await tryUpdateTables(
+      ['me26_stadyum_kursu', 'stadyum_kursu', 'stadium_stage'],
+      { uid: user.uid },
+      {
+        aktif: false,
+        updated_at: nowIso()
+      }
+    );
+
+    const localSpeaker = getLocalSpeaker();
+
+    if (localSpeaker?.uid === user.uid) {
+      clearLocalSpeaker();
+    }
+
+    isOnStage = false;
+
+    renderStageSpeaker(null);
+    updateStageButtons(null);
+
+    showToast('Kürsüden indiniz.', 'info');
+  } catch (error) {
+    console.warn('Kürsüden inme update başarısız, local temizleniyor:', error);
+
+    clearLocalSpeaker();
+    isOnStage = false;
+
+    renderStageSpeaker(null);
+    updateStageButtons(null);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = oldText || 'Kürsüden İn';
+    }
+  }
+}
+
+// ------------------------------------------------------
+// EVENT BAĞLAMA
+// ------------------------------------------------------
+
+function bindStadiumEvents() {
+  const chatButton = $('btn-chat-gonder');
+
+  if (chatButton && chatButton.dataset.me26StadiumChatBound !== '1') {
+    chatButton.dataset.me26StadiumChatBound = '1';
+    chatButton.addEventListener('click', sendChatMessage);
+  }
+
+  const chatInput = $('input-chat-mesaj');
+
+  if (chatInput && chatInput.dataset.me26StadiumInputBound !== '1') {
+    chatInput.dataset.me26StadiumInputBound = '1';
+
+    chatInput.addEventListener('input', () => {
+      if (chatInput.value.length > 80) {
+        chatInput.value = chatInput.value.slice(0, 80);
+      }
     });
 
-    return list;
-};
-
-// ======================================================
-// STADYUM MOTORU
-// ======================================================
-export const STADYUM = {
-    kanal: null,
-    sahnedekiKisi: null,
-    sonMesajZamani: 0,
-    chatCooldownTimer: null,
-    hasStarted: false,
-
-    // --------------------------------------------------
-    // 1. TRİBÜNLERİ ÇİZ
-    // --------------------------------------------------
-    ciz: function () {
-        const container = $('stadyum-tribunler');
-
-        if (!container) return;
-
-        removeChildren(container);
-
-        SEHIRLER.forEach((sehir) => {
-            const safeId = slugifyCity(sehir);
-            const card = createEl(
-                'div',
-                'bg-black/40 border border-slate-800 rounded-xl p-3 min-h-[92px] transition shadow-inner',
-                ''
-            );
-
-            card.id = `tribun-${safeId}`;
-
-            const header = createEl('div', 'flex items-center justify-between mb-3 gap-2', '');
-
-            const title = createEl(
-                'div',
-                'text-[10px] md:text-xs font-black text-white uppercase tracking-widest truncate',
-                sehir
-            );
-
-            const count = createEl(
-                'div',
-                'text-[10px] font-mono font-black text-kaos bg-slate-900 border border-slate-700 px-2 py-1 rounded min-w-[28px] text-center',
-                ''
-            );
-
-            count.id = `sayac-${safeId}`;
-
-            header.appendChild(title);
-            header.appendChild(count);
-
-            const seats = createEl(
-                'div',
-                'flex flex-wrap gap-1.5 min-h-[28px]',
-                ''
-            );
-
-            seats.id = `koltuklar-${safeId}`;
-
-            card.appendChild(header);
-            card.appendChild(seats);
-
-            container.appendChild(card);
-        });
-
-        const unknownCard = createEl(
-            'div',
-            'bg-black/30 border border-dashed border-slate-800 rounded-xl p-3 min-h-[92px] transition shadow-inner opacity-80',
-            ''
-        );
-
-        unknownCard.id = 'tribun-Belirsiz';
-
-        const unknownHeader = createEl('div', 'flex items-center justify-between mb-3 gap-2', '');
-        const unknownTitle = createEl('div', 'text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest truncate', 'Kayıtsız Alan');
-        const unknownCount = createEl('div', 'text-[10px] font-mono font-black text-gray-400 bg-slate-900 border border-slate-700 px-2 py-1 rounded min-w-[28px] text-center', '');
-
-        unknownCount.id = 'sayac-Belirsiz';
-
-        const unknownSeats = createEl('div', 'flex flex-wrap gap-1.5 min-h-[28px]', '');
-        unknownSeats.id = 'koltuklar-Belirsiz';
-
-        unknownHeader.appendChild(unknownTitle);
-        unknownHeader.appendChild(unknownCount);
-        unknownCard.appendChild(unknownHeader);
-        unknownCard.appendChild(unknownSeats);
-
-        container.appendChild(unknownCard);
-
-        this.ensureOptionalStageElements();
-        this.bindLocalEvents();
-    },
-
-    // --------------------------------------------------
-    // 2. EKSİK AMA GEREKLİ OPSİYONEL SAHNE ELEMANLARI
-    // --------------------------------------------------
-    ensureOptionalStageElements: function () {
-        const stage = $('stadyum-merkez-saha');
-        const avatar = $('sahne-avatar');
-        const btnSoz = $('btn-soz-iste');
-
-        if (!stage) return;
-
-        if (!$('saha-dalgalar')) {
-            const waves = createEl(
-                'div',
-                'absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none',
-                ''
-            );
-
-            waves.id = 'saha-dalgalar';
-
-            const circle1 = createEl('div', 'absolute inset-8 rounded-full border border-kaos/20 animate-ping', '');
-            const circle2 = createEl('div', 'absolute inset-14 rounded-full border border-kaos/10 animate-pulse', '');
-
-            waves.appendChild(circle1);
-            waves.appendChild(circle2);
-
-            stage.insertBefore(waves, stage.firstChild);
-        }
-
-        if (!$('sahne-kisi-rol') && avatar && avatar.parentElement) {
-            const role = createEl(
-                'div',
-                'text-[9px] font-bold text-gray-600 tracking-widest uppercase transition-colors',
-                'Kimse Konuşmuyor'
-            );
-
-            role.id = 'sahne-kisi-rol';
-
-            avatar.parentElement.appendChild(role);
-        }
-
-        if (!$('btn-kursuyu-birak') && btnSoz && btnSoz.parentElement) {
-            const leaveBtn = createEl(
-                'button',
-                'hidden bg-red-900/40 border border-red-700 hover:bg-red-900/60 text-red-300 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition shadow-md items-center gap-1.5',
-                'Kürsüden İn'
-            );
-
-            leaveBtn.type = 'button';
-            leaveBtn.id = 'btn-kursuyu-birak';
-
-            btnSoz.parentElement.appendChild(leaveBtn);
-        }
-    },
-
-    // --------------------------------------------------
-    // 3. LOKAL EVENTLER
-    // --------------------------------------------------
-    bindLocalEvents: function () {
-        const btnSoz = $('btn-soz-iste');
-        const btnIn = $('btn-kursuyu-birak');
-        const btnChat = $('btn-chat-gonder');
-        const inputChat = $('input-chat-mesaj');
-
-        if (btnSoz && !btnSoz.dataset.bound) {
-            btnSoz.dataset.bound = '1';
-            btnSoz.addEventListener('click', () => this.sozIste());
-        }
-
-        if (btnIn && !btnIn.dataset.bound) {
-            btnIn.dataset.bound = '1';
-            btnIn.addEventListener('click', () => this.kursudenIn());
-        }
-
-        if (btnChat && !btnChat.dataset.bound) {
-            btnChat.dataset.bound = '1';
-            btnChat.addEventListener('click', () => this.mesajGonder());
-        }
-
-        if (inputChat && !inputChat.dataset.bound) {
-            inputChat.dataset.bound = '1';
-            inputChat.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    this.mesajGonder();
-                }
-            });
-        }
-    },
-
-    // --------------------------------------------------
-    // 4. CHAT MESAJI GÖNDER
-    // Chat HTML'de yoksa devre dışı kalır.
-    // --------------------------------------------------
-    mesajGonder: async function () {
-        if (!STATE.isLoggedIn()) {
-            UI.showToast('Tribüne seslenmek için giriş yapmalısınız.', 'error');
-            return;
-        }
-
-        const inputEl = $('input-chat-mesaj');
-        const btnEl = $('btn-chat-gonder');
-
-        if (!inputEl) {
-            UI.showToast('Canlı tribün sohbeti henüz aktif değil.', 'info');
-            return;
-        }
-
-        const mesaj = trimMessage(inputEl.value);
-
-        if (!mesaj) return;
-
-        if (mesaj.length > 120) {
-            UI.showToast('Mesaj 120 karakterden uzun olamaz.', 'error');
-            return;
-        }
-
-        const now = Date.now();
-
-        if (this.sonMesajZamani && now - this.sonMesajZamani < 60000) {
-            const kalan = Math.ceil((60000 - (now - this.sonMesajZamani)) / 1000);
-            UI.showToast(`Tribüne tekrar seslenmek için ${kalan} saniye bekleyin.`, 'error');
-            return;
-        }
-
-        if (btnEl) btnEl.disabled = true;
-
-        try {
-            // Backend'de kufur_kontrol RPC varsa kullanılır.
-            // RPC yoksa bağlantı hatasına düşer ve mesaj gönderilmez.
-            const { data: uygunsuzMu, error } = await supabase.rpc('kufur_kontrol', {
-                metin: mesaj
-            });
-
-            if (error) {
-                throw error;
-            }
-
-            if (uygunsuzMu) {
-                UI.showToast('Mesajınız topluluk kurallarına aykırı bulundu ve gönderilmedi.', 'error');
-                if (btnEl) btnEl.disabled = false;
-                return;
-            }
-
-            const identity = getCurrentUserIdentity();
-
-            const payloadData = {
-                uid: identity.uid,
-                role: identity.role,
-                mesaj,
-                time: new Date().toISOString()
-            };
-
-            await safeChannelSend(this.kanal, {
-                type: 'broadcast',
-                event: 'chat_mesaji',
-                payload: payloadData
-            });
-
-            this.mesajiEkranaBas(payloadData);
-
-            inputEl.value = '';
-            this.sonMesajZamani = now;
-            this.cooldownBaslat();
-        } catch (error) {
-            console.error('Stadyum chat hatası:', error);
-            UI.showToast('Mesaj güvenlik kontrolünden geçirilemedi. Lütfen tekrar deneyin.', 'error');
-
-            if (btnEl) btnEl.disabled = false;
-        }
-    },
-
-    // --------------------------------------------------
-    // 5. CHAT COOLDOWN
-    // --------------------------------------------------
-    cooldownBaslat: function () {
-        const overlay = $('chat-cooldown-overlay');
-        const timerEl = $('chat-cooldown-timer');
-        const inputEl = $('input-chat-mesaj');
-        const btnEl = $('btn-chat-gonder');
-
-        if (inputEl) inputEl.disabled = true;
-        if (btnEl) btnEl.disabled = true;
-
-        if (!overlay || !timerEl) {
-            setTimeout(() => {
-                if (inputEl) inputEl.disabled = false;
-                if (btnEl) btnEl.disabled = false;
-            }, 60000);
-
-            return;
-        }
-
-        overlay.classList.remove('hidden');
-
-        let kalan = 60;
-        timerEl.textContent = String(kalan);
-
-        if (this.chatCooldownTimer) {
-            clearInterval(this.chatCooldownTimer);
-        }
-
-        this.chatCooldownTimer = setInterval(() => {
-            kalan -= 1;
-            timerEl.textContent = String(kalan);
-
-            if (kalan <= 0) {
-                clearInterval(this.chatCooldownTimer);
-                this.chatCooldownTimer = null;
-
-                overlay.classList.add('hidden');
-
-                if (inputEl) inputEl.disabled = false;
-                if (btnEl) btnEl.disabled = false;
-            }
-        }, 1000);
-    },
-
-    // --------------------------------------------------
-    // 6. CHAT MESAJINI EKRANA BAS
-    // --------------------------------------------------
-    mesajiEkranaBas: function (data) {
-        const container = $('stadyum-chat-messages');
-
-        if (!container || !data) return;
-
-        const placeholder = container.querySelector('.animate-pulse');
-        if (placeholder) placeholder.remove();
-
-        const msgDiv = createEl(
-            'div',
-            'bg-black/80 border border-slate-700 p-2.5 rounded-xl text-white shadow-md animate-slideUpFade flex items-start gap-2 shrink-0 transition-all',
-            ''
-        );
-
-        const idSpan = createEl(
-            'span',
-            'text-kaos font-mono font-black text-[10px] shrink-0',
-            cleanText(data.uid, 'TR-IA-????')
-        );
-
-        const msgSpan = createEl(
-            'span',
-            'text-[11px] text-gray-200 leading-relaxed',
-            cleanText(data.mesaj)
-        );
-
-        msgDiv.appendChild(idSpan);
-        msgDiv.appendChild(msgSpan);
-
-        container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
-
-        setTimeout(() => {
-            msgDiv.classList.add('message-fade-out');
-
-            setTimeout(() => {
-                msgDiv.remove();
-            }, 1500);
-        }, 15000);
-    },
-
-    // --------------------------------------------------
-    // 7. SAHNEYİ GÜNCELLE
-    // --------------------------------------------------
-    sahneyiGuncelle: function (kisiData) {
-        this.sahnedekiKisi = kisiData || null;
-
-        const waves = $('saha-dalgalar');
-        const avatar = $('sahne-avatar');
-        const micIcon = $('sahne-mic-icon');
-        const nameEl = $('sahne-kisi-isim');
-        const roleEl = $('sahne-kisi-rol');
-        const btnSoz = $('btn-soz-iste');
-        const btnIn = $('btn-kursuyu-birak');
-
-        const identity = getCurrentUserIdentity();
-        const myUserId = identity.isLoggedIn ? identity.uid : null;
-
-        if (kisiData) {
-            if (waves) {
-                waves.classList.remove('opacity-0');
-                waves.classList.add('opacity-100');
-            }
-
-            if (avatar) {
-                avatar.classList.add('border-green-500', 'bg-green-900/20');
-                avatar.classList.remove('border-slate-700', 'bg-slate-900');
-            }
-
-            if (micIcon) {
-                micIcon.classList.remove('fa-microphone-slash', 'text-gray-600');
-                micIcon.classList.add('fa-microphone', 'text-green-500');
-            }
-
-            if (nameEl) {
-                nameEl.textContent = cleanText(kisiData.uid, 'TR-IA-????');
-                nameEl.classList.add('text-white');
-                nameEl.classList.remove('text-gray-500');
-            }
-
-            if (roleEl) {
-                roleEl.textContent = cleanText(kisiData.role, 'Söz Sahibi');
-                roleEl.classList.add('text-green-400');
-                roleEl.classList.remove('text-gray-600');
-            }
-
-            if (myUserId && myUserId === kisiData.uid) {
-                if (btnSoz) btnSoz.classList.add('hidden');
-
-                if (btnIn) {
-                    btnIn.classList.remove('hidden');
-                    btnIn.classList.add('inline-flex');
-                }
-            } else {
-                if (btnSoz) {
-                    btnSoz.classList.remove('hidden');
-                    btnSoz.classList.add('opacity-50', 'cursor-not-allowed');
-                    btnSoz.textContent = 'Saha Dolu';
-                    btnSoz.disabled = true;
-                }
-
-                if (btnIn) {
-                    btnIn.classList.add('hidden');
-                    btnIn.classList.remove('inline-flex');
-                }
-            }
-
-            return;
-        }
-
-        if (waves) {
-            waves.classList.add('opacity-0');
-            waves.classList.remove('opacity-100');
-        }
-
-        if (avatar) {
-            avatar.classList.remove('border-green-500', 'bg-green-900/20');
-            avatar.classList.add('border-slate-700', 'bg-slate-900');
-        }
-
-        if (micIcon) {
-            micIcon.classList.add('fa-microphone-slash', 'text-gray-600');
-            micIcon.classList.remove('fa-microphone', 'text-green-500');
-        }
-
-        if (nameEl) {
-            nameEl.textContent = 'Saha Boş';
-            nameEl.classList.remove('text-white');
-            nameEl.classList.add('text-gray-500');
-        }
-
-        if (roleEl) {
-            roleEl.textContent = 'Kimse Konuşmuyor';
-            roleEl.classList.remove('text-green-400');
-            roleEl.classList.add('text-gray-600');
-        }
-
-        if (btnSoz) {
-            btnSoz.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed');
-            btnSoz.textContent = 'Söz İste';
-            btnSoz.disabled = false;
-        }
-
-        if (btnIn) {
-            btnIn.classList.add('hidden');
-            btnIn.classList.remove('inline-flex');
-        }
-    },
-
-    // --------------------------------------------------
-    // 8. SÖZ İSTE
-    // --------------------------------------------------
-    sozIste: async function () {
-        if (!STATE.isLoggedIn()) {
-            UI.showToast('Söz istemek için giriş yapmalısınız.', 'error');
-            return;
-        }
-
-        if (this.sahnedekiKisi) {
-            UI.showToast('Şu an meclis kürsüsü dolu. Lütfen sıranızı bekleyin.', 'error');
-            return;
-        }
-
-        const identity = getCurrentUserIdentity();
-
-        if (!identity.isLoggedIn) {
-            UI.showToast('Söz istemek için giriş yapmalısınız.', 'error');
-            return;
-        }
-
-        const kisi = {
-            uid: identity.uid,
-            role: identity.role,
-            city: identity.city
-        };
-
-        try {
-            await safeChannelSend(this.kanal, {
-                type: 'broadcast',
-                event: 'sahne_hareketi',
-                payload: {
-                    action: 'cikti',
-                    kisi
-                }
-            });
-
-            this.sahneyiGuncelle(kisi);
-
-            UI.showToast('Sahneye çıktınız. Sesli yayın modülü ilerleyen aşamada aktif olacak.', 'success');
-        } catch (error) {
-            console.error('Söz isteme hatası:', error);
-            UI.showToast('Sahneye çıkılamadı. Bağlantınızı kontrol edin.', 'error');
-        }
-    },
-
-    // --------------------------------------------------
-    // 9. KÜRSÜDEN İN
-    // --------------------------------------------------
-    kursudenIn: async function () {
-        try {
-            await safeChannelSend(this.kanal, {
-                type: 'broadcast',
-                event: 'sahne_hareketi',
-                payload: {
-                    action: 'indi',
-                    kisi: null
-                }
-            });
-
-            this.sahneyiGuncelle(null);
-
-            UI.showToast('Kürsüden ayrıldınız.', 'info');
-        } catch (error) {
-            console.error('Kürsüden inme hatası:', error);
-            UI.showToast('Kürsüden çıkış iletilemedi.', 'error');
-        }
-    },
-
-    // --------------------------------------------------
-    // 10. PRESENCE GÜNCELLE
-    // --------------------------------------------------
-    guncelle: function (presenceState) {
-        const records = normalizePresenceState(presenceState);
-
-        let totalOnline = 0;
-        let mezunOnline = 0;
-        let ogrenciOnline = 0;
-
-        const sehirSayimlari = {};
-
-        SEHIRLER.forEach((sehir) => {
-            sehirSayimlari[sehir] = {
-                mezun: 0,
-                ogrenci: 0,
-                koltuklar: []
-            };
-        });
-
-        sehirSayimlari.Belirsiz = {
-            mezun: 0,
-            ogrenci: 0,
-            koltuklar: []
-        };
-
-        records.forEach((kisi) => {
-            totalOnline += 1;
-
-            const role = cleanText(kisi.role, 'Belirsiz');
-            const cityRaw = cleanText(kisi.city, 'Belirsiz');
-            const city = sehirSayimlari[cityRaw] ? cityRaw : 'Belirsiz';
-            const isStudent = isStudentRole(role);
-            const seatType = isStudent ? 'ogrenci' : 'mezun';
-
-            if (isStudent) ogrenciOnline += 1;
-            else mezunOnline += 1;
-
-            sehirSayimlari[city].koltuklar.push(seatType);
-
-            if (isStudent) sehirSayimlari[city].ogrenci += 1;
-            else sehirSayimlari[city].mezun += 1;
-        });
-
-        setText('stat-total-online', totalOnline.toLocaleString('tr-TR'));
-        setText('stat-mezun-online', mezunOnline.toLocaleString('tr-TR'));
-        setText('stat-ogrenci-online', ogrenciOnline.toLocaleString('tr-TR'));
-
-        let liderSehir = 'Bekleniyor';
-        let maxKisi = 0;
-
-        Object.keys(sehirSayimlari).forEach((sehir) => {
-            const toplam =
-                sehirSayimlari[sehir].mezun +
-                sehirSayimlari[sehir].ogrenci;
-
-            if (toplam > maxKisi) {
-                maxKisi = toplam;
-                liderSehir = sehir;
-            }
-        });
-
-        setText(
-            'stat-lider-tribun',
-            maxKisi > 0 ? `${liderSehir} (${maxKisi})` : 'Boş'
-        );
-
-        Object.keys(sehirSayimlari).forEach((sehir) => {
-            const safeSehir = slugifyCity(sehir);
-            const koltukContainer = $(`koltuklar-${safeSehir}`);
-            const sayacEl = $(`sayac-${safeSehir}`);
-            const tribunKutusu = $(`tribun-${safeSehir}`);
-            const data = sehirSayimlari[sehir];
-
-            if (!koltukContainer || !sayacEl) return;
-
-            removeChildren(koltukContainer);
-
-            data.koltuklar.slice(0, 60).forEach((tip) => {
-                const dot = createEl(
-                    'span',
-                    tip === 'mezun'
-                        ? 'w-2.5 h-2.5 rounded-full bg-kaos shadow-kaos inline-block'
-                        : 'w-2.5 h-2.5 rounded-full bg-white shadow-md inline-block',
-                    ''
-                );
-
-                dot.title = tip === 'mezun' ? 'Mezun' : 'Öğrenci';
-
-                koltukContainer.appendChild(dot);
-            });
-
-            if (data.koltuklar.length > 60) {
-                const more = createEl(
-                    'span',
-                    'text-[9px] text-gray-400 font-mono ml-1',
-                    `+${data.koltuklar.length - 60}`
-                );
-
-                koltukContainer.appendChild(more);
-            }
-
-            sayacEl.textContent =
-                data.koltuklar.length > 0
-                    ? String(data.koltuklar.length)
-                    : '';
-
-            if (tribunKutusu) {
-                if (data.koltuklar.length > 0) {
-                    tribunKutusu.classList.add('border-slate-500', 'bg-black/60');
-                    tribunKutusu.classList.remove('border-slate-800', 'bg-black/40');
-                } else {
-                    tribunKutusu.classList.remove('border-slate-500', 'bg-black/60');
-                    tribunKutusu.classList.add('border-slate-800', 'bg-black/40');
-                }
-            }
-        });
-    },
-
-    // --------------------------------------------------
-    // 11. BAŞLAT
-    // --------------------------------------------------
-    baslat: async function () {
-        this.ciz();
-
-        const identity = getCurrentUserIdentity();
-
-        try {
-            if (this.kanal) {
-                try {
-                    await this.kanal.untrack();
-                } catch (error) {
-                    console.warn('Eski stadyum presence temizlenemedi:', error);
-                }
-
-                try {
-                    supabase.removeChannel(this.kanal);
-                } catch (error) {
-                    console.warn('Eski stadyum kanalı kapatılamadı:', error);
-                }
-
-                this.kanal = null;
-            }
-
-            this.kanal = supabase.channel('me26_stadyum', {
-                config: {
-                    presence: {
-                        key: identity.uid
-                    }
-                }
-            });
-
-            this.kanal
-                .on('broadcast', { event: 'sahne_hareketi' }, (payload) => {
-                    const data = payload?.payload || {};
-
-                    if (data.action === 'cikti') {
-                        this.sahneyiGuncelle(data.kisi || null);
-                    }
-
-                    if (data.action === 'indi') {
-                        this.sahneyiGuncelle(null);
-                    }
-                })
-                .on('broadcast', { event: 'chat_mesaji' }, (payload) => {
-                    this.mesajiEkranaBas(payload?.payload || {});
-                })
-                .on('presence', { event: 'sync' }, () => {
-                    const state = this.kanal.presenceState();
-                    this.guncelle(state);
-                })
-                .subscribe(async (status) => {
-                    if (status === 'SUBSCRIBED') {
-                        await this.kanal.track({
-                            user_id: identity.uid,
-                            role: identity.role,
-                            city: identity.city,
-                            online_at: new Date().toISOString()
-                        });
-
-                        this.hasStarted = true;
-                    }
-
-                    if (status === 'CHANNEL_ERROR') {
-                        UI.showToast('Canlı Stadyum bağlantısı kurulamadı.', 'error');
-                    }
-                });
-        } catch (error) {
-            console.error('Stadyum başlatma hatası:', error);
-            UI.showToast('Canlı Stadyum şu an başlatılamadı.', 'error');
-        }
-    },
-
-    // --------------------------------------------------
-    // 12. TEMİZLE
-    // --------------------------------------------------
-    temizle: async function () {
-        if (this.chatCooldownTimer) {
-            clearInterval(this.chatCooldownTimer);
-            this.chatCooldownTimer = null;
-        }
-
-        if (!this.kanal) return;
-
-        try {
-            await this.kanal.untrack();
-        } catch (error) {
-            console.warn('Stadyum untrack hatası:', error);
-        }
-
-        try {
-            supabase.removeChannel(this.kanal);
-        } catch (error) {
-            console.warn('Stadyum kanal kapatma hatası:', error);
-        }
-
-        this.kanal = null;
-        this.hasStarted = false;
-    }
-};
+    chatInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        sendChatMessage();
+      }
+    });
+  }
+
+  const requestButton = $('btn-soz-iste');
+
+  if (requestButton && requestButton.dataset.me26StadiumSpeakBound !== '1') {
+    requestButton.dataset.me26StadiumSpeakBound = '1';
+    requestButton.addEventListener('click', requestSpeak);
+  }
+
+  const leaveButton = $('btn-kursuyu-birak');
+
+  if (leaveButton && leaveButton.dataset.me26StadiumLeaveBound !== '1') {
+    leaveButton.dataset.me26StadiumLeaveBound = '1';
+    leaveButton.addEventListener('click', leaveStage);
+  }
+
+  document.querySelectorAll('.nav-menu-btn[data-target="view-stadium"]').forEach((button) => {
+    if (button.dataset.me26StadiumNavBound === '1') return;
+
+    button.dataset.me26StadiumNavBound = '1';
+
+    button.addEventListener('click', () => {
+      setTimeout(() => {
+        loadStadium();
+        loadChatMessages();
+        renderCurrentSpeaker();
+      }, 200);
+    });
+  });
+}
 
 // ------------------------------------------------------
-// SAYFADAN ÇIKARKEN KANALI TEMİZLE
+// BAŞLAT / DURDUR
 // ------------------------------------------------------
-window.addEventListener('beforeunload', () => {
-    if (STADYUM.kanal) {
-        try {
-            STADYUM.kanal.untrack();
-            supabase.removeChannel(STADYUM.kanal);
-        } catch (error) {
-            console.warn('Stadyum çıkış temizliği başarısız:', error);
-        }
-    }
-});
+
+export function initStadium() {
+  if (stadiumStarted) return;
+
+  stadiumStarted = true;
+
+  bindStadiumEvents();
+  startPresenceHeartbeat();
+  startStadiumRefresh();
+  startChatRefresh();
+  startCooldownTimer();
+  renderCurrentSpeaker();
+
+  console.info('ME26 stadium.js temiz final sürüm yüklendi.');
+}
+
+export function stopStadium() {
+  if (presenceTimer) clearInterval(presenceTimer);
+  if (stadiumTimer) clearInterval(stadiumTimer);
+  if (chatTimer) clearInterval(chatTimer);
+  if (cooldownTimer) clearInterval(cooldownTimer);
+
+  presenceTimer = null;
+  stadiumTimer = null;
+  chatTimer = null;
+  cooldownTimer = null;
+}
+
+// ------------------------------------------------------
+// GLOBAL KÖPRÜLER
+// ------------------------------------------------------
+
+window.ME26_STADIUM = {
+  initStadium,
+  stopStadium,
+  loadStadium,
+  loadChatMessages,
+  sendChatMessage,
+  requestSpeak,
+  leaveStage,
+  renderCurrentSpeaker
+};
+
+window.loadStadium = loadStadium;
+window.stadyumuYukle = loadStadium;
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStadium);
+} else {
+  initStadium();
+}
