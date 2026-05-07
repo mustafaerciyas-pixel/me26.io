@@ -1,862 +1,533 @@
 /* ==========================================================================
-   ME26 AĞI - UI MOTORU (ui.js)
-   Temiz, Kısa, Hatasız Final Sürüm
-
-   Bu dosya:
-   - Başka dosya import etmez.
-   - Dosyanın ortasında import yoktur.
-   - escapeHtml hatası yoktur.
-   - qa.js ve stadium.js tarafından beklenen exportları verir.
-========================================================================== */
-
-// ------------------------------------------------------
-// TEMEL YARDIMCILAR
-// ------------------------------------------------------
-
-const $ = (id) => document.getElementById(id);
-
-const cleanText = (value, fallback = '') => {
-  if (value === null || value === undefined) return fallback;
-  return String(value).trim();
-};
-
-const toNumber = (value, fallback = 0) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
-
-const formatNumber = (value) => {
-  return Number(value || 0).toLocaleString('tr-TR');
-};
-
-export const escapeHtml = (value) => {
-  return cleanText(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-};
-
-export const setText = (id, value) => {
-  const el = $(id);
-  if (el) el.textContent = value;
-};
-
-export const setHtml = (id, value) => {
-  const el = $(id);
-  if (el) el.innerHTML = value;
-};
-
-export const setVisible = (id, visible) => {
-  const el = $(id);
-  if (!el) return;
-  el.classList.toggle('hidden', !visible);
-};
-
-export const emptyState = (text) => {
-  return `
-    <div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">
-      ${escapeHtml(text)}
-    </div>
-  `;
-};
-
-export const errorState = (text) => {
-  return `
-    <div class="text-center py-10 border border-red-900/60 rounded-2xl text-red-300 text-xs font-bold uppercase tracking-widest bg-red-950/20">
-      ${escapeHtml(text)}
-    </div>
-  `;
-};
-
-export const loadingState = (text = 'Yükleniyor...') => {
-  return `
-    <div class="text-center py-10 border border-slate-800 rounded-2xl text-gray-500 text-xs font-bold uppercase tracking-widest bg-black/20">
-      ${escapeHtml(text)}
-    </div>
-  `;
-};
-
-// ------------------------------------------------------
-// TOAST
-// ------------------------------------------------------
-
-export function showToast(message, type = 'info') {
-  const container = $('toast-container');
-
-  if (!container) {
-    console.log(`[ME26 ${type}]`, message);
-    return;
-  }
-
-  const variants = {
-    success: 'bg-green-900/90 text-green-300 border-green-700',
-    info: 'bg-blue-900/90 text-blue-300 border-blue-700',
-    warning: 'bg-yellow-900/90 text-yellow-300 border-yellow-700',
-    error: 'bg-red-900/90 text-red-300 border-red-700'
-  };
-
-  const icons = {
-    success: '✅',
-    info: 'ℹ️',
-    warning: '⚠️',
-    error: '❌'
-  };
-
-  const toast = document.createElement('div');
-
-  toast.className =
-    'pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs font-bold uppercase tracking-widest max-w-sm transition-all duration-300 ' +
-    (variants[type] || variants.info);
-
-  toast.textContent = `${icons[type] || 'ℹ️'} ${cleanText(message, 'Bildirim')}`;
-
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add('opacity-0', 'translate-y-2');
-  }, 3000);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 3500);
-}
-
-// ------------------------------------------------------
-// BUTON LOADING
-// ------------------------------------------------------
-
-export function setLoading(buttonOrId, text = 'İşleniyor...') {
-  const button = typeof buttonOrId === 'string' ? $(buttonOrId) : buttonOrId;
-
-  if (!button) return '';
-
-  const oldText = button.innerHTML;
-
-  button.disabled = true;
-  button.innerHTML = text;
-  button.classList.add('opacity-70', 'cursor-wait');
-
-  return oldText;
-}
-
-export function restoreButton(buttonOrId, oldText = '') {
-  const button = typeof buttonOrId === 'string' ? $(buttonOrId) : buttonOrId;
-
-  if (!button) return;
-
-  button.disabled = false;
-
-  if (oldText) {
-    button.innerHTML = oldText;
-  }
-
-  button.classList.remove('opacity-70', 'cursor-wait');
-}
-
-// ------------------------------------------------------
-// LANDING / PANEL GEÇİŞ
-// ------------------------------------------------------
-
-export function showLanding() {
-  const landing = $('landing-view');
-  const saas = $('saas-view');
-
-  if (landing) landing.classList.remove('hidden');
-
-  if (saas) {
-    saas.classList.add('hidden');
-    saas.classList.remove('flex');
-  }
-
-  document.body.classList.remove('overflow-hidden');
-}
-
-export function showSaas() {
-  const landing = $('landing-view');
-  const saas = $('saas-view');
-
-  if (landing) landing.classList.add('hidden');
-
-  if (saas) {
-    saas.classList.remove('hidden');
-    saas.classList.add('flex');
-  }
-
-  document.body.classList.add('overflow-hidden');
-}
-
-export function showView(viewName) {
-  if (viewName === 'saas' || viewName === 'panel') {
-    showSaas();
-    return;
-  }
-
-  showLanding();
-}
-
-// ------------------------------------------------------
-// PANEL SEKME GEÇİŞİ
-// ------------------------------------------------------
-
-export function switchSaasTab(targetId) {
-  if (!targetId) return;
-
-  document.querySelectorAll('.view-section').forEach((section) => {
-    section.classList.add('hidden');
-    section.classList.remove('block');
-  });
-
-  const target = $(targetId);
-
-  if (target) {
-    target.classList.remove('hidden');
-    target.classList.add('block');
-  }
-
-  document.querySelectorAll('.nav-menu-btn').forEach((button) => {
-    button.classList.remove('active', 'text-white');
-    button.classList.add('text-gray-400');
-  });
-
-  document
-    .querySelectorAll(`.nav-menu-btn[data-target="${targetId}"]`)
-    .forEach((button) => {
-      button.classList.add('active', 'text-white');
-      button.classList.remove('text-gray-400');
-    });
-
-  const scrollParent = document.querySelector('#saas-view main');
-
-  if (scrollParent) {
-    scrollParent.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-}
-
-export const switchTab = switchSaasTab;
-export const navigate = switchSaasTab;
-
-// ------------------------------------------------------
-// MODAL
-// ------------------------------------------------------
-
-export function openModal(modalId) {
-  const modal = $(modalId);
-
-  if (!modal) {
-    console.warn('Modal bulunamadı:', modalId);
-    return;
-  }
-
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-  modal.setAttribute('aria-hidden', 'false');
-}
-
-export function closeModal(modalId) {
-  const modal = $(modalId);
-
-  if (!modal) return;
-
-  modal.classList.add('hidden');
-  modal.classList.remove('flex');
-  modal.setAttribute('aria-hidden', 'true');
-}
-
-export function closeAllModals() {
-  [
-    'ortak-kursu-modal',
-    'phone-modal',
-    'pdf-modal',
-    'vip-modal'
-  ].forEach(closeModal);
-}
-
-// ------------------------------------------------------
-// PROFİL RENDER
-// ------------------------------------------------------
-
-const getDigitalId = (user = {}) => {
-  if (user.digitalId) return user.digitalId;
-  if (user.digital_id) return user.digital_id;
-
-  const userNo =
-    user.vip_kurucu_no ||
-    user.kurucu_no ||
-    user.userNo ||
-    user.user_no ||
-    user.no ||
-    'BEKLEYEN';
-
-  if (userNo && userNo !== 'BEKLEYEN') return `TR-IA-${userNo}`;
-
-  return 'TR-IA-BEKLEYEN';
-};
-
-export function renderProfile(user = {}) {
-  const digitalId = getDigitalId(user);
-
-  const role =
-    user.role ||
-    user.mesleki_durum ||
-    user.m_durum ||
-    user.rutbe ||
-    'Kimlik Bekleniyor';
-
-  const city =
-    user.city ||
-    user.sehir ||
-    'TRİBÜN SEÇİLMEDİ';
-
-  const votePower = toNumber(user.votePower || user.vote_power || user.oy_gucu, 0);
-
-  const inviteCount = toNumber(
-    user.inviteCount ||
-    user.invite_count ||
-    user.davet_edilen_kisi_sayisi,
-    0
-  );
-
-  const access = votePower > 0 ? 'Tam' : 'Sınırlı';
-
-  const inviteCode =
-    user.inviteCode ||
-    user.kendi_davet_kodu ||
-    user.davet_kodu ||
-    user.d_kod ||
-    digitalId;
-
-  const baseUrl =
-    window.ME26_CONFIG?.inviteBaseUrl ||
-    window.ME26_CONFIG?.officialBaseUrl ||
-    'https://me26.mustafaerciyas.workers.dev';
-
-  const inviteLink = `${String(baseUrl).replace(/\/+$/, '')}/?ref=${encodeURIComponent(inviteCode)}`;
-
-  setText('sidebar-user-id', digitalId);
-  setText('mobile-user-id', digitalId);
-  setText('ui-user-id', digitalId);
-
-  setText('ui-user-role', role);
-  setText('sidebar-user-role', role);
-
-  setText('ui-user-city', city);
-  setText('ui-vote-power', access);
-  setText('sidebar-vote-power', `Erişim Seviyesi ${access}`);
-
-  setText('ui-invite-link', inviteLink);
-  setText('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
-
-  const progressBar = $('ui-vip-progress-bar');
-
-  if (progressBar) {
-    progressBar.style.width = `${Math.min((inviteCount / 3) * 100, 100)}%`;
-  }
-
-  const cityGate = $('ui-city-selector-container');
-
-  if (cityGate) {
-    const hasCity = Boolean(city && city !== 'Belirsiz' && city !== 'TRİBÜN SEÇİLMEDİ');
-    cityGate.classList.toggle('hidden', hasCity);
-  }
-
-  const roleBadge = $('ui-role-badge');
-
-  if (roleBadge) {
-    if (user.isVip || user.is_vip) {
-      roleBadge.textContent = 'VIP KURUCU';
-      roleBadge.className =
-        'inline-flex bg-kaos text-slate-950 border border-kaos px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest mb-4';
-    } else if (digitalId !== 'TR-IA-BEKLEYEN') {
-      roleBadge.textContent = 'ASİL KURUCU';
-      roleBadge.className =
-        'inline-flex bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest mb-4';
-    } else {
-      roleBadge.textContent = 'ME26 Ağı Onay Bekliyor';
-      roleBadge.className =
-        'inline-flex bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest mb-4';
-    }
-  }
-
-  const systemText = $('ui-sistem-durumu');
-
-  if (systemText) {
-    if (votePower > 0) {
-      systemText.textContent =
-        'Sicil kaydınız aktif. Sandık, kürsü ve katkı alanları tam erişimle kullanılabilir.';
-    } else {
-      systemText.textContent =
-        'Kullanıcı kaydınız aktif. Şehir, telefon ve belge adımları tamamlandıkça erişim seviyesi artacak.';
-    }
-  }
-}
-
-export const renderUser = renderProfile;
-export const updateUserPanel = renderProfile;
-export const renderUserInfo = renderProfile;
-
-// ------------------------------------------------------
-// ÖNERGE RENDER
-// ------------------------------------------------------
-
-export function renderProposalCard(item = {}, options = {}) {
-  const destekSayisi = toNumber(
-    item.destek_sayisi ||
-    item.destekSayisi ||
-    item.support_count,
-    0
-  );
-
-  const status = cleanText(item.status || item.durum).toLowerCase();
-
-  const isAgenda =
-    options.isAgenda ||
-    destekSayisi >= 50 ||
-    ['gundem', 'gündem', 'voting', 'oylama'].includes(status);
-
-  const title = item.baslik || item.title || 'Başlıksız Önerge';
-  const problem = item.sorun || item.problem || item.aciklama || 'Açıklama yok.';
-  const solution = item.cozum || item.solution || '';
-
-  return `
-    <div class="bg-black/50 border border-slate-800 p-5 rounded-2xl shadow-lg" data-onerge-card="${escapeHtml(item.id)}">
-      <div class="text-[9px] font-black uppercase tracking-widest text-kaos mb-3">
-        ${isAgenda ? 'Gündemde' : 'Destek Bekliyor'}
-      </div>
-
-      <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
-        ${escapeHtml(title)}
-      </h3>
-
-      <p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-3">
-        ${escapeHtml(problem)}
-      </p>
-
-      ${solution ? `
-        <p class="text-xs md:text-sm text-gray-300 leading-relaxed mb-4 border-l-2 border-kaos/60 pl-3">
-          ${escapeHtml(solution)}
-        </p>
-      ` : ''}
-
-      <div class="flex items-center justify-between gap-3">
-        <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
-          Destek: ${destekSayisi}/50
-        </span>
-
-        <button
-          type="button"
-          data-id="${escapeHtml(item.id)}"
-          class="btn-destekle bg-slate-800 border border-slate-600 hover:border-kaos hover:text-kaos text-white rounded-xl px-5 py-3 text-[10px] font-black uppercase tracking-widest transition"
-        >
-          Destekle
-        </button>
-      </div>
-
-      ${isAgenda ? `
-        <div class="grid grid-cols-3 gap-2 mt-4">
-          <button
-            type="button"
-            data-id="${escapeHtml(item.id)}"
-            data-vote="yes"
-            class="vote-btn bg-slate-800 border border-slate-600 hover:border-green-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest"
-          >
-            Kabul
-          </button>
-
-          <button
-            type="button"
-            data-id="${escapeHtml(item.id)}"
-            data-vote="abstain"
-            class="vote-btn bg-slate-800 border border-slate-600 hover:border-yellow-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest"
-          >
-            Çekimser
-          </button>
-
-          <button
-            type="button"
-            data-id="${escapeHtml(item.id)}"
-            data-vote="no"
-            class="vote-btn bg-slate-800 border border-slate-600 hover:border-red-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest"
-          >
-            Ret
-          </button>
-        </div>
-      ` : ''}
-    </div>
-  `;
-}
-
-export function renderProposals(list = []) {
-  const container = $('proposals-container');
-
-  if (!container) return;
-
-  const items = Array.isArray(list) ? list : [];
-
-  if (items.length === 0) {
-    container.innerHTML = emptyState('Henüz önerge yok.');
-    return;
-  }
-
-  container.innerHTML = items.map((item) => renderProposalCard(item)).join('');
-}
-
-export function renderGundem(list = []) {
-  const container = $('gundem-container');
-
-  if (!container) return;
-
-  const items = Array.isArray(list) ? list : [];
-
-  if (items.length === 0) {
-    container.innerHTML = emptyState('Henüz gündem yok.');
-    return;
-  }
-
-  container.innerHTML = items
-    .map((item) => renderProposalCard(item, { isAgenda: true }))
-    .join('');
-}
-
-export const renderOnergeler = renderProposals;
-export const onergeleriCiz = renderProposals;
-
-// ------------------------------------------------------
-// QA / SÖZ SENDE RENDER
-// ------------------------------------------------------
-
-export function renderQuestionCard(item = {}) {
-  const title = item.baslik || item.title || 'Başlıksız Soru';
-  const content = item.icerik || item.content || item.aciklama || '';
-  const author = item.yazar_dijital_id || item.author_id || item.yazar || 'TR-IA-BEKLEYEN';
-  const solved = Boolean(item.cozuldu_mu || item.solved);
-  const answerCount = item.cevap_sayisi || item.answer_count || item.answers_count || 0;
-
-  return `
-    <div class="bg-black/50 border border-slate-800 p-5 rounded-2xl shadow-lg">
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <span class="text-[9px] font-black uppercase tracking-widest ${solved ? 'text-green-400' : 'text-kaos'}">
-          ${solved ? 'Kütüphane' : 'Çözüm Bekliyor'}
-        </span>
-
-        <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">
-          ${escapeHtml(author)}
-        </span>
-      </div>
-
-      <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
-        ${escapeHtml(title)}
-      </h3>
-
-      <p class="text-xs md:text-sm text-gray-400 leading-relaxed">
-        ${escapeHtml(content)}
-      </p>
-
-      <div class="mt-4 flex items-center justify-between gap-3">
-        <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
-          ${Number(answerCount || 0).toLocaleString('tr-TR')} cevap
-        </span>
-
-        <button
-          type="button"
-          data-id="${escapeHtml(item.id)}"
-          class="btn-qa-cevapla bg-slate-800 border border-slate-600 hover:border-kaos hover:text-kaos text-white rounded-xl px-5 py-3 text-[10px] font-black uppercase tracking-widest transition"
-        >
-          Cevapla
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-export function renderQuestions(list = []) {
-  const container = $('qa-listesi');
-
-  if (!container) return;
-
-  const items = Array.isArray(list) ? list : [];
-
-  if (items.length === 0) {
-    container.innerHTML = emptyState('Henüz soru yok.');
-    return;
-  }
-
-  container.innerHTML = items.map((item) => renderQuestionCard(item)).join('');
-}
-
-export const renderQAList = renderQuestions;
-export const sorulariCiz = renderQuestions;
-
-// ------------------------------------------------------
-// TRİBÜN LİGİ
-// ------------------------------------------------------
-
-export function renderTribunLigi(list = []) {
-  const body = $('tribun-ligi-body');
-
-  if (!body) return;
-
-  const items = Array.isArray(list) ? list : [];
-
-  if (items.length === 0) {
-    body.innerHTML = `
-      <tr>
-        <td colspan="2" class="p-4 text-center text-gray-500 text-xs uppercase tracking-widest">
-          Henüz tribün verisi yok.
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  body.innerHTML = items
-    .map((item, index) => {
-      const city = item.sehir || item.city || item.name || item.il || 'Belirsiz';
-      const power = item.guc || item.güç || item.power || item.puan || 0;
-
-      return `
-        <tr class="border-b border-slate-800 hover:bg-slate-800/50 transition">
-          <td class="p-4 font-black text-white text-sm">
-            ${index + 1}. ${escapeHtml(city)}
-          </td>
-          <td class="p-4 font-mono font-black text-kaos text-sm text-right">
-            ${formatNumber(power)}
-          </td>
-        </tr>
-      `;
-    })
-    .join('');
-}
-
-// ------------------------------------------------------
-// STADYUM
-// ------------------------------------------------------
-
-export function renderStadiumStats(stats = {}) {
-  setText('stat-total-online', formatNumber(stats.total || stats.total_online || 0));
-  setText('stat-mezun-online', formatNumber(stats.mezun || stats.mezun_online || 0));
-  setText('stat-ogrenci-online', formatNumber(stats.ogrenci || stats.ogrenci_online || 0));
-  setText('stat-lider-tribun', stats.lider || stats.lider_tribun || 'Bekleniyor');
-}
-
-export function renderStadiumTribunes(list = []) {
-  const container = $('stadyum-tribunler');
-
-  if (!container) return;
-
-  const items = Array.isArray(list) ? list : [];
-
-  if (items.length === 0) {
-    container.innerHTML = `
-      <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">
-        Tribünler hazırlanıyor...
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = items
-    .map((item) => {
-      const city = item.sehir || item.city || item.name || 'Belirsiz';
-      const count = item.count || item.sayi || item.online || item.kisi_sayisi || 0;
-
-      return `
-        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
-          <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
-            ${escapeHtml(city)}
-          </div>
-          <div class="text-2xl font-black text-kaos mt-2">
-            ${formatNumber(count)}
-          </div>
-        </div>
-      `;
-    })
-    .join('');
-}
-
-export function addStadiumMessage(message = {}) {
-  const container = $('stadyum-chat-messages');
-
-  if (!container) return;
-
-  const text = message.text || message.mesaj || message.content || '';
-  const author = message.author || message.yazar || message.id || message.dijital_id || 'TR-IA';
-  const city = message.city || message.sehir || '';
-
-  const row = document.createElement('div');
-
-  row.className = 'bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2 text-xs';
-
-  row.innerHTML = `
-    <div class="flex items-center justify-between gap-2 mb-1">
-      <span class="text-kaos font-black">${escapeHtml(author)}</span>
-      <span class="text-gray-600 font-bold">${escapeHtml(city)}</span>
-    </div>
-    <div class="text-gray-300 leading-relaxed">${escapeHtml(text)}</div>
-  `;
-
-  container.appendChild(row);
-  container.scrollTop = container.scrollHeight;
-}
-
-export function renderStageSpeaker(speaker = null) {
-  const nameEl = $('sahne-kisi-isim');
-  const roleEl = $('sahne-kisi-rol');
-  const iconEl = $('sahne-mic-icon');
-
-  if (!speaker) {
-    if (nameEl) nameEl.textContent = 'Saha Boş';
-    if (roleEl) roleEl.textContent = 'Kimse Konuşmuyor';
-
-    if (iconEl) {
-      iconEl.className = 'fa-solid fa-microphone-slash text-3xl text-gray-600';
-    }
-
-    return;
-  }
-
-  if (nameEl) nameEl.textContent = speaker.name || speaker.id || speaker.dijital_id || 'TR-IA';
-  if (roleEl) roleEl.textContent = speaker.role || speaker.rol || 'Kürsüde';
-
-  if (iconEl) {
-    iconEl.className = 'fa-solid fa-microphone text-3xl text-kaos';
-  }
-}
-
-// ------------------------------------------------------
-// FORM YARDIMCILARI
-// ------------------------------------------------------
-
-export function clearInputs(ids = []) {
-  ids.forEach((id) => {
-    const el = $(id);
-
-    if (!el) return;
-
-    if (el.type === 'checkbox' || el.type === 'radio') {
-      el.checked = false;
-      return;
-    }
-
-    el.value = '';
-  });
-}
-
-export function getInputValue(id, fallback = '') {
-  return cleanText($(id)?.value, fallback);
-}
-
-export function setInputValue(id, value = '') {
-  const el = $(id);
-  if (el) el.value = value;
-}
-
-// ------------------------------------------------------
-// UI BAŞLAT
-// ------------------------------------------------------
-
-export function initUI() {
-  document.querySelectorAll('[data-close-modal]').forEach((button) => {
-    if (button.dataset.me26CloseBound === '1') return;
-
-    button.dataset.me26CloseBound = '1';
-
-    button.addEventListener('click', () => {
-      const target = button.getAttribute('data-close-modal');
-      if (target) closeModal(target);
-    });
-  });
-
-  document.querySelectorAll('.nav-menu-btn').forEach((button) => {
-    if (button.dataset.me26UiNavBound === '1') return;
-
-    button.dataset.me26UiNavBound = '1';
-
-    button.addEventListener('click', () => {
-      const target = button.getAttribute('data-target');
-      if (target) switchSaasTab(target);
-    });
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeAllModals();
-    }
-  });
-}
-
-// ------------------------------------------------------
-// EXPORT NESNESİ
-// ------------------------------------------------------
+   ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
+   Hibrit Vitrin + Otomatik Bouncer + Ortak Kürsü Modeli + Tribün Ligi
+   Canlı Yayın (Production) Sürümü
+   ========================================================================== */
+
+import { STATE } from './state.js';
 
 export const UI = {
-  escapeHtml,
-  showToast,
-  toast: showToast,
+    // 1. ANA EKRAN GEÇİŞİ (DIŞ KAPI <-> İÇ PANEL)
+    showView: (viewId) => {
+        const landing = document.getElementById('landing-view');
+        const saas = document.getElementById('saas-view');
+        
+        if (landing) landing.classList.add('hidden');
+        if (saas) { saas.classList.add('hidden'); saas.classList.remove('flex'); }
 
-  setText,
-  setHtml,
-  setVisible,
+        if (viewId === 'landing') {
+            if (landing) landing.classList.remove('hidden');
+        } else if (viewId === 'saas') {
+            if (saas) {
+                saas.classList.remove('hidden');
+                saas.classList.add('flex');
+            }
+        }
+    },
 
-  emptyState,
-  errorState,
-  loadingState,
+    // 2. SAAS SEKMELERİ ARASI GEÇİŞ
+    switchSaasTab: (targetId) => {
+        document.querySelectorAll('.view-section').forEach(sec => {
+            sec.classList.add('hidden');
+            sec.classList.remove('block');
+        });
+        
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.remove('hidden');
+            target.classList.add('block');
+        }
 
-  setLoading,
-  restoreButton,
+        document.querySelectorAll('.nav-menu-btn').forEach(btn => {
+            btn.classList.remove('active', 'bg-slate-800', 'text-white');
+            btn.classList.add('text-gray-400');
+        });
 
-  showLanding,
-  showSaas,
-  showView,
+        document.querySelectorAll(`.nav-menu-btn[data-target="${targetId}"]`).forEach(btn => {
+            btn.classList.add('active', 'bg-slate-800', 'text-white');
+            btn.classList.remove('text-gray-400');
+        });
+    },
 
-  switchSaasTab,
-  switchTab,
-  navigate,
+    // 3. PENCERELER (MODALLAR)
+    openModal: (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
 
-  openModal,
-  closeModal,
-  closeAllModals,
+    closeModal: (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    },
 
-  renderProfile,
-  renderUser,
-  updateUserPanel,
-  renderUserInfo,
+    // ==========================================
+    // ORTAK KÜRSÜ MODAL YÖNETİMİ
+    // ==========================================
+    openKursuModal: () => {
+        // GÜVENLİK DUVARI: Bouncer onaylamazsa modal hiç açılmaz
+        if (!UI.triggerVerificationGate()) return;
+        
+        UI.switchKursuTab('onerge'); // Varsayılan olarak Önerge sekmesi açılsın
+        UI.openModal('ortak-kursu-modal');
+    },
 
-  renderProposalCard,
-  renderProposals,
-  renderGundem,
-  renderOnergeler,
-  onergeleriCiz,
+    switchKursuTab: (tab) => {
+        const btnOnerge = document.getElementById('tab-btn-onerge');
+        const btnSoru = document.getElementById('tab-btn-soru');
+        const fieldsOnerge = document.getElementById('kursu-onerge-fields');
+        const fieldsSoru = document.getElementById('kursu-soru-fields');
+        const btnSubmit = document.getElementById('btn-submit-kursu');
+        const durationInput = document.getElementById('input-kursu-duration');
 
-  renderQuestionCard,
-  renderQuestions,
-  renderQAList,
-  sorulariCiz,
+        // Modu state'e kaydet (Gönderirken app.js'e lazım olacak)
+        STATE.aktifKursuModu = tab; 
 
-  renderTribunLigi,
+        if (tab === 'onerge') {
+            btnOnerge.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition bg-slate-800 text-white shadow-md";
+            btnSoru.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition text-gray-500 hover:text-white bg-transparent";
+            
+            fieldsOnerge.classList.remove('hidden');
+            fieldsOnerge.classList.add('block');
+            fieldsSoru.classList.add('hidden');
+            fieldsSoru.classList.remove('block');
+            
+            if(durationInput) durationInput.parentElement.classList.remove('hidden'); // Süreyi göster
+            btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Önergeyi Gündeme Gönder';
+        } else {
+            btnSoru.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition bg-slate-800 text-white shadow-md";
+            btnOnerge.className = "flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition text-gray-500 hover:text-white bg-transparent";
+            
+            fieldsSoru.classList.remove('hidden');
+            fieldsSoru.classList.add('block');
+            fieldsOnerge.classList.add('hidden');
+            fieldsOnerge.classList.remove('block');
+            
+            if(durationInput) durationInput.parentElement.classList.add('hidden'); // Süreyi gizle
+            btnSubmit.innerHTML = '<i class="fas fa-comment-dots"></i> Soruyu Ortak Akla Gönder';
+        }
+    },
 
-  renderStadiumStats,
-  renderStadiumTribunes,
-  addStadiumMessage,
-  renderStageSpeaker,
+    // 4. BİLDİRİM (TOAST) MESAJLARI
+    showToast: (message, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
 
-  clearInputs,
-  getInputValue,
-  setInputValue,
+        const toast = document.createElement('div');
+        const isSuccess = type === 'success';
+        const isInfo = type === 'info';
+        
+        let bgColor = isSuccess ? 'bg-green-900/90 text-green-400 border-green-700' : 
+                      isInfo ? 'bg-blue-900/90 text-blue-400 border-blue-700' : 
+                      'bg-red-900/90 text-red-400 border-red-700';
+                      
+        let icon = isSuccess ? '✅' : isInfo ? 'ℹ️' : '❌';
 
-  initUI
+        toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-xs font-bold uppercase tracking-widest transform transition-all duration-500 translate-y-10 opacity-0 border ${bgColor}`;
+        
+        toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+        setTimeout(() => {
+            toast.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    },
+
+    // ==========================================
+    // OTOMATİK BOUNCER (GÜVENLİK KAPISI)
+    // ==========================================
+    triggerVerificationGate: (silent = false) => {
+        if (!STATE.isLoggedIn()) {
+            if (!silent) UI.showToast('İşlem yapabilmek için sisteme giriş yapmalısınız.', 'error');
+            return false;
+        }
+
+        const currentPower = parseFloat((STATE.user.votePower || "0").replace('x', ''));
+        const isVerified = STATE.user.authStage === "pdf_verified" || currentPower >= 1.0;
+
+        if (isVerified) return true;
+
+        if (!silent) {
+            if (STATE.user.authStage === "document_pending") {
+                UI.showToast("Mesleki belge başvurunuz inceleme kuyruğunda. Onay sonrası tam erişim açılacak.", "info");
+            } else if (STATE.user.hasPhone) {
+                UI.showToast("Telefon doğrulandı. Tam erişim için mesleki belgenizi yüklemelisin.", "info");
+            } else {
+                UI.showToast("Bu alan doğrulanmış İçmimarlık Mezunları ve İçmimarlık Öğrencileri içindir. Sicilini tamamlamalısın.", "error");
+            }
+            UI.switchSaasTab("view-profil"); // Sicil & Ayarlar paneline fırlat
+        }
+        return false;
+    },
+
+    // 5. AKILLI PROFİL MOTORU
+    renderProfile: () => {
+        if (!STATE.isLoggedIn()) return;
+
+        const user = STATE.user;
+        const setEl = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+        // --- TEMEL BİLGİLER ---
+        const isCitySelected = user.city && user.city !== 'Seçilmedi' && user.city !== 'Belirsiz';
+        
+        // Rol text kontrolü
+        let displayRole = 'Kimlik Bekleniyor';
+        if (user.role && user.role !== 'Belirsiz') {
+            displayRole = user.role.toLowerCase().includes('öğrenci') ? 'İçmimarlık Öğrencisi' : 'İçmimarlık Mezunu';
+        }
+        
+        // 1.0x ve 0.0x yerine Tam / Sınırlı Erişim
+        const displayPower = user.authStage === 'pdf_verified' ? 'Tam' : 'Sınırlı';
+        
+        setEl('ui-user-city', isCitySelected ? user.city : 'TRİBÜN SEÇİLMEDİ');
+        setEl('ui-user-role', displayRole);
+        setEl('ui-vote-power', displayPower);
+        setEl('sidebar-user-role', displayRole);
+        setEl('sidebar-vote-power', displayPower);
+
+        let userIdText = 'TR-IA-BEKLEYEN';
+        const numaraAlinmisMi = user.userNo && user.userNo !== 'BEKLEYEN';
+        if (numaraAlinmisMi) userIdText = `TR-IA-${user.userNo}`;
+        
+        setEl('ui-user-id', userIdText);
+        setEl('sidebar-user-id', userIdText);
+        setEl('mobile-user-id', userIdText);
+
+        const idBadge = document.getElementById('ui-role-badge');
+        if (numaraAlinmisMi) {
+            if (user.isVip) {
+                if (idBadge) { idBadge.textContent = 'VIP KURUCU'; idBadge.className = 'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos'; }
+            } else {
+                if (idBadge) { idBadge.textContent = 'ASİL KURUCU'; idBadge.className = 'bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold'; }
+            }
+        } else {
+            if (idBadge) { idBadge.textContent = 'Aday Kurucu'; idBadge.className = 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold'; }
+        }
+
+        // ==========================================
+        // SİSTEM DURUMU (LOBİ KUTUSU) DİNAMİK GÜNCELLEME
+        // ==========================================
+        const sistemDurumuEl = document.getElementById('ui-sistem-durumu');
+        if (sistemDurumuEl) {
+            const containerBox = sistemDurumuEl.parentElement;
+            const titleBox = sistemDurumuEl.previousElementSibling;
+
+            if (user.authStage === 'pdf_verified') {
+                sistemDurumuEl.innerHTML = 'Tebrikler! Mesleki belgeni inceledik ve onayladık. Artık sistemde <strong class="text-white">Tam Erişim</strong> hakkına sahipsin. Otonom sandıklarda oy kullanabilir ve kendi projelerini meclise sunabilirsin.';
+                containerBox.className = "bg-green-900/20 border border-green-500/30 p-6 rounded-2xl"; 
+                titleBox.className = "text-green-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Sistem Durumu: Tam Erişim';
+            } else if (user.authStage === 'document_pending') {
+                sistemDurumuEl.innerHTML = 'Mesleki belgeni aldık, şu an <strong class="text-white">inceleme kuyruğunda</strong> güvenle bekliyor. Kontroller bittiğinde ve belgen onaylandığında meclisteki tüm kapılar sana açılacak (Tam Erişim).';
+                containerBox.className = "bg-yellow-900/20 border border-yellow-500/30 p-6 rounded-2xl";
+                titleBox.className = "text-yellow-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-hourglass-half mr-2"></i> Sistem Durumu: İncelemede';
+            } else if (user.hasPhone) {
+                sistemDurumuEl.innerHTML = 'Harika, telefon numaranı doğruladın! Şimdi son bir adım kaldı: Oylamalara katılmak için <strong class="text-white">mesleki belgeni yüklemelisin.</strong> Belgen onaylandığında Tam Erişim kazanacaksın.';
+                containerBox.className = "bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl";
+                titleBox.className = "text-blue-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Sistem Durumu: Eksik Yetki';
+            } else {
+                sistemDurumuEl.innerHTML = 'Sistemimize hoş geldin! Şu an meclisi sadece izleyebiliyorsun. İçerideki oylamalara katılmak ve kendi fikirlerini sunmak için gerçek bir meslektaşımız olduğunu doğrulamamız gerekiyor. Lütfen profilinden <strong class="text-white">mesleki belgeni incelemeye gönder.</strong> Belgen onaylandığında, sistemdeki tüm kapılar sana açılacak (Tam Erişim).';
+                containerBox.className = "bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl";
+                titleBox.className = "text-gray-400 text-xs font-black tracking-widest uppercase mb-3";
+                titleBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Sistem Durumu: Kayıtlı İzleyici';
+            }
+        }
+
+        // --- SAĞ PANEL (AĞI BÜYÜT & VIP) MANTIĞI ---
+        const inviteCount = user.inviteCount || 0;
+        setEl('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
+        const progressBar = document.getElementById('ui-vip-progress-bar');
+        if (progressBar) progressBar.style.width = `${Math.min((inviteCount / 3) * 100, 100)}%`;
+
+        const btnVipModal = document.getElementById('btn-open-vip-modal');
+        const btnStandartNum = document.getElementById('btn-standart-numara');
+        const vipStatus = document.getElementById('ui-vip-status');
+
+        if (numaraAlinmisMi) {
+            if (btnVipModal) btnVipModal.classList.add('hidden');
+            if (btnStandartNum) btnStandartNum.classList.add('hidden');
+            if (vipStatus) {
+                vipStatus.textContent = 'SİSTEM ELÇİSİ';
+                vipStatus.className = 'text-[9px] text-slate-900 font-black bg-kaos px-2 py-1 rounded border border-kaos shadow-kaos';
+            }
+        } else {
+            if (btnVipModal) btnVipModal.classList.remove('hidden');
+            if (btnStandartNum) btnStandartNum.classList.remove('hidden');
+            if (vipStatus) {
+                if (inviteCount >= 3) {
+                    vipStatus.textContent = 'KİLİT AÇILDI';
+                    vipStatus.className = 'text-[9px] text-green-400 font-bold bg-green-900/30 px-2 py-1 rounded border border-green-700';
+                } else {
+                    vipStatus.textContent = 'KİLİTLİ';
+                    vipStatus.className = 'text-[9px] text-gray-500 font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700';
+                }
+            }
+        }
+
+        // --- SOL PANEL (GÖREVLER VE TERFİ) MANTIĞI ---
+        const btnPhone = document.getElementById('btn-open-phone-modal');
+        const btnPdf = document.getElementById('btn-open-pdf-modal');
+        const taskContainer = btnPhone ? btnPhone.parentElement : null;
+
+        document.querySelectorAll('.dynamic-task-badge').forEach(el => el.remove());
+
+        const addBadge = (html, extraClass = '') => {
+            if (!taskContainer) return;
+            const badge = document.createElement('div');
+            badge.className = `dynamic-task-badge w-full py-3 rounded-lg text-[10px] md:text-xs text-center uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2 border ${extraClass}`;
+            badge.innerHTML = html;
+            taskContainer.insertBefore(badge, taskContainer.firstChild);
+        };
+
+        if (user.hasPhone) {
+            if (btnPhone) btnPhone.classList.add('hidden');
+            addBadge('<span>✅</span> TELEFON DOĞRULANDI (BOT KONTROLÜ)', 'bg-green-900/20 border-green-700/50 text-green-400');
+        } else {
+            if (btnPhone) btnPhone.classList.remove('hidden');
+        }
+
+        if (user.authStage === 'pdf_verified') {
+            if (btnPdf) btnPdf.classList.add('hidden');
+            addBadge('<span>🎓</span> MESLEKİ BELGE ONAYLI (TAM ERİŞİM)', 'bg-indigo-900/20 border-indigo-700/50 text-indigo-400');
+            
+            if (user.role && user.role.toLowerCase().includes('öğrenci')) {
+                const terfiBtn = document.createElement('button');
+                terfiBtn.className = 'dynamic-task-badge w-full bg-kaos text-slate-900 hover:opacity-90 font-black py-3 rounded-lg text-[11px] uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 mt-2';
+                terfiBtn.innerHTML = '<i class="fas fa-graduation-cap text-lg"></i> Mezun Oldun Mu? Unvanını Güncelle';
+                terfiBtn.onclick = () => UI.openModal('pdf-modal');
+                if (taskContainer) taskContainer.appendChild(terfiBtn);
+            }
+
+        } else if (user.authStage === 'document_pending') {
+            if (btnPdf) btnPdf.classList.add('hidden');
+            addBadge('<span>⏳</span> İNCELEME KUYRUĞUNDA BEKLİYOR', 'bg-yellow-900/20 border-yellow-700/50 text-yellow-500');
+        } else {
+            if (btnPdf) btnPdf.classList.remove('hidden');
+        }
+
+        const citySelectors = document.querySelectorAll('#ui-city-selector-container');
+        citySelectors.forEach(el => {
+            if (!isCitySelected) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+        });
+    },
+
+    // 6. ÖNERGELERİ EKRANA BASMA (BUZLU CAM)
+    renderProposals: (onergeler) => {
+        const meclisContainer = document.getElementById('proposals-container');
+        const gundemContainer = document.getElementById('gundem-container'); 
+
+        if (meclisContainer) meclisContainer.innerHTML = ''; 
+        if (gundemContainer) gundemContainer.innerHTML = '';
+
+        if (!onergeler || onergeler.length === 0) {
+            if (meclisContainer) meclisContainer.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Bekleyen önerge yok.</p>';
+            if (gundemContainer) gundemContainer.innerHTML = '<p class="text-center text-sm text-gray-500 font-medium py-8 border border-dashed border-slate-700 rounded-xl">Sırada önerge yok.</p>';
+            return;
+        }
+
+        const isAuthorized = UI.triggerVerificationGate(true);
+
+        onergeler.forEach(onerge => {
+            const isKotaDoldu = (onerge.destek_sayisi || 0) >= 50;
+            const container = isKotaDoldu ? gundemContainer : meclisContainer;
+            if(!container) return;
+
+            const yuzde = isAuthorized ? Math.min(((onerge.destek_sayisi || 0) / 50) * 100, 100) : 0;
+            const barHTML = isAuthorized ? `<div class="absolute left-0 bottom-0 h-1 ${isKotaDoldu ? 'bg-green-500' : 'bg-kaos'}" style="width: ${yuzde}%"></div>` : '';
+            
+            const blurClass = isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none';
+            const statText = isAuthorized ? `✅ ${onerge.destek_sayisi || 0}/50` : `🔒 GİZLİ`;
+            const overlay = isAuthorized ? '' : `
+                <div class="absolute inset-0 z-20 flex items-center justify-center cursor-pointer rounded-2xl" onclick="UI.triggerVerificationGate()">
+                    <div class="bg-black/80 px-4 py-2 rounded-full border border-slate-600 shadow-xl flex items-center gap-2">
+                        <i class="fas fa-lock text-kaos"></i> <span class="text-[10px] font-black text-white uppercase tracking-widest">KİLİDİ AÇ</span>
+                    </div>
+                </div>
+            `;
+
+            const div = document.createElement('div');
+            div.className = 'bg-black/40 border border-slate-600 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden shadow-lg mb-3 group';
+            
+            div.innerHTML = `
+                ${barHTML}
+                ${overlay}
+                <div class="flex-grow z-10 w-full pr-4 relative">
+                    <h4 class="text-base font-black text-white mb-2 leading-tight">${onerge.baslik}</h4>
+                    ${!isKotaDoldu ? `<p class="text-xs text-gray-400 line-clamp-2 ${blurClass}">${onerge.sorun}</p>` : ''}
+                </div>
+                <div class="flex flex-col md:items-end w-full md:w-auto shrink-0 z-10 gap-2 relative">
+                    <div class="text-center md:text-right bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-700 w-full">
+                        <div class="text-sm font-black ${isKotaDoldu ? 'text-green-400' : 'text-kaos'} ${blurClass}">${statText}</div>
+                    </div>
+                    ${!isKotaDoldu ? `<button onclick="${isAuthorized ? '' : 'return UI.triggerVerificationGate()'}" data-id="${onerge.id}" class="btn-destekle w-full ${isAuthorized ? 'bg-slate-800 border-slate-500 text-white hover:bg-slate-700' : 'bg-black/50 border-slate-700 text-gray-500 pointer-events-none'} border px-4 py-2 rounded-xl font-black text-[11px] transition uppercase flex justify-center items-center gap-2"><i class="fas ${isAuthorized ? 'fa-arrow-up text-kaos' : 'fa-lock'}"></i> DESTEKLE</button>` : ''}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    },
+
+    // ==========================================
+    // 7. TRİBÜN LİGİ (LEADERBOARD) MOTORU
+    // ==========================================
+    renderTribunLigi: (cityDataArray) => {
+        if (!cityDataArray) return;
+
+        // KULLANICI ŞEHRİNİ LİSTEYE OTOMATİK EKLEME (Tüm Şehirler Mantığı)
+        const userCity = STATE.user?.city;
+        const validCity = userCity && userCity !== 'Belirsiz' && userCity !== 'Seçilmedi';
+
+        // Eğer kullanıcının şehri dizide yoksa, 0 puanla anında listeye ekle
+        if (validCity && !cityDataArray.find(c => c.city === userCity)) {
+            cityDataArray.push({
+                city: userCity,
+                icmimar: 0,
+                ogrenci: 0,
+                onerge: 0,
+                oy: 0,
+                katki: 0,
+                weeklyGrowthPoints: 0,
+                weeklyGrowthPercent: 0
+            });
+        }
+
+        if (cityDataArray.length === 0) return;
+
+        // Puan Hesaplama Formülü
+        const calculateCityPower = (city) => {
+            return (city.icmimar * 10) + (city.ogrenci * 5) + (city.onerge * 2) + (city.oy * 1) + (city.katki * 2);
+        };
+
+        // Verileri güç puanına göre hesapla ve sırala
+        const processedData = cityDataArray.map(c => ({
+            ...c,
+            power: calculateCityPower(c)
+        })).sort((a, b) => b.power - a.power);
+
+        // --- 1. ZİRVE KARTLARI ---
+        const championsContainer = document.getElementById('tribun-champions');
+        if (championsContainer) {
+            const genelLider = processedData[0];
+            const enAktif = [...processedData].sort((a, b) => (b.onerge + b.oy + b.katki) - (a.onerge + a.oy + a.katki))[0];
+            const ogrenciLideri = [...processedData].sort((a, b) => b.ogrenci - a.ogrenci)[0];
+            
+            // Haftanın Yükseleni (Minimum 50 Puan şartı)
+            const eligibleForGrowth = processedData.filter(c => c.weeklyGrowthPoints >= 50);
+            const enHizli = eligibleForGrowth.length > 0 
+                            ? eligibleForGrowth.sort((a, b) => b.weeklyGrowthPercent - a.weeklyGrowthPercent)[0] 
+                            : processedData[0]; // fallback
+
+            championsContainer.innerHTML = `
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">👑</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Genel Lider</div>
+                    <div class="text-sm font-black text-kaos uppercase tracking-widest truncate">${genelLider.city}</div>
+                </div>
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">🔥</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">En Aktif Tribün</div>
+                    <div class="text-sm font-black text-red-400 uppercase tracking-widest truncate">${enAktif.city}</div>
+                </div>
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">🎓</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">İçmimarlık Öğrencisi Lideri</div>
+                    <div class="text-sm font-black text-blue-400 uppercase tracking-widest truncate">${ogrenciLideri.city}</div>
+                </div>
+                <div class="bg-black/50 border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden group">
+                    <div class="text-2xl mb-1 drop-shadow-md">⚡</div>
+                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">Haftanın Yükseleni</div>
+                    <div class="text-sm font-black text-green-400 uppercase tracking-widest truncate">${enHizli.city}</div>
+                </div>
+            `;
+        }
+
+        // --- 2. SENİN TRİBÜNÜN KARTI (Dinamik Motivasyon) ---
+        const userCard = document.getElementById('tribun-user-card');
+        
+        if (userCard) {
+            if (!validCity) {
+                userCard.innerHTML = `<p class="text-xs font-bold text-gray-300 uppercase tracking-widest">📍 Tribün seçimi yapılmadı. Şehrini seçerek Liyakat Ligi’ne katıl.</p>`;
+            } else {
+                // Artık userCityIndex'in bulunacağından eminiz (yukarıda ekledik)
+                const userCityIndex = processedData.findIndex(c => c.city === userCity);
+                
+                if (userCityIndex !== -1) {
+                    const myCityData = processedData[userCityIndex];
+                    const rank = userCityIndex + 1;
+                    let motivasyonMesaji = "";
+
+                    if (rank === 1) {
+                        motivasyonMesaji = `<span class="text-green-400">Şehrin zirvede. Farkı açmak için tribününü büyüt.</span>`;
+                    } else {
+                        const ustSehir = processedData[userCityIndex - 1];
+                        const puanFarki = ustSehir.power - myCityData.power;
+                        motivasyonMesaji = `<span class="text-yellow-400">Üst sıradaki ${ustSehir.city}’i geçmek için ${puanFarki > 0 ? puanFarki : 1} puan lazım.</span>`;
+                    }
+
+                    userCard.innerHTML = `
+                        <div class="text-sm font-black text-white uppercase tracking-widest mb-1">
+                            Senin Tribünün: <span class="text-kaos">${myCityData.city}</span> · ${rank}. Sıra · ${myCityData.power.toLocaleString()} Puan
+                        </div>
+                        <div class="text-[10px] font-bold tracking-widest uppercase mt-2">${motivasyonMesaji}</div>
+                    `;
+                }
+            }
+        }
+
+        // --- 3. ANA TABLOYU DOLDUR ---
+        const tableBody = document.getElementById('tribun-table-body');
+        if (tableBody) {
+            tableBody.innerHTML = '';
+            processedData.forEach((city, index) => {
+                const rank = index + 1;
+                let rankDisplay = `<span class="text-gray-400 font-black">${rank}</span>`;
+                if (rank === 1) rankDisplay = `<span class="text-xl" title="Şampiyon">👑</span>`;
+                else if (rank === 2) rankDisplay = `<span class="text-lg" title="İkinci">🥈</span>`;
+                else if (rank === 3) rankDisplay = `<span class="text-lg" title="Üçüncü">🥉</span>`;
+
+                const isCurrentUserCity = (userCity === city.city);
+                const rowClass = isCurrentUserCity ? 'bg-kaos/10 border-b border-kaos/30' : 'border-b border-slate-800 hover:bg-slate-800/50 transition';
+
+                const tr = document.createElement('tr');
+                tr.className = rowClass;
+                tr.innerHTML = `
+                    <td class="p-3 text-center align-middle">${rankDisplay}</td>
+                    <td class="p-3 font-black text-white uppercase tracking-widest ${isCurrentUserCity ? 'text-kaos' : ''}">${city.city}</td>
+                    <td class="p-3 font-mono font-black text-kaos text-base">${city.power.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-300 font-mono">${city.icmimar.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-300 font-mono">${city.ogrenci.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-400 font-mono">${city.onerge.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-400 font-mono">${city.oy.toLocaleString()}</td>
+                    <td class="p-3 text-center text-gray-400 font-mono">${city.katki.toLocaleString()}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // --- 4. VİRAL WHATSAPP BUTONU ---
+        const btnViral = document.getElementById('btn-tribun-whatsapp');
+        if (btnViral) {
+            if (!validCity) {
+                btnViral.innerHTML = '<i class="fas fa-map-marker-alt"></i> 📍 ÖNCE ŞEHRİNİ SEÇ';
+                btnViral.className = "relative z-10 w-full md:w-auto px-8 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 mx-auto";
+                btnViral.onclick = () => UI.switchSaasTab('view-profil');
+            } else {
+                btnViral.innerHTML = `<i class="fab fa-whatsapp text-xl"></i> 📢 ${userCity} TRİBÜNÜNÜ ŞAMPİYON YAP`;
+                btnViral.className = "relative z-10 w-full md:w-auto px-8 bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 mx-auto";
+                btnViral.onclick = () => {
+                    const msg = `ME26 Liyakat Ligi başladı. ${userCity} Tribünü'nü zirveye taşımak için katıl, kimliğini doğrula ve şehrinin gücüne puan kazandır: https://me26.org`;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                };
+            }
+        }
+    }
 };
-
-window.UI = {
-  ...(window.UI || {}),
-  ...UI
-};
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initUI);
-} else {
-  initUI();
-}
-
-console.info('ME26 ui.js temiz kısa final sürüm yüklendi.');
