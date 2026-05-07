@@ -891,16 +891,1256 @@ export const UI = {
 // ESC TUŞU İLE AÇIK MODALLARI KAPAT
 // ------------------------------------------------------
 document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
+    if (event.key !== 'Escape') return;/* ==========================================================================
+   ME26 AĞI - ARAYÜZ VE GÖRSEL MOTOR (ui.js)
+   Canlı Sistem Uyumlu Sürüm
 
-    [
-        'ortak-kursu-modal',
-        'phone-modal',
-        'pdf-modal',
-        'vip-modal',
-        'dinamik-detay-modal'
-    ].forEach((modalId) => {
-        const modal = $(modalId);
+   Görev:
+   - Landing / SaaS ekran geçişleri
+   - Modal yönetimi
+   - Profil ve erişim durumu yazıları
+   - Önerge / gündem kartları
+   - Destek sayısı görünümü
+   - Oylama katılım sayısı görünümü
+   - Tribün Ligi görünümü
+   - Davet linklerini config.js üzerinden üretmek
+   - Kullanıcı içeriklerini güvenli basmak
+========================================================================== */
+
+import { STATE } from './state.js';
+import { ME26_CONFIG } from './config.js';
+
+// ------------------------------------------------------
+// KISA YARDIMCILAR
+// ------------------------------------------------------
+
+const $ = (id) => document.getElementById(id);
+
+const cleanText = (value, fallback = '') => {
+  if (value === null || value === undefined) return fallback;
+  return String(value).trim();
+};
+
+const escapeHtml = (value) => {
+  return cleanText(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+const truncate = (value, limit = 180) => {
+  const text = cleanText(value);
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit).trim()}...`;
+};
+
+const setText = (id, text) => {
+  const el = $(id);
+  if (el) el.textContent = text;
+};
+
+const toNumber = (...values) => {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') continue;
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
+};
+
+const isCitySelected = (city) => {
+  return Boolean(
+    city &&
+    city !== 'Belirsiz' &&
+    city !== 'Seçilmedi' &&
+    city !== 'TRİBÜN SEÇİLMEDİ'
+  );
+};
+
+const getUser = () => {
+  if (typeof STATE.getUser === 'function') return STATE.getUser();
+  return STATE.user || {};
+};
+
+const isLoggedIn = () => {
+  if (typeof STATE.isLoggedIn === 'function') return STATE.isLoggedIn();
+  return Boolean(getUser()?.uid || getUser()?.id || getUser()?.email);
+};
+
+const getBaseUrl = () => {
+  return (
+    ME26_CONFIG.inviteBaseUrl ||
+    ME26_CONFIG.officialBaseUrl ||
+    'https://me26-io.vercel.app'
+  ).replace(/\/+$/, '');
+};
+
+const getDigitalId = (user) => {
+  if (!user) return 'TR-IA-BEKLEYEN';
+
+  if (user.userNo && user.userNo !== 'BEKLEYEN') {
+    return `TR-IA-${user.userNo}`;
+  }
+
+  if (user.user_no && user.user_no !== 'BEKLEYEN') {
+    return `TR-IA-${user.user_no}`;
+  }
+
+  if (user.digitalId) return user.digitalId;
+  if (user.digital_id) return user.digital_id;
+
+  return 'TR-IA-BEKLEYEN';
+};
+
+const getDisplayRole = (user) => {
+  const role = cleanText(user?.role || user?.meslek_tipi, 'Belirsiz');
+
+  if (!role || role === 'Belirsiz') return 'Kimlik Bekleniyor';
+
+  if (role.toLowerCase().includes('öğrenci')) {
+    return 'İçmimarlık Öğrencisi';
+  }
+
+  if (role.toLowerCase().includes('student')) {
+    return 'İçmimarlık Öğrencisi';
+  }
+
+  return 'İçmimarlık Mezunu';
+};
+
+const getAccessLabel = (user) => {
+  const stage = user?.authStage || user?.auth_stage;
+  return stage === 'pdf_verified' ? 'Tam' : 'Sınırlı';
+};
+
+const getVotePowerNumber = (user) => {
+  const raw = user?.votePower || user?.vote_power || '0';
+  const parsed = parseFloat(String(raw).replace('x', ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getAudienceAuth = (hedefKitle) => {
+  const target = cleanText(hedefKitle).toLowerCase();
+
+  if (target.includes('öğrenci') || target.includes('student')) return 'ogrenci';
+
+  if (
+    target.includes('mezun') ||
+    target.includes('içmimar') ||
+    target.includes('icmimar') ||
+    target.includes('interior')
+  ) {
+    return 'icmimar';
+  }
+
+  return 'herkes';
+};
+
+const buildInviteLink = (user) => {
+  const code =
+    cleanText(user?.davetKodu) ||
+    cleanText(user?.davet_kodu) ||
+    getDigitalId(user);
+
+  const baseUrl = getBaseUrl();
+
+  return `${baseUrl}/?ref=${encodeURIComponent(code)}`;
+};
+
+const createEmptyState = (message) => {
+  const div = document.createElement('div');
+  div.className =
+    'text-center py-10 border border-dashed border-slate-700 rounded-2xl text-gray-500 text-xs md:text-sm font-bold tracking-widest uppercase bg-black/20';
+  div.textContent = message;
+  return div;
+};
+
+const getVoteStats = (onerge) => {
+  const yes = toNumber(
+    onerge.kabul_sayisi,
+    onerge.evet_sayisi,
+    onerge.yes_count,
+    onerge.oy_kabul,
+    onerge.oy_yes,
+    onerge.kabul
+  );
+
+  const abstain = toNumber(
+    onerge.cekimser_sayisi,
+    onerge.çekimser_sayisi,
+    onerge.abstain_count,
+    onerge.oy_cekimser,
+    onerge.oy_çekimser,
+    onerge.abstain
+  );
+
+  const no = toNumber(
+    onerge.ret_sayisi,
+    onerge.no_count,
+    onerge.oy_ret,
+    onerge.oy_no,
+    onerge.ret
+  );
+
+  const countedTotal = yes + abstain + no;
+
+  const total = toNumber(
+    onerge.katilim_sayisi,
+    onerge.katılım_sayisi,
+    onerge.oy_sayisi,
+    onerge.toplam_oy,
+    onerge.total_votes,
+    countedTotal
+  );
+
+  const safeTotal = total > 0 ? total : countedTotal;
+
+  return {
+    yes,
+    abstain,
+    no,
+    total: safeTotal,
+    yesPercent: safeTotal > 0 ? Math.round((yes / safeTotal) * 100) : 0,
+    abstainPercent: safeTotal > 0 ? Math.round((abstain / safeTotal) * 100) : 0,
+    noPercent: safeTotal > 0 ? Math.round((no / safeTotal) * 100) : 0
+  };
+};
+
+const goToProfile = () => {
+  UI.switchSaasTab('view-profil');
+};
+
+// ======================================================
+// UI MOTORU
+// ======================================================
+
+export const UI = {
+  // --------------------------------------------------
+  // 1. ANA EKRAN GEÇİŞİ
+  // --------------------------------------------------
+
+  showView: (viewId) => {
+    const landing = $('landing-view');
+    const saas = $('saas-view');
+
+    if (landing) landing.classList.add('hidden');
+
+    if (saas) {
+      saas.classList.add('hidden');
+      saas.classList.remove('flex');
+    }
+
+    if (viewId === 'landing') {
+      if (landing) landing.classList.remove('hidden');
+      document.body.classList.remove('overflow-hidden');
+      return;
+    }
+
+    if (viewId === 'saas') {
+      if (saas) {
+        saas.classList.remove('hidden');
+        saas.classList.add('flex');
+      }
+
+      document.body.classList.add('overflow-hidden');
+    }
+  },
+
+  // --------------------------------------------------
+  // 2. SAAS SEKMELERİ
+  // --------------------------------------------------
+
+  switchSaasTab: (targetId) => {
+    document.querySelectorAll('.view-section').forEach((section) => {
+      section.classList.add('hidden');
+      section.classList.remove('block');
+    });
+
+    const target = $(targetId);
+
+    if (target) {
+      target.classList.remove('hidden');
+      target.classList.add('block');
+    }
+
+    document.querySelectorAll('.nav-menu-btn').forEach((btn) => {
+      btn.classList.remove('active', 'bg-slate-800', 'text-white');
+      btn.classList.add('text-gray-400');
+    });
+
+    document
+      .querySelectorAll(`.nav-menu-btn[data-target="${targetId}"]`)
+      .forEach((btn) => {
+        btn.classList.add('active', 'bg-slate-800', 'text-white');
+        btn.classList.remove('text-gray-400');
+      });
+
+    if (targetId === 'view-profil') {
+      UI.renderProfile();
+    }
+
+    if (targetId === 'view-kursu') {
+      if (typeof window.onergeleriGetir === 'function') {
+        window.onergeleriGetir();
+      }
+
+      if (typeof window.qaSorulariGetir === 'function') {
+        window.qaSorulariGetir();
+      }
+    }
+
+    const scrollParent = document.querySelector('#saas-view main');
+    if (scrollParent) scrollParent.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  // --------------------------------------------------
+  // 3. MODAL YÖNETİMİ
+  // --------------------------------------------------
+
+  openModal: (modalId) => {
+    const modal = $(modalId);
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.setAttribute('aria-hidden', 'false');
+  },
+
+  closeModal: (modalId) => {
+    const modal = $(modalId);
+    if (!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    modal.setAttribute('aria-hidden', 'true');
+  },
+
+  openKursuModal: () => {
+    if (!UI.triggerVerificationGate()) return;
+
+    UI.switchKursuTab('onerge');
+    UI.openModal('ortak-kursu-modal');
+  },
+
+  switchKursuTab: (tab) => {
+    const btnOnerge = $('tab-btn-onerge');
+    const btnSoru = $('tab-btn-soru');
+    const fieldsOnerge = $('kursu-onerge-fields');
+    const fieldsSoru = $('kursu-soru-fields');
+    const btnSubmit = $('btn-submit-kursu');
+    const durationInput = $('input-kursu-duration');
+
+    STATE.aktifKursuModu = tab;
+
+    const activeClass =
+      'flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition bg-slate-800 text-white shadow-md';
+
+    const passiveClass =
+      'flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition text-gray-500 hover:text-white bg-transparent';
+
+    if (tab === 'soru') {
+      if (btnSoru) btnSoru.className = activeClass;
+      if (btnOnerge) btnOnerge.className = passiveClass;
+
+      if (fieldsSoru) {
+        fieldsSoru.classList.remove('hidden');
+        fieldsSoru.classList.add('block');
+      }
+
+      if (fieldsOnerge) {
+        fieldsOnerge.classList.add('hidden');
+        fieldsOnerge.classList.remove('block');
+      }
+
+      if (durationInput?.parentElement) {
+        durationInput.parentElement.classList.add('hidden');
+      }
+
+      if (btnSubmit) btnSubmit.textContent = 'SORUYU ORTAK AKLA GÖNDER';
+      return;
+    }
+
+    if (btnOnerge) btnOnerge.className = activeClass;
+    if (btnSoru) btnSoru.className = passiveClass;
+
+    if (fieldsOnerge) {
+      fieldsOnerge.classList.remove('hidden');
+      fieldsOnerge.classList.add('block');
+    }
+
+    if (fieldsSoru) {
+      fieldsSoru.classList.add('hidden');
+      fieldsSoru.classList.remove('block');
+    }
+
+    if (durationInput?.parentElement) {
+      durationInput.parentElement.classList.remove('hidden');
+    }
+
+    if (btnSubmit) btnSubmit.textContent = 'ÖNERGEYİ GÜNDEME GÖNDER';
+  },
+
+  // --------------------------------------------------
+  // 4. TOAST BİLDİRİMLERİ
+  // --------------------------------------------------
+
+  showToast: (message, type = 'success') => {
+    const container = $('toast-container');
+    if (!container) return;
+
+    const variants = {
+      success: {
+        icon: '✅',
+        cls: 'bg-green-900/90 text-green-300 border-green-700'
+      },
+      info: {
+        icon: 'ℹ️',
+        cls: 'bg-blue-900/90 text-blue-300 border-blue-700'
+      },
+      error: {
+        icon: '❌',
+        cls: 'bg-red-900/90 text-red-300 border-red-700'
+      },
+      warning: {
+        icon: '⚠️',
+        cls: 'bg-yellow-900/90 text-yellow-300 border-yellow-700'
+      }
+    };
+
+    const selected = variants[type] || variants.success;
+
+    const toast = document.createElement('div');
+
+    toast.className = `flex items-start gap-3 px-4 py-3 rounded-lg shadow-lg text-[11px] md:text-xs font-bold uppercase tracking-widest transform transition-all duration-500 translate-y-10 opacity-0 border pointer-events-auto max-w-sm ${selected.cls}`;
+
+    toast.innerHTML = `
+      <span class="shrink-0">${selected.icon}</span>
+      <span>${escapeHtml(message)}</span>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.remove('translate-y-10', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+      toast.classList.add('translate-y-10', 'opacity-0');
+
+      setTimeout(() => {
+        toast.remove();
+      }, 500);
+    }, 3500);
+  },
+
+  // --------------------------------------------------
+  // 5. GÜVENLİK KAPISI
+  // --------------------------------------------------
+
+  triggerVerificationGate: (silent = false) => {
+    if (!isLoggedIn()) {
+      if (!silent) {
+        UI.showToast('İşlem yapabilmek için sisteme giriş yapmalısınız.', 'error');
+      }
+
+      return false;
+    }
+
+    const user = getUser();
+    const authStage = user.authStage || user.auth_stage;
+    const votePower = getVotePowerNumber(user);
+
+    const isVerified = authStage === 'pdf_verified' || votePower >= 1;
+
+    if (isVerified) return true;
+
+    if (!silent) {
+      if (authStage === 'document_pending') {
+        UI.showToast(
+          'Mesleki belge başvurunuz inceleme kuyruğunda. Onay sonrası tam erişim açılacak.',
+          'info'
+        );
+      } else if (user.hasPhone || user.has_phone) {
+        UI.showToast(
+          'Telefon doğrulandı. Tam erişim için mesleki belgenizi incelemeye göndermelisiniz.',
+          'info'
+        );
+      } else {
+        UI.showToast(
+          'Bu alan doğrulanmış İçmimarlık Mezunları ve İçmimarlık Öğrencileri içindir. Sicilinizi tamamlamalısınız.',
+          'error'
+        );
+      }
+
+      UI.switchSaasTab('view-profil');
+    }
+
+    return false;
+  },
+
+  // --------------------------------------------------
+  // 6. PROFİL MOTORU
+  // --------------------------------------------------
+
+  renderProfile: () => {
+    if (!isLoggedIn()) return;
+
+    const user = getUser();
+
+    const selectedCity = isCitySelected(user.city || user.sehir);
+    const roleText = getDisplayRole(user);
+    const accessText = getAccessLabel(user);
+    const digitalId = getDigitalId(user);
+    const hasNumber = digitalId !== 'TR-IA-BEKLEYEN';
+    const inviteCount = Number(user.inviteCount || user.invite_count || 0);
+    const progressPercent = Math.min((inviteCount / 3) * 100, 100);
+
+    setText('ui-user-city', selectedCity ? user.city || user.sehir : 'TRİBÜN SEÇİLMEDİ');
+    setText('ui-user-role', roleText);
+    setText('ui-vote-power', accessText);
+
+    setText('sidebar-user-role', roleText);
+    setText('sidebar-vote-power', accessText);
+
+    setText('ui-user-id', digitalId);
+    setText('sidebar-user-id', digitalId);
+    setText('mobile-user-id', digitalId);
+
+    setText('ui-vip-invite-count', `${inviteCount} / 3 Paylaşım`);
+    setText('ui-invite-link', buildInviteLink(user));
+
+    const progressBar = $('ui-vip-progress-bar');
+    if (progressBar) progressBar.style.width = `${progressPercent}%`;
+
+    const cityGate = $('ui-city-selector-container');
+    if (cityGate) cityGate.classList.toggle('hidden', selectedCity);
+
+    const roleBadge = $('ui-role-badge');
+
+    if (roleBadge) {
+      if (hasNumber && (user.isVip || user.is_vip)) {
+        roleBadge.textContent = 'VIP KURUCU';
+        roleBadge.className =
+          'bg-kaos text-slate-900 border border-kaos px-1.5 py-0.5 rounded text-[9px] font-black shadow-kaos';
+      } else if (hasNumber) {
+        roleBadge.textContent = 'ASİL KURUCU';
+        roleBadge.className =
+          'bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
+      } else {
+        roleBadge.textContent = 'ADAY KURUCU';
+        roleBadge.className =
+          'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded text-[8px] font-bold';
+      }
+    }
+
+    UI.renderSystemStatus(user);
+    UI.renderVerificationTasks(user);
+    UI.renderVipStatus(user, hasNumber, inviteCount);
+    UI.renderMentorPreference(user);
+  },
+
+  renderSystemStatus: (user) => {
+    const textEl = $('ui-sistem-durumu');
+    if (!textEl) return;
+
+    const box = textEl.parentElement;
+    const title = textEl.previousElementSibling;
+    const authStage = user.authStage || user.auth_stage;
+
+    if (authStage === 'pdf_verified') {
+      textEl.textContent =
+        'Tebrikler. Mesleki belge başvurunuz onaylandı. Artık sistemde tam erişim hakkına sahipsiniz; sandıklarda oy kullanabilir ve kendi önergenizi sunabilirsiniz.';
+
+      if (box) box.className = 'bg-green-900/20 border border-green-500/30 p-6 rounded-2xl';
+
+      if (title) {
+        title.className = 'text-green-400 text-xs font-black tracking-widest uppercase mb-3';
+        title.textContent = 'Sistem Durumu: Tam Erişim';
+      }
+
+      return;
+    }
+
+    if (authStage === 'document_pending') {
+      textEl.textContent =
+        'Mesleki belge başvurunuz ön inceleme kuyruğunda. Kontroller tamamlandığında ve başvurunuz onaylandığında tam erişim açılacaktır.';
+
+      if (box) box.className = 'bg-yellow-900/20 border border-yellow-500/30 p-6 rounded-2xl';
+
+      if (title) {
+        title.className = 'text-yellow-400 text-xs font-black tracking-widest uppercase mb-3';
+        title.textContent = 'Sistem Durumu: İncelemede';
+      }
+
+      return;
+    }
+
+    if (user.hasPhone || user.has_phone) {
+      textEl.textContent =
+        'Telefon doğrulamanız tamamlandı. Tam erişim için mesleki belge inceleme başvurunuzu göndermeniz gerekir.';
+
+      if (box) box.className = 'bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl';
+
+      if (title) {
+        title.className = 'text-blue-400 text-xs font-black tracking-widest uppercase mb-3';
+        title.textContent = 'Sistem Durumu: Eksik Yetki';
+      }
+
+      return;
+    }
+
+    textEl.textContent =
+      'Sisteme hoş geldiniz. Şu an meclisi izleyebilirsiniz. Oy kullanmak, önerge vermek ve ortak akla katkı sunmak için telefon doğrulaması ve mesleki belge inceleme başvurusu gerekir.';
+
+    if (box) box.className = 'bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl';
+
+    if (title) {
+      title.className = 'text-gray-400 text-xs font-black tracking-widest uppercase mb-3';
+      title.textContent = 'Sistem Durumu: Kayıtlı İzleyici';
+    }
+  },
+
+  renderVerificationTasks: (user) => {
+    const btnPhone = $('btn-open-phone-modal');
+    const btnPdf = $('btn-open-pdf-modal');
+    const taskContainer = btnPhone ? btnPhone.parentElement : btnPdf?.parentElement;
+    const authStage = user.authStage || user.auth_stage;
+    const hasPhone = Boolean(user.hasPhone || user.has_phone);
+
+    document.querySelectorAll('.dynamic-task-badge').forEach((el) => el.remove());
+
+    const addBadge = (html, extraClass = '') => {
+      if (!taskContainer) return;
+
+      const badge = document.createElement('div');
+
+      badge.className = `dynamic-task-badge w-full py-3 rounded-lg text-[10px] md:text-xs text-center uppercase tracking-widest font-bold flex items-center justify-center gap-2 mb-2 border ${extraClass}`;
+
+      badge.innerHTML = html;
+
+      taskContainer.insertBefore(badge, taskContainer.firstChild);
+    };
+
+    if (btnPhone) {
+      btnPhone.classList.toggle('hidden', hasPhone);
+      btnPhone.textContent = 'Telefonu Doğrula';
+    }
+
+    if (hasPhone) {
+      addBadge('✅ TELEFON DOĞRULANDI', 'bg-green-900/20 border-green-700/50 text-green-400');
+    }
+
+    if (btnPdf) {
+      btnPdf.textContent = 'Belge İnceleme Başvurusu Gönder';
+    }
+
+    if (authStage === 'pdf_verified') {
+      if (btnPdf) btnPdf.classList.add('hidden');
+
+      addBadge(
+        '✅ MESLEKİ BELGE ONAYLI · TAM ERİŞİM',
+        'bg-indigo-900/20 border-indigo-700/50 text-indigo-400'
+      );
+
+      const role = cleanText(user.role || user.meslek_tipi).toLowerCase();
+
+      if (role.includes('öğrenci')) {
+        const upgradeButton = document.createElement('button');
+
+        upgradeButton.type = 'button';
+        upgradeButton.className =
+          'dynamic-task-badge w-full bg-kaos text-slate-900 hover:opacity-90 font-black py-3 rounded-lg text-[11px] uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 mt-2';
+        upgradeButton.textContent = 'Mezun Oldun Mu? Unvanını Güncelle';
+        upgradeButton.addEventListener('click', () => UI.openModal('pdf-modal'));
+
+        if (taskContainer) taskContainer.appendChild(upgradeButton);
+      }
+
+      return;
+    }
+
+    if (authStage === 'document_pending') {
+      if (btnPdf) btnPdf.classList.add('hidden');
+
+      addBadge(
+        '⏳ BELGE İNCELEME KUYRUĞUNDA',
+        'bg-yellow-900/20 border-yellow-700/50 text-yellow-500'
+      );
+
+      return;
+    }
+
+    if (btnPdf) btnPdf.classList.remove('hidden');
+  },
+
+  renderVipStatus: (user, hasNumber, inviteCount) => {
+    const btnVipModal = $('btn-open-vip-modal');
+    const btnStandardNumber = $('btn-standart-numara');
+    const vipStatus = $('ui-vip-status');
+
+    if (hasNumber) {
+      if (btnVipModal) btnVipModal.classList.add('hidden');
+      if (btnStandardNumber) btnStandardNumber.classList.add('hidden');
+
+      if (vipStatus) {
+        vipStatus.textContent = user.isVip || user.is_vip ? 'VIP KURUCU' : 'SİSTEM ELÇİSİ';
+        vipStatus.className =
+          'text-[9px] text-slate-900 font-black bg-kaos px-2 py-1 rounded border border-kaos shadow-kaos';
+      }
+
+      return;
+    }
+
+    if (btnVipModal) btnVipModal.classList.remove('hidden');
+    if (btnStandardNumber) btnStandardNumber.classList.remove('hidden');
+
+    if (!vipStatus) return;
+
+    if (inviteCount >= 3) {
+      vipStatus.textContent = 'KİLİT AÇILDI';
+      vipStatus.className =
+        'text-[9px] text-green-400 font-bold bg-green-900/30 px-2 py-1 rounded border border-green-700';
+    } else {
+      vipStatus.textContent = 'KİLİTLİ';
+      vipStatus.className =
+        'text-[9px] text-gray-500 font-bold bg-slate-800 px-2 py-1 rounded border border-slate-700';
+    }
+  },
+
+  renderMentorPreference: (user) => {
+    const studentArea = $('mentorluk-ogrenci-alani');
+    const graduateArea = $('mentorluk-mezun-alani');
+
+    if (!studentArea || !graduateArea) return;
+
+    studentArea.classList.add('hidden');
+    studentArea.classList.remove('flex');
+
+    graduateArea.classList.add('hidden');
+    graduateArea.classList.remove('flex');
+
+    const role = cleanText(user?.role || user?.meslek_tipi).toLowerCase();
+
+    if (role.includes('öğrenci')) {
+      studentArea.classList.remove('hidden');
+      studentArea.classList.add('flex');
+    } else if (role && role !== 'belirsiz') {
+      graduateArea.classList.remove('hidden');
+      graduateArea.classList.add('flex');
+    }
+  },
+
+  // --------------------------------------------------
+  // 7. ÖNERGE / GÜNDEM KARTLARI
+  // --------------------------------------------------
+
+  renderProposals: (onergeler = []) => {
+    const proposalsContainer = $('proposals-container');
+    const agendaContainer = $('gundem-container');
+
+    if (proposalsContainer) {
+      proposalsContainer.classList.remove('hidden');
+      proposalsContainer.classList.add('grid');
+      proposalsContainer.innerHTML = '';
+    }
+
+    if (agendaContainer) {
+      agendaContainer.innerHTML = '';
+    }
+
+    if (!Array.isArray(onergeler) || onergeler.length === 0) {
+      if (proposalsContainer) {
+        proposalsContainer.appendChild(createEmptyState('Bekleyen önerge yok.'));
+      }
+
+      if (agendaContainer) {
+        agendaContainer.appendChild(createEmptyState('Sırada önerge yok.'));
+      }
+
+      return;
+    }
+
+    const isAuthorized = UI.triggerVerificationGate(true);
+
+    let proposalCount = 0;
+    let agendaCount = 0;
+
+    onergeler.forEach((onerge) => {
+      const destekSayisi = toNumber(
+        onerge.destek_sayisi,
+        onerge.destekSayisi,
+        onerge.support_count,
+        onerge.supports
+      );
+
+      const status = cleanText(onerge.status || onerge.durum).toLowerCase();
+
+      const isAgenda =
+        destekSayisi >= 50 ||
+        status === 'gundem' ||
+        status === 'gündem' ||
+        status === 'voting' ||
+        status === 'oylama';
+
+      const targetContainer = isAgenda ? agendaContainer : proposalsContainer;
+      if (!targetContainer) return;
+
+      const card = isAgenda
+        ? UI.createAgendaCard(onerge, isAuthorized)
+        : UI.createProposalSupportCard(onerge, isAuthorized);
+
+      targetContainer.appendChild(card);
+
+      if (isAgenda) agendaCount += 1;
+      else proposalCount += 1;
+    });
+
+    if (proposalsContainer && proposalCount === 0) {
+      proposalsContainer.appendChild(createEmptyState('Destek bekleyen önerge yok.'));
+    }
+
+    if (agendaContainer && agendaCount === 0) {
+      agendaContainer.appendChild(createEmptyState('Oylamaya açılmış gündem yok.'));
+    }
+  },
+
+  createProposalSupportCard: (onerge, isAuthorized) => {
+    const id = escapeHtml(onerge.id);
+    const title = escapeHtml(onerge.baslik || onerge.title || 'Başlıksız Önerge');
+    const problem = escapeHtml(truncate(onerge.sorun || onerge.problem || '', 180));
+    const solution = escapeHtml(truncate(onerge.cozum || onerge.solution || '', 220));
+    const audience = escapeHtml(onerge.hedef_kitle || onerge.target_audience || 'Herkes');
+
+    const destekSayisi = toNumber(
+      onerge.destek_sayisi,
+      onerge.destekSayisi,
+      onerge.support_count,
+      onerge.supports
+    );
+
+    const card = document.createElement('div');
+
+    card.className =
+      'bg-black/50 border border-slate-800 p-5 rounded-2xl relative overflow-hidden shadow-lg';
+
+    card.setAttribute('data-onerge-card', id);
+
+    const lockedOverlay = isAuthorized
+      ? ''
+      : `
+      <div class="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
+        <button type="button" class="btn-goto-profile bg-kaos text-black px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md">
+          Destek İçin Sicilini Tamamla
+        </button>
+      </div>
+    `;
+
+    card.innerHTML = `
+      ${lockedOverlay}
+
+      <div class="${isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none'}">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <span class="text-[9px] font-black uppercase tracking-widest text-kaos">
+            Önerge · ${audience}
+          </span>
+
+          <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">
+            Gündem İçin 50 Destek
+          </span>
+        </div>
+
+        <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
+          ${title}
+        </h3>
+
+        ${problem ? `<p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-2">${problem}</p>` : ''}
+
+        ${solution ? `<p class="text-xs md:text-sm text-gray-300 leading-relaxed mb-4 border-l-2 border-kaos/60 pl-3">${solution}</p>` : ''}
+
+        <div class="grid grid-cols-[1fr_auto] gap-3 items-stretch">
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3">
+            <div class="flex justify-between text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-2">
+              <span>Destek</span>
+              <span>${destekSayisi}/50</span>
+            </div>
+
+            <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+              <div class="bg-kaos h-full transition-all" style="width:${Math.min((destekSayisi / 50) * 100, 100)}%"></div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            data-id="${id}"
+            data-onerge-id="${id}"
+            class="btn-destekle bg-slate-800 border border-slate-600 hover:border-kaos hover:text-kaos text-white rounded-xl px-5 text-[10px] font-black uppercase tracking-widest transition"
+          >
+            Destekle
+          </button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('.btn-goto-profile')?.addEventListener('click', goToProfile);
+
+    return card;
+  },
+
+  createAgendaCard: (onerge, isAuthorized) => {
+    const id = escapeHtml(onerge.id);
+    const title = escapeHtml(onerge.baslik || onerge.title || 'Başlıksız Gündem');
+    const problem = escapeHtml(truncate(onerge.sorun || onerge.problem || '', 180));
+    const solution = escapeHtml(truncate(onerge.cozum || onerge.solution || '', 220));
+    const audience = escapeHtml(onerge.hedef_kitle || onerge.target_audience || 'Herkes');
+    const authType = getAudienceAuth(onerge.hedef_kitle || onerge.target_audience);
+
+    const stats = getVoteStats(onerge);
+
+    const card = document.createElement('div');
+
+    card.className =
+      'bg-black/50 border border-kaos/40 p-5 rounded-2xl relative overflow-hidden shadow-lg mb-4';
+
+    card.setAttribute('data-onerge-card', id);
+
+    const lockedOverlay = isAuthorized
+      ? ''
+      : `
+      <div class="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
+        <button type="button" class="btn-goto-profile bg-kaos text-black px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md">
+          Oy İçin Sicilini Tamamla
+        </button>
+      </div>
+    `;
+
+    card.innerHTML = `
+      ${lockedOverlay}
+
+      <div class="${isAuthorized ? '' : 'blur-sm opacity-50 select-none pointer-events-none'}">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <span class="text-[9px] font-black uppercase tracking-widest text-kaos">
+            Gündemde · ${audience}
+          </span>
+
+          <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">
+            Oylama Açık
+          </span>
+        </div>
+
+        <h3 class="text-lg md:text-xl font-black text-white mb-2 leading-tight">
+          ${title}
+        </h3>
+
+        ${problem ? `<p class="text-xs md:text-sm text-gray-400 leading-relaxed mb-2">${problem}</p>` : ''}
+
+        ${solution ? `<p class="text-xs md:text-sm text-gray-300 leading-relaxed mb-4 border-l-2 border-kaos/60 pl-3">${solution}</p>` : ''}
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Katılım</div>
+            <div class="vote-total text-lg font-black text-white">${isAuthorized ? stats.total : 'GİZLİ'}</div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Kabul</div>
+            <div class="vote-count-yes text-lg font-black text-green-400">${isAuthorized ? stats.yes : '—'}</div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Çekimser</div>
+            <div class="vote-count-abstain text-lg font-black text-yellow-400">${isAuthorized ? stats.abstain : '—'}</div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Ret</div>
+            <div class="vote-count-no text-lg font-black text-red-400">${isAuthorized ? stats.no : '—'}</div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden flex border border-slate-700">
+            <div class="vote-bar-yes bg-green-500 h-full transition-all" style="width:${stats.yesPercent}%"></div>
+            <div class="vote-bar-abstain bg-yellow-500 h-full transition-all" style="width:${stats.abstainPercent}%"></div>
+            <div class="vote-bar-no bg-red-500 h-full transition-all" style="width:${stats.noPercent}%"></div>
+          </div>
+
+          <div class="flex justify-between text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-2">
+            <span class="vote-text-yes">%${stats.yesPercent} Kabul</span>
+            <span class="vote-text-abstain">%${stats.abstainPercent} Çekimser</span>
+            <span class="vote-text-no">%${stats.noPercent} Ret</span>
+          </div>
+        </div>
+
+        <div class="vote-buttons-container grid grid-cols-3 gap-2" data-auth="${authType}">
+          <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-green-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-id="${id}" data-onerge-id="${id}" data-vote="yes">Kabul</button>
+          <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-yellow-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-id="${id}" data-onerge-id="${id}" data-vote="abstain">Çekimser</button>
+          <button type="button" class="vote-btn bg-slate-800 border border-slate-600 hover:border-red-500 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition" data-id="${id}" data-onerge-id="${id}" data-vote="no">Ret</button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('.btn-goto-profile')?.addEventListener('click', goToProfile);
+
+    return card;
+  },
+
+  updateVoteCardStats: (onergeId, statsData = {}) => {
+    const card = document.querySelector(`[data-onerge-card="${CSS.escape(String(onergeId))}"]`);
+    if (!card) return;
+
+    const stats = getVoteStats(statsData);
+
+    const totalEl = card.querySelector('.vote-total');
+    const yesCountEl = card.querySelector('.vote-count-yes');
+    const abstainCountEl = card.querySelector('.vote-count-abstain');
+    const noCountEl = card.querySelector('.vote-count-no');
+
+    if (totalEl) totalEl.textContent = stats.total;
+    if (yesCountEl) yesCountEl.textContent = stats.yes;
+    if (abstainCountEl) abstainCountEl.textContent = stats.abstain;
+    if (noCountEl) noCountEl.textContent = stats.no;
+
+    const yesBar = card.querySelector('.vote-bar-yes');
+    const abstainBar = card.querySelector('.vote-bar-abstain');
+    const noBar = card.querySelector('.vote-bar-no');
+
+    if (yesBar) yesBar.style.width = `${stats.yesPercent}%`;
+    if (abstainBar) abstainBar.style.width = `${stats.abstainPercent}%`;
+    if (noBar) noBar.style.width = `${stats.noPercent}%`;
+
+    const yesText = card.querySelector('.vote-text-yes');
+    const abstainText = card.querySelector('.vote-text-abstain');
+    const noText = card.querySelector('.vote-text-no');
+
+    if (yesText) yesText.textContent = `%${stats.yesPercent} Kabul`;
+    if (abstainText) abstainText.textContent = `%${stats.abstainPercent} Çekimser`;
+    if (noText) noText.textContent = `%${stats.noPercent} Ret`;
+  },
+
+  // --------------------------------------------------
+  // 8. TRİBÜN LİGİ
+  // --------------------------------------------------
+
+  renderTribunLeague: (cities = []) => {
+    const championsContainer =
+      $('tribun-champions-container') ||
+      $('tribun-champions') ||
+      $('champions-container');
+
+    const tableBody =
+      $('tribun-ligi-body') ||
+      $('tribun-table-body') ||
+      document.querySelector('[data-tribun-body]');
+
+    const user = getUser();
+    const userCity = cleanText(user.city || user.sehir);
+    const validUserCity = isCitySelected(userCity);
+
+    const processed = Array.isArray(cities)
+      ? cities
+          .map((item) => {
+            const city = cleanText(item.city || item.sehir || item.name || item.il, 'Belirsiz');
+
+            const mezun = toNumber(item.mezun, item.mezun_sayisi, item.icmimar, item.icmimar_sayisi);
+            const ogrenci = toNumber(item.ogrenci, item.ogrenci_sayisi);
+            const onerge = toNumber(item.onerge, item.onerge_sayisi);
+            const oy = toNumber(item.oy, item.oy_sayisi, item.katilim, item.katilim_sayisi);
+            const katkı = toNumber(item.katki, item.katki_sayisi, item.katkı);
+            const rawPower = toNumber(item.power, item.puan, item.guc, item.güç);
+
+            const calculatedPower = rawPower || mezun * 3 + ogrenci * 2 + onerge * 5 + oy + katkı * 2;
+
+            return {
+              city,
+              mezun,
+              ogrenci,
+              onerge,
+              oy,
+              katki: katkı,
+              weeklyGrowthPercent: toNumber(item.weeklyGrowthPercent, item.haftalik_buyume),
+              power: calculatedPower
+            };
+          })
+          .filter((item) => item.city && item.city !== 'Belirsiz')
+          .sort((a, b) => Number(b.power || 0) - Number(a.power || 0))
+      : [];
+
+    if (championsContainer) {
+      if (processed.length === 0) {
+        championsContainer.innerHTML = '';
+      } else {
+        const leader = processed[0];
+
+        const mostActive =
+          [...processed].sort((a, b) => {
+            return b.onerge + b.oy + b.katki - (a.onerge + a.oy + a.katki);
+          })[0] || leader;
+
+        const studentLeader =
+          [...processed].sort((a, b) => {
+            return Number(b.ogrenci || 0) - Number(a.ogrenci || 0);
+          })[0] || leader;
+
+        const fastest =
+          [...processed].sort((a, b) => {
+            return Number(b.weeklyGrowthPercent || 0) - Number(a.weeklyGrowthPercent || 0);
+          })[0] || leader;
+
+        championsContainer.innerHTML = `
+          ${UI.createChampionCard('Genel Lider', leader.city, '🏆')}
+          ${UI.createChampionCard('En Aktif Tribün', mostActive.city, '🔥')}
+          ${UI.createChampionCard('Öğrenci Lideri', studentLeader.city, '🎓')}
+          ${UI.createChampionCard('Haftanın Yükseleni', fastest.city, '⚡')}
+        `;
+      }
+    }
+
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    if (processed.length === 0) {
+      const row = document.createElement('tr');
+
+      row.innerHTML =
+        '<td colspan="2" class="p-4 text-center text-gray-500 text-xs uppercase tracking-widest">Henüz tribün verisi yok.</td>';
+
+      tableBody.appendChild(row);
+      return;
+    }
+
+    processed.forEach((city, index) => {
+      const isMine = validUserCity && city.city === userCity;
+      const row = document.createElement('tr');
+
+      row.className = isMine
+        ? 'bg-kaos/10 border-b border-kaos/30'
+        : 'border-b border-slate-800 hover:bg-slate-800/50 transition';
+
+      const rank = index + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+
+      row.innerHTML = `
+        <td class="p-4 font-black text-white text-sm">
+          <span class="mr-2">${medal}</span>${escapeHtml(city.city)}
+          ${isMine ? '<span class="ml-2 text-[9px] text-kaos uppercase tracking-widest">Senin Tribünün</span>' : ''}
+        </td>
+
+        <td class="p-4 font-mono font-black text-kaos text-sm text-right">
+          ${Number(city.power || 0).toLocaleString('tr-TR')}
+        </td>
+      `;
+
+      tableBody.appendChild(row);
+    });
+  },
+
+  createChampionCard: (label, city, icon = '') => {
+    return `
+      <div class="bg-black/40 border border-slate-700 rounded-2xl p-4 text-center shadow-md">
+        <div class="text-2xl mb-2">${icon}</div>
+        <div class="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">${escapeHtml(label)}</div>
+        <div class="text-sm md:text-base font-black text-white truncate">${escapeHtml(city || 'Bekleniyor')}</div>
+      </div>
+    `;
+  },
+
+  // Eski çağrılarla uyumluluk için alias
+  renderLeague: (cities = []) => {
+    UI.renderTribunLeague(cities);
+  },
+
+  renderCityLeague: (cities = []) => {
+    UI.renderTribunLeague(cities);
+  },
+
+  // --------------------------------------------------
+  // 9. DAVET LİNKİ
+  // --------------------------------------------------
+
+  copyInviteLink: async () => {
+    const user = getUser();
+    const link = buildInviteLink(user);
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const input = document.createElement('input');
+        input.value = link;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+      }
+
+      UI.showToast('Davet bağlantısı kopyalandı.', 'success');
+    } catch (error) {
+      console.error('Davet linki kopyalanamadı:', error);
+      UI.showToast('Davet bağlantısı kopyalanamadı.', 'error');
+    }
+  },
+
+  refreshProfile: () => {
+    UI.renderProfile();
+  }
+};
+
+// ------------------------------------------------------
+// GLOBAL ERİŞİM
+// ------------------------------------------------------
+
+window.UI = UI;
+
+window.kopyalaDavetLinki = () => {
+  UI.copyInviteLink();
+};
+
+window.copyInviteLink = () => {
+  UI.copyInviteLink();
+};
+
+// ------------------------------------------------------
+// MODAL KAPATMA BUTONLARI
+// ------------------------------------------------------
+
+document.addEventListener('click', (event) => {
+  const closeButton = event.target.closest('[data-close-modal]');
+  if (!closeButton) return;
+
+  const modalId = closeButton.getAttribute('data-close-modal');
+  if (!modalId) return;
+
+  UI.closeModal(modalId);
+});
+
+// ------------------------------------------------------
+// ESC TUŞU İLE AÇIK MODALLARI KAPAT
+// ------------------------------------------------------
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+
+  [
+    'ortak-kursu-modal',
+    'phone-modal',
+    'pdf-modal',
+    'vip-modal',
+    'dinamik-detay-modal'
+  ].forEach((modalId) => {
+    const modal = $(modalId);
+
+    if (modal && !modal.classList.contains('hidden')) {
+      if (modalId === 'dinamik-detay-modal') {
+        modal.remove();
+      } else {
+        UI.closeModal(modalId);
+      }
+    }
+  });
+});
 
         if (modal && !modal.classList.contains('hidden')) {
             if (modalId === 'dinamik-detay-modal') {
