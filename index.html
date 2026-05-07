@@ -14,31 +14,16 @@
   <meta name="theme-color" content="#facc15" />
 
   <script src="https://cdn.tailwindcss.com"></script>
-
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            kaos: '#facc15',
-            meblack: '#020617'
+            kaos: "#facc15",
+            meblack: "#020617"
           },
           boxShadow: {
-            kaos: '0 0 30px rgba(250, 204, 21, 0.35)'
-          },
-          animation: {
-            slideUpFade: 'slideUpFade 0.35s ease-out both',
-            pulseSoft: 'pulseSoft 2s ease-in-out infinite'
-          },
-          keyframes: {
-            slideUpFade: {
-              '0%': { opacity: '0', transform: 'translateY(10px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' }
-            },
-            pulseSoft: {
-              '0%, 100%': { opacity: '0.65' },
-              '50%': { opacity: '1' }
-            }
+            kaos: "0 0 30px rgba(250, 204, 21, 0.35)"
           }
         }
       }
@@ -51,9 +36,7 @@
   />
 
   <style>
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
       background:
@@ -68,24 +51,13 @@
       backdrop-filter: blur(18px);
     }
 
-    .view-section.hidden {
-      display: none;
-    }
-
-    .view-section.block {
-      display: block;
-    }
+    .view-section.hidden { display: none; }
+    .view-section.block { display: block; }
 
     .nav-menu-btn.active {
       background: rgba(30, 41, 59, 0.95);
       color: #ffffff;
       border-color: rgba(250, 204, 21, 0.35);
-    }
-
-    .message-fade-out {
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: all 1.5s ease;
     }
 
     ::selection {
@@ -111,7 +83,6 @@
           <div class="w-9 h-9 rounded-2xl bg-kaos text-slate-950 flex items-center justify-center font-black shadow-kaos">
             ME
           </div>
-
           <div>
             <div class="text-sm font-black tracking-widest">ME26 AĞI</div>
             <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">Dijital Meclis</div>
@@ -202,9 +173,7 @@
 
           <div class="grid gap-4">
             <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-              <div class="text-kaos text-2xl mb-3">
-                <i class="fa-solid fa-square-poll-vertical"></i>
-              </div>
+              <div class="text-kaos text-2xl mb-3"><i class="fa-solid fa-square-poll-vertical"></i></div>
               <h3 class="font-black mb-2">Ortak Sandık</h3>
               <p class="text-sm text-gray-400 leading-relaxed">
                 Mesleki sorunlar önergeye dönüşür. Yeterli destek alan başlıklar ortak sandığa taşınır.
@@ -212,9 +181,7 @@
             </div>
 
             <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-              <div class="text-kaos text-2xl mb-3">
-                <i class="fa-solid fa-comments"></i>
-              </div>
+              <div class="text-kaos text-2xl mb-3"><i class="fa-solid fa-comments"></i></div>
               <h3 class="font-black mb-2">Söz Sende</h3>
               <p class="text-sm text-gray-400 leading-relaxed">
                 Öğrenciler ve mezunlar soru sorar, deneyim aktarır, çözüm üreten bilgi kütüphanesi oluşur.
@@ -222,9 +189,7 @@
             </div>
 
             <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
-              <div class="text-kaos text-2xl mb-3">
-                <i class="fa-solid fa-shield-halved"></i>
-              </div>
+              <div class="text-kaos text-2xl mb-3"><i class="fa-solid fa-shield-halved"></i></div>
               <h3 class="font-black mb-2">Koruma Hattı</h3>
               <p class="text-sm text-gray-400 leading-relaxed">
                 Ünvan kullanımı, belge kontrolü ve mesleki kimlik güvenliği için ön inceleme bildirimleri alınır.
@@ -248,17 +213,14 @@
             <div class="text-3xl font-black text-kaos">0₺</div>
             <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Aidat</div>
           </div>
-
           <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center">
             <div class="text-3xl font-black text-kaos">0</div>
             <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Başkan</div>
           </div>
-
           <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center">
             <div class="text-3xl font-black text-kaos">ID</div>
             <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Gizli Profil</div>
           </div>
-
           <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center">
             <div class="text-3xl font-black text-kaos">PDF</div>
             <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-2">Belge Kontrol</div>
@@ -279,49 +241,32 @@
           <div class="glass rounded-3xl p-6">
             <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-landmark"></i></div>
             <h3 class="font-black mb-2">İçmimar Lobisi</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">
-              Mesleğin genel durumunu, gündem başlıklarını ve sistem duyurularını tek alanda toplar.
-            </p>
+            <p class="text-sm text-gray-400 leading-relaxed">Mesleğin genel durumunu, gündem başlıklarını ve sistem duyurularını tek alanda toplar.</p>
           </div>
-
           <div class="glass rounded-3xl p-6">
             <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-box-archive"></i></div>
             <h3 class="font-black mb-2">Ortak Sandık</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">
-              Öneriler destek toplar. Yeterli desteğe ulaşan başlıklar oylamaya açılır.
-            </p>
+            <p class="text-sm text-gray-400 leading-relaxed">Öneriler destek toplar. Yeterli desteğe ulaşan başlıklar oylamaya açılır.</p>
           </div>
-
           <div class="glass rounded-3xl p-6">
             <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-microphone-lines"></i></div>
             <h3 class="font-black mb-2">Söz Sende</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">
-              Soru, cevap, deneyim ve çözüm kayıtları zamanla mesleki bilgi kütüphanesine dönüşür.
-            </p>
+            <p class="text-sm text-gray-400 leading-relaxed">Soru, cevap, deneyim ve çözüm kayıtları zamanla mesleki bilgi kütüphanesine dönüşür.</p>
           </div>
-
           <div class="glass rounded-3xl p-6">
             <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-city"></i></div>
             <h3 class="font-black mb-2">Canlı Stadyum</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">
-              Kimlerin hangi şehir tribününden sisteme katıldığını canlı ve anonim şekilde gösterir.
-            </p>
+            <p class="text-sm text-gray-400 leading-relaxed">Kimlerin hangi şehir tribününden sisteme katıldığını canlı ve anonim şekilde gösterir.</p>
           </div>
-
           <div class="glass rounded-3xl p-6">
             <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-ranking-star"></i></div>
             <h3 class="font-black mb-2">Tribün Ligi</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">
-              Şehirlerin katılım, önerge, oy ve katkı gücünü görünür hale getirir.
-            </p>
+            <p class="text-sm text-gray-400 leading-relaxed">Şehirlerin katılım, önerge, oy ve katkı gücünü görünür hale getirir.</p>
           </div>
-
           <div class="glass rounded-3xl p-6">
             <div class="text-kaos text-2xl mb-4"><i class="fa-solid fa-user-shield"></i></div>
             <h3 class="font-black mb-2">Koruma Hattı</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">
-              Ünvan güvenliği, belge kontrolü ve mesleki kimlik koruması için bildirimleri ön incelemeye alır.
-            </p>
+            <p class="text-sm text-gray-400 leading-relaxed">Ünvan güvenliği, belge kontrolü ve mesleki kimlik koruması için bildirimleri ön incelemeye alır.</p>
           </div>
         </div>
       </section>
@@ -337,27 +282,22 @@
             <h3 class="font-black mb-2">1. Gerçek Kimlik, Gizli Profil</h3>
             <p class="text-sm text-gray-400">Sistem gerçek kullanıcıyı doğrular; topluluk içinde ad-soyad yerine Global ID görünür.</p>
           </div>
-
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">2. Belge Kontrollü Erişim</h3>
             <p class="text-sm text-gray-400">Tam erişim, mesleki belge inceleme başvurusu ve telefon doğrulaması sonrasında açılır.</p>
           </div>
-
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">3. Oy Gücü Kurallıdır</h3>
             <p class="text-sm text-gray-400">Oy, destek ve katkı işlemleri veritabanı kayıtlarıyla kilitlenir. Aynı başlıkta çift oy engellenir.</p>
           </div>
-
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">4. İftira ve Hedef Gösterme Yok</h3>
             <p class="text-sm text-gray-400">Kişisel saldırı, hakaret, iftira, linç ve mesleki itibarı haksız zedeleyen içerikler sistem dışı bırakılır.</p>
           </div>
-
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">5. Koruma Hattı Kesin Hüküm Vermez</h3>
             <p class="text-sm text-gray-400">ME26 yargı mercii veya meslek odası değildir. Bildirimleri belgeye dayalı ön inceleme amacıyla kayıt altına alır.</p>
           </div>
-
           <div class="bg-black/30 border border-slate-800 rounded-2xl p-5">
             <h3 class="font-black mb-2">6. Başkan Yok, Kural Var</h3>
             <p class="text-sm text-gray-400">Sistemin amacı kişileri öne çıkarmak değil; kurallı, izlenebilir ve liyakate dayalı ortak akıl üretmektir.</p>
@@ -379,17 +319,14 @@
               <h3 class="font-black mb-2">Global ID</h3>
               <p class="text-sm text-gray-400">Topluluk içinde kullanıcılar ad-soyadla değil; TR-IA kimliği, şehir tribünü, rol ve katkı geçmişiyle görünür.</p>
             </div>
-
             <div class="glass rounded-3xl p-6">
               <h3 class="font-black mb-2">Telefon Doğrulama</h3>
               <p class="text-sm text-gray-400">Çoklu hesap, sahte kayıt ve manipülasyon riskini azaltmak için telefon doğrulaması istenir.</p>
             </div>
-
             <div class="glass rounded-3xl p-6">
               <h3 class="font-black mb-2">Belge İnceleme</h3>
               <p class="text-sm text-gray-400">Mesleki belge başvurusu otomatik hüküm üretmez. Ön inceleme kuyruğuna alınır.</p>
             </div>
-
             <div class="glass rounded-3xl p-6">
               <h3 class="font-black mb-2">Koruma Hattı</h3>
               <p class="text-sm text-gray-400">Bildirim sahibinin bilgileri gizli tutulur. Süreçler anonim ve istatistiksel biçimde değerlendirilebilir.</p>
@@ -428,7 +365,6 @@
           <div class="w-11 h-11 rounded-2xl bg-kaos text-slate-950 flex items-center justify-center font-black shadow-kaos">
             ME
           </div>
-
           <div>
             <div class="text-lg font-black tracking-widest">ME26</div>
             <div class="text-[9px] text-gray-500 uppercase tracking-[0.25em]">Dijital Meclis</div>
@@ -446,27 +382,21 @@
         <button type="button" data-target="view-lobi" class="nav-menu-btn active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-white border border-transparent">
           <i class="fa-solid fa-landmark w-5 text-kaos"></i> İçmimar Lobisi
         </button>
-
         <button type="button" data-target="view-sandik" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
           <i class="fa-solid fa-square-poll-vertical w-5"></i> Ortak Sandık
         </button>
-
         <button type="button" data-target="view-kursu" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
           <i class="fa-solid fa-comments w-5"></i> Söz Sende
         </button>
-
         <button type="button" data-target="view-stadium" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
           <i class="fa-solid fa-city w-5"></i> Canlı Stadyum
         </button>
-
         <button type="button" data-target="view-tribun" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
           <i class="fa-solid fa-ranking-star w-5"></i> Tribün
         </button>
-
         <button type="button" data-target="view-koruma" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
           <i class="fa-solid fa-shield-halved w-5"></i> İçmimar Koruma Hattı
         </button>
-
         <button type="button" data-target="view-profil" class="nav-menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-bold text-gray-400 border border-transparent hover:bg-slate-900">
           <i class="fa-solid fa-id-card w-5"></i> Sicilim & Ayarlarım
         </button>
@@ -489,7 +419,6 @@
           <div class="text-sm font-black tracking-widest">ME26 AĞI</div>
           <div id="mobile-user-id" class="text-[10px] text-kaos font-black">TR-IA-???</div>
         </div>
-
         <button id="btn-mobile-logout" type="button" class="text-xs text-red-400 font-black uppercase tracking-widest">
           Çıkış
         </button>
@@ -634,12 +563,10 @@
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_0.85fr] gap-5">
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-6">
                 <h2 class="text-xl font-black mb-4">Sistem Durumu</h2>
-
                 <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-2xl">
                   <h3 class="text-gray-400 text-xs font-black tracking-widest uppercase mb-3">
                     Sistem Durumu: Kayıtlı İzleyici
                   </h3>
-
                   <p id="ui-sistem-durumu" class="text-sm text-gray-300 leading-relaxed">
                     Profilinden mesleki belge inceleme başvurusu göndererek tam erişim kazanabilir ve kendi önergelerini sunabilirsin.
                   </p>
@@ -652,13 +579,11 @@
                   <h3 class="text-lg font-black mt-1">Sicilini Tamamla</h3>
                   <p class="text-sm text-gray-400 mt-2">Telefon ve belge inceleme başvurusu ile tam erişime hazırlan.</p>
                 </div>
-
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6">
                   <div class="text-[10px] text-kaos font-black uppercase tracking-widest">Aşama 2</div>
                   <h3 class="text-lg font-black mt-1">Sandığa Katıl</h3>
                   <p class="text-sm text-gray-400 mt-2">Destek ver, oy kullan, önerge oluştur ve mesleki gündeme katkı sun.</p>
                 </div>
-
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6">
                   <div class="text-[10px] text-kaos font-black uppercase tracking-widest">Aşama 3</div>
                   <h3 class="text-lg font-black mt-1">Ortak Akıl Üret</h3>
@@ -681,7 +606,6 @@
               <button
                 id="btn-open-proposal-modal-2"
                 type="button"
-                onclick="document.getElementById('btn-open-proposal-modal')?.click()"
                 class="bg-kaos text-slate-950 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-kaos"
               >
                 Önerge Ver
@@ -767,17 +691,14 @@
                 <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Şu An Stadyumda</div>
                 <div id="stat-total-online" class="text-3xl font-black text-kaos mt-2">0</div>
               </div>
-
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
                 <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Mezun Koltuğu</div>
                 <div id="stat-mezun-online" class="text-3xl font-black text-white mt-2">0</div>
               </div>
-
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
                 <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Öğrenci Koltuğu</div>
                 <div id="stat-ogrenci-online" class="text-3xl font-black text-white mt-2">0</div>
               </div>
-
               <div class="bg-black/40 border border-slate-800 rounded-3xl p-5">
                 <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Lider Tribün</div>
                 <div id="stat-lider-tribun" class="text-xl font-black text-kaos mt-2">Bekleniyor</div>
@@ -794,7 +715,6 @@
               <div class="grid gap-5">
                 <div class="bg-black/40 border border-slate-800 rounded-3xl p-6 text-center relative overflow-hidden">
                   <div id="saha-dalgalar" class="absolute inset-0 opacity-0 bg-green-500/5"></div>
-
                   <div
                     id="sahne-avatar"
                     class="relative mx-auto w-24 h-24 rounded-full border border-slate-700 bg-slate-900 flex items-center justify-center mb-4 transition"
@@ -1192,32 +1112,26 @@
           <i class="fa-solid fa-landmark text-kaos"></i>
           Lobi
         </button>
-
         <button type="button" data-target="view-sandik" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-square-poll-vertical"></i>
           Sandık
         </button>
-
         <button type="button" data-target="view-kursu" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-comments"></i>
           Söz
         </button>
-
         <button type="button" data-target="view-stadium" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-city"></i>
           Stad
         </button>
-
         <button type="button" data-target="view-tribun" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-ranking-star"></i>
           Tribün
         </button>
-
         <button type="button" data-target="view-koruma" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-shield-halved"></i>
           Koruma
         </button>
-
         <button type="button" data-target="view-profil" class="nav-menu-btn py-3 flex flex-col items-center gap-1 text-gray-500">
           <i class="fa-solid fa-id-card"></i>
           Ayarlar
@@ -1352,7 +1266,7 @@
           <input
             id="input-phone-number"
             type="tel"
-            placeholder="+90 5XX XXX XX XX"
+            placeholder="5XXXXXXXXX"
             class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-kaos mb-4"
           />
 
@@ -1479,196 +1393,13 @@
 
   <!-- ======================================================
        SCRIPTS
+       Sıra önemli:
+       app.js ana giriş/kayıt için önce çalışır.
+       ui.js, qa.js ve stadium.js yardımcı modüller olarak yüklenir.
   ======================================================= -->
   <script type="module" src="./app.js"></script>
-
-  <!--
-    Acil giriş yedeği:
-    app.js syntax hatası alırsa bile giriş / kayıt butonlarını bağımsız olarak bağlar.
-    app.js düzeldikten sonra bu blok kalsa da sorun çıkarmaz; window.AUTH varsa onu kullanır.
-  -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup
-    } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const FALLBACK_CONFIG = {
-      officialBaseUrl: 'https://me26.mustafaerciyas.workers.dev',
-      inviteBaseUrl: 'https://me26.mustafaerciyas.workers.dev',
-      firebaseConfig: {
-        apiKey: 'AIzaSyBYbh_AjnBGsapwfIy68vTJ_ivcgSSvIOA',
-        authDomain: 'me26-io.firebaseapp.com',
-        projectId: 'me26-io',
-        storageBucket: 'me26-io.firebasestorage.app',
-        messagingSenderId: '87570616950',
-        appId: '1:87570616950:web:50c97a3de14a69efb4c557'
-      },
-      supabaseUrl: 'https://ukmkojfntsmueikjcrvz.supabase.co',
-      supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrbWtvamZudHNtdWVpa2pjcnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDkxOTIsImV4cCI6MjA5MzEyNTE5Mn0.qekCT-bHdmq7_31KDyFLzY33rA-jFJOqhK7gGg3ptVw'
-    };
-
-    let fallbackAuth = null;
-    let fallbackSupabase = null;
-    let fallbackLock = false;
-
-    const $ = (id) => document.getElementById(id);
-
-    const cleanText = (value, fallback = '') => {
-      if (value === null || value === undefined) return fallback;
-      return String(value).trim();
-    };
-
-    const showToast = (message, type = 'info') => {
-      if (window.UI && typeof window.UI.showToast === 'function') {
-        window.UI.showToast(message, type);
-        return;
-      }
-
-      const container = $('toast-container');
-      if (!container) return;
-
-      const colors = {
-        success: 'bg-green-900/90 text-green-300 border-green-700',
-        info: 'bg-blue-900/90 text-blue-300 border-blue-700',
-        warning: 'bg-yellow-900/90 text-yellow-300 border-yellow-700',
-        error: 'bg-red-900/90 text-red-300 border-red-700'
-      };
-
-      const toast = document.createElement('div');
-      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs font-bold uppercase tracking-widest max-w-sm ${colors[type] || colors.info}`;
-      toast.textContent = message;
-      container.appendChild(toast);
-
-      setTimeout(() => toast.remove(), 3500);
-    };
-
-    const getRefFromUrl = () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const ref = cleanText(params.get('ref'));
-        if (!ref) return null;
-        return ref.replace(/[^A-Z0-9\-]/gi, '').toUpperCase().slice(0, 60);
-      } catch {
-        return null;
-      }
-    };
-
-    const createInviteCode = (uid) => {
-      try {
-        const randomArray = new Uint32Array(1);
-        crypto.getRandomValues(randomArray);
-        return `ME26-TR-${randomArray[0].toString(36).toUpperCase().slice(0, 6)}`;
-      } catch {
-        return `ME26-TR-${String(uid || Math.random()).slice(0, 8).toUpperCase()}`;
-      }
-    };
-
-    const showSaasFallback = (dbUser) => {
-      const landing = $('landing-view');
-      const saas = $('saas-view');
-
-      if (landing) landing.classList.add('hidden');
-      if (saas) {
-        saas.classList.remove('hidden');
-        saas.classList.add('flex');
-      }
-
-      document.body.classList.add('overflow-hidden');
-
-      const userNo = dbUser?.vip_kurucu_no || dbUser?.kurucu_no || dbUser?.userNo || 'BEKLEYEN';
-      const digitalId = userNo !== 'BEKLEYEN' ? `TR-IA-${userNo}` : 'TR-IA-BEKLEYEN';
-      const role = dbUser?.mesleki_durum || dbUser?.m_durum || dbUser?.role || 'Kimlik Bekleniyor';
-      const city = dbUser?.sehir || dbUser?.city || 'TRİBÜN SEÇİLMEDİ';
-      const inviteCode = dbUser?.kendi_davet_kodu || dbUser?.davet_kodu || dbUser?.d_kod || digitalId;
-
-      const setText = (id, value) => {
-        const el = $(id);
-        if (el) el.textContent = value;
-      };
-
-      setText('sidebar-user-id', digitalId);
-      setText('mobile-user-id', digitalId);
-      setText('ui-user-id', digitalId);
-      setText('ui-user-role', role);
-      setText('sidebar-user-role', role);
-      setText('ui-user-city', city);
-      setText('ui-vote-power', dbUser?.oy_gucu > 0 ? 'Tam' : 'Sınırlı');
-      setText('sidebar-vote-power', dbUser?.oy_gucu > 0 ? 'Erişim Seviyesi Tam' : 'Erişim Seviyesi Sınırlı');
-      setText('ui-invite-link', `${FALLBACK_CONFIG.inviteBaseUrl}/?ref=${encodeURIComponent(inviteCode)}`);
-
-      const cityGate = $('ui-city-selector-container');
-      if (cityGate) {
-        const hasCity = Boolean(dbUser?.sehir || dbUser?.city);
-        cityGate.classList.toggle('hidden', hasCity);
-      }
-    };
-
-    const fallbackLogin = async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (fallbackLock) return;
-      fallbackLock = true;
-
-      try {
-        if (window.AUTH && typeof window.AUTH.loginWithGoogle === 'function') {
-          await window.AUTH.loginWithGoogle();
-          return;
-        }
-
-        if (!fallbackAuth || !fallbackSupabase) {
-          const app = initializeApp(FALLBACK_CONFIG.firebaseConfig);
-          fallbackAuth = getAuth(app);
-          fallbackSupabase = createClient(
-            FALLBACK_CONFIG.supabaseUrl,
-            FALLBACK_CONFIG.supabaseKey,
-            {
-              auth: {
-                persistSession: false,
-                autoRefreshToken: false,
-                detectSessionInUrl: false
-              }
-            }
-          );
-        }
-
-        showToast('Google giriş başlatılıyor.', 'info');
-
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-
-        const result = await signInWithPopup(fallbackAuth, provider);
-        const firebaseUser = result.user;
-
-        if (!firebaseUser?.uid) {
-          throw new Error('Google kullanıcı kimliği alınamadı.');
-        }
-
-        const { data: existingUser, error: selectError } = await fallbackSupabase
-          .from('users')
-          .select('*')
-          .eq('id', firebaseUser.uid)
-          .maybeSingle();
-
-        if (selectError) throw selectError;
-
-        let dbUser = existingUser;
-
-        if (!dbUser) {
-          const payload = {
-            uid: firebaseUser.uid,
-            g_isim: firebaseUser.displayName || 'İsimsiz',
-            mail: firebaseUser.email || null,
-            foto: firebaseUser.photoURL || '',
-            m_durum: 'Belirsiz',
-            sehir: null,
-            d_kod: createInviteCode(firebaseUser.uid),
-            ref: getRefFromUrl()
-          };
-
-          const { data: createdUser, error:
+  <script type="module" src="./ui.js"></script>
+  <script type="module" src="./qa.js"></script>
+  <script type="module" src="./stadium.js"></script>
+</body>
+</html>
